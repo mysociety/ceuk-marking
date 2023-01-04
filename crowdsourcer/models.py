@@ -29,12 +29,32 @@ class PublicAuthority(models.Model):
 
 
 class Question(models.Model):
+    MARKING_TYPES = [
+        ("foi", "FOI"),
+        ("national_data", "National Data"),
+        ("volunteer", "Volunteer Research"),
+        ("national_volunteer", "National Data and Volunteer Research"),
+    ]
+    QUESTION_TYPES = [
+        ("yes_no", "Yes/No"),
+        ("foi", "FOI"),
+        ("national_data", "National Data"),
+        ("select_one", "Select One"),
+        ("tiered", "Tiered Answer"),
+        ("multiple_choice", "Multiple Choice"),
+    ]
     number = models.IntegerField(blank=True, null=True)
     number_part = models.CharField(max_length=4, blank=True, null=True)
     description = models.TextField()
     criteria = models.TextField()
     section = models.ForeignKey(Section, on_delete=models.CASCADE)
     questiongroup = models.ManyToManyField(QuestionGroup)
+    how_marked = models.CharField(
+        max_length=30, default="volunteer", choices=MARKING_TYPES
+    )
+    question_type = models.CharField(
+        max_length=30, default="yes_no", choices=QUESTION_TYPES
+    )
 
     def __str__(self):
         return self.description
