@@ -5,13 +5,30 @@ from django.core.management.base import BaseCommand
 
 import pandas as pd
 
-from crowdsourcer.models import Question, QuestionGroup, Section
+from crowdsourcer.models import Option, Question, QuestionGroup, Section
 
 
 class Command(BaseCommand):
     help = "import questions"
 
     question_file = settings.BASE_DIR / "data" / "questions.xlsx"
+
+    column_names = [
+        "question_no",
+        "topic",
+        "question",
+        "criteria",
+        "clarifications",
+        "how_marked",
+        "climate_justice",
+        "weighting",
+        "district",
+        "single_tier",
+        "county",
+        "northern_ireland",
+        "question_type",
+        "points",
+    ]
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -28,25 +45,18 @@ class Command(BaseCommand):
             df = pd.read_excel(
                 self.question_file,
                 sheet_name=section.title,
-                header=3,
-                usecols="B:L",
+                header=2,
+                usecols=lambda name: "Unnamed" not in name,
             )
 
             df = df.dropna(axis="index", how="all")
 
-            df.columns = [
-                "question_no",
-                "topic",
-                "question",
-                "criteria",
-                "clarifications",
-                "how_marked",
-                "weighting",
-                "district",
-                "single_tier",
-                "county",
-                "northern_ireland",
-            ]
+            columns = list(self.column_names)
+            options = len(df.columns) - len(self.column_names) + 1
+            for i in range(1, options):
+                columns.append(f"option_{i}")
+
+            df.columns = columns
 
             for index, row in df.iterrows():
                 q_no = row["question_no"]
@@ -60,6 +70,23 @@ class Command(BaseCommand):
                     if len(q_parts) == 2:
                         q_part = q_parts[1]
 
+                how_marked = "volunteer"
+                question_type = "yes_no"
+                if row["how_marked"] == "FOI":
+                    how_marked = "foi"
+                    question_type = "foi"
+                elif row["how_marked"] == "National Data":
+                    how_marked = "national_data"
+                    question_type = "national_data"
+
+                if not pd.isna(row["question_type"]):
+                    if row["question_type"] == "Tiered answer":
+                        question_type = "tiered"
+                    elif row["question_type"] == "Tick all that apply":
+                        question_type = "multuple_choice"
+                    elif row["question_type"] == "Multiple choice":
+                        question_type = "select_one"
+
                 q, c = Question.objects.update_or_create(
                     number=q_no,
                     number_part=q_part,
@@ -67,8 +94,38 @@ class Command(BaseCommand):
                     defaults={
                         "description": row["question"],
                         "criteria": row["criteria"],
+                        "question_type": question_type,
+                        "how_marked": how_marked,
                     },
                 )
+
+                if q.question_type in ["select_one", "tiered", "multiple_choice"]:
+                    o, c = Option.objects.update_or_create(
+                        question=q,
+                        description="None",
+                        defaults={"score": 0},
+                    )
+                    for i in range(1, options):
+                        desc = row[f"option_{i}"]
+                        score = 1
+                        if q.question_type == "tiered":
+                            score = i
+                        if not pd.isna(desc):
+                            o, c = Option.objects.update_or_create(
+                                question=q,
+                                description=desc,
+                                defaults={"score": score},
+                            )
+                elif q.question_type == "yes_no":
+                    for desc in ["Yes", "No"]:
+                        score = 1
+                        if desc == "No":
+                            score = 0
+                        o, c = Option.objects.update_or_create(
+                            question=q,
+                            description=desc,
+                            defaults={"score": score},
+                        )
 
                 for col, group in q_groups.items():
                     if row[col] == "Yes":
