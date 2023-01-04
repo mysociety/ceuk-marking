@@ -1,5 +1,6 @@
 from django.contrib.auth.models import User
 from django.db import models
+from django.urls import reverse
 
 
 class Section(models.Model):
@@ -87,6 +88,16 @@ class Response(models.Model):
     private_notes = models.TextField()
     revision_type = models.CharField(max_length=200, blank=True, null=True)
     revision_notes = models.TextField(blank=True, null=True)
+
+    def get_absolute_url(self):
+        return reverse(
+            "authority_question_edit",
+            kwargs={
+                "name": self.authority.name,
+                "section_title": self.question.section.title,
+                "number": self.question.number,
+            },
+        )
 
 
 class Assigned(models.Model):

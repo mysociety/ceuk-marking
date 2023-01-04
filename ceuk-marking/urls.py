@@ -18,4 +18,32 @@ from django.urls import path
 
 from crowdsourcer import views
 
-urlpatterns = [path("admin/", admin.site.urls), path("", views.OverviewView.as_view())]
+urlpatterns = [
+    path("admin/", admin.site.urls),
+    path("", views.OverviewView.as_view(), name="home"),
+    path(
+        "section/<section_title>/questions/",
+        views.SectionQuestionList.as_view(),
+        name="section_questions",
+    ),
+    path(
+        "section/<section_title>/question/<slug:number>/",
+        views.SectionQuestionAuthorityList.as_view(),
+        name="section_question_authorities",
+    ),
+    path(
+        "authorities/<name>/section/<section_title>/question/<number>/",
+        views.AuthorityQuestion.as_view(),
+        name="authority_question",
+    ),
+    path(
+        "authorities/<name>/section/<section_title>/question/<number>/answer/",
+        views.AuthorityQuestionAnswer.as_view(),
+        name="authority_question_answer",
+    ),
+    path(
+        "authorities/<name>/section/<section_title>/question/<number>/edit/",
+        views.AuthorityQuestionEdit.as_view(),
+        name="authority_question_edit",
+    ),
+]

@@ -1,0 +1,20 @@
+{% extends 'crowdsourcer/base.html' %}
+
+{% block content %}
+    {{ authority.name }}</br>
+    {{ question.description }}
+    <ul>
+    {% for option in options %}
+    <li>{{ option.description }} - {{ option.score }}</li>
+    {% endfor %}
+    </ul>
+
+    <p>
+    <form method="POST">
+        {% csrf_token %}
+    {{ form.as_p }}
+    <p>
+        <input type="submit">
+    </p>
+    </p>
+{% endblock %}

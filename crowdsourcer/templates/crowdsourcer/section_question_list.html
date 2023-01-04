@@ -1,0 +1,7 @@
+{% extends 'crowdsourcer/base.html' %}
+
+{% block content %}
+    {% for question in questions %}
+    <a href="{% url 'section_question_authorities' question.section.title  question.number %}">{{ question.number }}: {{ question.description }}</a><br>
+    {% endfor %}
+{% endblock %}
