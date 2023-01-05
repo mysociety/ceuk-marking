@@ -1,6 +1,6 @@
 from django.core.exceptions import PermissionDenied
 from django.urls import reverse
-from django.views.generic import ListView
+from django.views.generic import DetailView, ListView
 from django.views.generic.base import RedirectView
 from django.views.generic.edit import CreateView, UpdateView
 
@@ -82,6 +82,13 @@ class AuthorityQuestion(RedirectView):
             "section_title": self.kwargs["section_title"],
             "number": self.kwargs["number"],
         }
+        if not Assigned.is_user_assigned(
+            self.request.user,
+            authority=self.kwargs["name"],
+            section=self.kwargs["section_title"],
+        ):
+            return reverse("authority_question_view", kwargs=kwargs)
+
         try:
             Response.objects.get(
                 authority__name=self.kwargs["name"],

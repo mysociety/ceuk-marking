@@ -48,6 +48,11 @@ urlpatterns = [
         views.AuthorityQuestionEdit.as_view(),
         name="authority_question_edit",
     ),
+    path(
+        "authorities/<name>/section/<section_title>/question/<number>/view/",
+        views.AuthorityQuestionView.as_view(),
+        name="authority_question_view",
+    ),
 ]
 
 if settings.DEBUG:  # pragma: no cover

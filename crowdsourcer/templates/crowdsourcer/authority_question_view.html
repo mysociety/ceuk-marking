@@ -1,0 +1,7 @@
+{% extends 'crowdsourcer/base.html' %}
+
+{% block content %}
+    {{ response.authority.name }}<br>
+    {{ response.question.description }}<br>
+    {{ response.option.description }} ({{ response.option.score }})
+{% endblock %}
