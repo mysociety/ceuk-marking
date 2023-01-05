@@ -1,3 +1,4 @@
+from django.core.exceptions import PermissionDenied
 from django.urls import reverse
 from django.views.generic import ListView
 from django.views.generic.base import RedirectView
@@ -99,6 +100,13 @@ class AuthorityQuestionAnswer(CreateView):
     form_class = ResponseForm
 
     def get_initial(self):
+        if not Assigned.is_user_assigned(
+            self.request.user,
+            authority=self.kwargs["name"],
+            section=self.kwargs["section_title"],
+        ):
+            raise PermissionDenied
+
         authority = PublicAuthority.objects.get(name=self.kwargs["name"])
         question = Question.objects.get(
             number=self.kwargs["number"], section__title=self.kwargs["section_title"]
@@ -128,12 +136,33 @@ class AuthorityQuestionAnswer(CreateView):
         return context
 
 
+class AuthorityQuestionView(DetailView):
+    template_name = "crowdsourcer/authority_question_view.html"
+    model = Response
+    context_object_name = "response"
+
+    def get_object(self):
+        response = Response.objects.get(
+            authority__name=self.kwargs["name"],
+            question__number=self.kwargs["number"],
+            question__section__title=self.kwargs["section_title"],
+        )
+
+        return response
+
+
 class AuthorityQuestionEdit(UpdateView):
     template_name = "crowdsourcer/authority_question.html"
     model = Response
     form_class = ResponseForm
 
     def get_object(self):
+        if not Assigned.is_user_assigned(
+            self.request.user,
+            authority=self.kwargs["name"],
+            section=self.kwargs["section_title"],
+        ):
+            raise PermissionDenied
         response = Response.objects.get(
             authority__name=self.kwargs["name"],
             question__number=self.kwargs["number"],
