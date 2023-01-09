@@ -29,6 +29,11 @@ urlpatterns = [
         name="section_questions",
     ),
     path(
+        "section/<section_title>/authorities/",
+        views.SectionAuthorityList.as_view(),
+        name="section_authorities",
+    ),
+    path(
         "section/<section_title>/question/<slug:number>/",
         views.SectionQuestionAuthorityList.as_view(),
         name="section_question_authorities",
@@ -37,6 +42,11 @@ urlpatterns = [
         "authorities/<name>/section/<section_title>/question/<number>/",
         views.AuthorityQuestion.as_view(),
         name="authority_question",
+    ),
+    path(
+        "authorities/<name>/section/<section_title>/questions/",
+        views.AuthoritySectionQuestions.as_view(),
+        name="authority_question_edit",
     ),
     path(
         "authorities/<name>/section/<section_title>/question/<number>/answer/",

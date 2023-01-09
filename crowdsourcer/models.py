@@ -60,6 +60,9 @@ class Question(models.Model):
     def __str__(self):
         return self.description
 
+    def options(self):
+        return Option.objects.filter(question=self).order_by("score")
+
 
 class Option(models.Model):
     question = models.ForeignKey(Question, on_delete=models.CASCADE)

@@ -1,0 +1,7 @@
+{% extends 'crowdsourcer/base.html' %}
+
+{% block content %}
+    {% for authority in authorities %}
+    <a href="">{{ authority.name }}</a><br>
+    {% endfor %}
+{% endblock %}

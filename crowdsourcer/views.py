@@ -37,6 +37,39 @@ class OverviewView(ListView):
         return context
 
 
+class SectionAuthorityList(ListView):
+    template_name = "crowdsourcer/section_authority_list.html"
+    model = Section
+    context_object_name = "authorities"
+
+    def get_queryset(self):
+        if self.request.user.is_anonymous:
+            return None
+
+        if not Assigned.is_user_assigned(
+            self.request.user,
+            section=self.kwargs["section_title"],
+        ):
+            return None
+
+        types = ["volunteer", "national_volunteer"]
+        section = Section.objects.get(title=self.kwargs["section_title"])
+        questions = Question.objects.filter(section=section, how_marked__in=types)
+
+        if not self.request.user.is_superuser:
+            assigned = Assigned.objects.filter(
+                user=self.request.user, section=section, authority__isnull=False
+            ).values_list("authority__id", flat=True)
+
+        authorities = PublicAuthority.objects.filter(
+            questiongroup__question__in=questions
+        )
+        if len(assigned) > 0:
+            authorities = authorities.filter(id__in=assigned)
+
+        return authorities.order_by("name").distinct()
+
+
 class SectionQuestionList(ListView):
     template_name = "crowdsourcer/section_question_list.html"
     model = Section
@@ -73,6 +106,29 @@ class SectionQuestionAuthorityList(ListView):
         )
         context["question"] = question
         return context
+
+
+class AuthoritySectionQuestions(ListView):
+    template_name = "crowdsourcer/authority_questions.html"
+    model = Question
+    context_object_name = "questions"
+
+    def get_queryset(self):
+        if self.request.user.is_anonymous:
+            return None
+
+        if not Assigned.is_user_assigned(
+            self.request.user,
+            authority=self.kwargs["name"],
+            section=self.kwargs["section_title"],
+        ):
+            return None
+
+        authority = PublicAuthority.objects.get(name=self.kwargs["name"])
+        return Question.objects.filter(
+            section__title=self.kwargs["section_title"],
+            questiongroup=authority.questiongroup,
+        )
 
 
 class AuthorityQuestion(RedirectView):

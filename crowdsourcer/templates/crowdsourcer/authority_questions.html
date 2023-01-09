@@ -1,0 +1,14 @@
+{% extends 'crowdsourcer/base.html' %}
+
+{% block content %}
+    {{ authority.name }}</br>
+    {% for question in questions %}
+    {{ question.description }}<br>
+    <ul>
+        {% for option in question.options %}
+        <li>{{ option.description }}({{ option.score }})</li>
+        {% endfor %}
+    </ul>
+    {% endfor %}
+
+{% endblock %}
