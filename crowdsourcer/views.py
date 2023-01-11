@@ -36,6 +36,46 @@ class OverviewView(ListView):
         context = super().get_context_data(**kwargs)
         context["show_users"] = self.request.user.is_superuser
 
+        assignment_count = context["assignments"].count()
+        council_assignments = (
+            context["assignments"].filter(authority__isnull=False).count()
+        )
+        section_assignments = (
+            context["assignments"].filter(authority__isnull=True).count()
+        )
+
+        print(assignment_count, section_assignments, council_assignments)
+
+        progress = []
+        for assignment in context["assignments"]:
+            questions = Question.objects.filter(
+                section=assignment.section, how_marked__in=Question.VOLUNTEER_TYPES
+            )
+
+            question_list = list(questions.values_list("id", flat=True))
+            args = [
+                question_list,
+                assignment.section.title,
+                assignment.user,
+            ]
+            if assignment.authority is not None:
+                args.append([assignment.authority_id])
+
+            response_counts = PublicAuthority.response_counts(*args).distinct()
+
+            total = 0
+            complete = 0
+
+            for count in response_counts:
+                total += 1
+                if count.num_responses == count.num_questions:
+                    complete += 1
+            progress.append(
+                {"assignment": assignment, "complete": complete, "total": total}
+            )
+
+            context["progress"] = progress
+
         return context
 
 
@@ -59,61 +99,23 @@ class SectionAuthorityList(ListView):
         questions = Question.objects.filter(section=section, how_marked__in=types)
 
         question_list = list(questions.values_list("id", flat=True))
-        assigned = []
+
+        assigned = None
         if not self.request.user.is_superuser:
             assigned = Assigned.objects.filter(
                 user=self.request.user, section=section, authority__isnull=False
             ).values_list("authority__id", flat=True)
 
-        authorities = PublicAuthority.objects.filter(
-            questiongroup__question__in=questions
-        ).annotate(
-            num_questions=Subquery(
-                Question.objects.filter(
-                    questiongroup=OuterRef("questiongroup"),
-                    section__title=self.kwargs["section_title"],
-                    how_marked__in=types,
-                )
-                .values("questiongroup")
-                .annotate(num_questions=Count("pk"))
-                .values("num_questions")
-            ),
+        authorities = PublicAuthority.response_counts(
+            question_list, self.kwargs["section_title"], self.request.user, assigned
         )
-
-        if self.request.user.is_superuser:
-            authorities = authorities.annotate(
-                num_responses=Subquery(
-                    Response.objects.filter(
-                        authority=OuterRef("pk"),
-                        question__in=question_list,
-                    )
-                    .values("authority")
-                    .annotate(response_count=Count("pk"))
-                    .values("response_count")
-                )
-            )
-        else:
-            authorities = authorities.annotate(
-                num_responses=Subquery(
-                    Response.objects.filter(
-                        user=self.request.user,
-                        authority=OuterRef("pk"),
-                        question__in=question_list,
-                    )
-                    .values("authority")
-                    .annotate(response_count=Count("pk"))
-                    .values("response_count")
-                )
-            )
-
-        if len(assigned) > 0:
-            authorities = authorities.filter(id__in=assigned)
 
         return authorities.order_by("name").distinct()
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["section_title"] = self.kwargs["section_title"]
+
         return context
 
 

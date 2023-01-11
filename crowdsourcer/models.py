@@ -1,5 +1,6 @@
 from django.contrib.auth.models import User
 from django.db import models
+from django.db.models import Count, OuterRef, Subquery
 from django.urls import reverse
 
 
@@ -17,18 +18,6 @@ class QuestionGroup(models.Model):
         return self.description
 
 
-class PublicAuthority(models.Model):
-    unique_id = models.CharField(max_length=100, unique=True)
-    name = models.TextField(max_length=300)
-    questiongroup = models.ForeignKey(QuestionGroup, on_delete=models.CASCADE)
-
-    def __str__(self):
-        return self.name
-
-    class Meta:
-        verbose_name_plural = "authorities"
-
-
 class Question(models.Model):
     MARKING_TYPES = [
         ("foi", "FOI"),
@@ -44,6 +33,7 @@ class Question(models.Model):
         ("tiered", "Tiered Answer"),
         ("multiple_choice", "Multiple Choice"),
     ]
+    VOLUNTEER_TYPES = ["volunteer", "national_volunteer"]
     number = models.IntegerField(blank=True, null=True)
     number_part = models.CharField(max_length=4, blank=True, null=True)
     description = models.TextField()
@@ -62,6 +52,66 @@ class Question(models.Model):
 
     def options(self):
         return Option.objects.filter(question=self).order_by("score")
+
+
+class PublicAuthority(models.Model):
+    unique_id = models.CharField(max_length=100, unique=True)
+    name = models.TextField(max_length=300)
+    questiongroup = models.ForeignKey(QuestionGroup, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.name
+
+    @classmethod
+    def response_counts(cls, questions, section, user, assigned=None):
+        authorities = cls.objects.filter(
+            questiongroup__question__in=questions
+        ).annotate(
+            num_questions=Subquery(
+                Question.objects.filter(
+                    questiongroup=OuterRef("questiongroup"),
+                    section__title=section,
+                    how_marked__in=Question.VOLUNTEER_TYPES,
+                )
+                .values("questiongroup")
+                .annotate(num_questions=Count("pk"))
+                .values("num_questions")
+            ),
+        )
+
+        if user.is_superuser:
+            authorities = authorities.annotate(
+                num_responses=Subquery(
+                    Response.objects.filter(
+                        authority=OuterRef("pk"),
+                        question__in=questions,
+                    )
+                    .values("authority")
+                    .annotate(response_count=Count("pk"))
+                    .values("response_count")
+                )
+            )
+        else:
+            authorities = authorities.annotate(
+                num_responses=Subquery(
+                    Response.objects.filter(
+                        user=user,
+                        authority=OuterRef("pk"),
+                        question__in=questions,
+                    )
+                    .values("authority")
+                    .annotate(response_count=Count("pk"))
+                    .values("response_count")
+                )
+            )
+
+        if assigned is not None:
+            authorities = authorities.filter(id__in=assigned)
+
+        return authorities
+
+    class Meta:
+        verbose_name_plural = "authorities"
 
 
 class Option(models.Model):
