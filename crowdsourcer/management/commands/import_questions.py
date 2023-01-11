@@ -83,7 +83,7 @@ class Command(BaseCommand):
                     if row["question_type"] == "Tiered answer":
                         question_type = "tiered"
                     elif row["question_type"] == "Tick all that apply":
-                        question_type = "multuple_choice"
+                        question_type = "multiple_choice"
                     elif row["question_type"] == "Multiple choice":
                         question_type = "select_one"
 
