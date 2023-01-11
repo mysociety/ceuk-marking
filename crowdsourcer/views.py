@@ -1,4 +1,5 @@
 from django.core.exceptions import PermissionDenied
+from django.db.models import Count, OuterRef, Subquery
 from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.views.generic import DetailView, ListView, TemplateView
@@ -57,6 +58,8 @@ class SectionAuthorityList(ListView):
         section = Section.objects.get(title=self.kwargs["section_title"])
         questions = Question.objects.filter(section=section, how_marked__in=types)
 
+        question_list = list(questions.values_list("id", flat=True))
+        assigned = []
         if not self.request.user.is_superuser:
             assigned = Assigned.objects.filter(
                 user=self.request.user, section=section, authority__isnull=False
@@ -64,7 +67,45 @@ class SectionAuthorityList(ListView):
 
         authorities = PublicAuthority.objects.filter(
             questiongroup__question__in=questions
+        ).annotate(
+            num_questions=Subquery(
+                Question.objects.filter(
+                    questiongroup=OuterRef("questiongroup"),
+                    section__title=self.kwargs["section_title"],
+                    how_marked__in=types,
+                )
+                .values("questiongroup")
+                .annotate(num_questions=Count("pk"))
+                .values("num_questions")
+            ),
         )
+
+        if self.request.user.is_superuser:
+            authorities = authorities.annotate(
+                num_responses=Subquery(
+                    Response.objects.filter(
+                        authority=OuterRef("pk"),
+                        question__in=question_list,
+                    )
+                    .values("authority")
+                    .annotate(response_count=Count("pk"))
+                    .values("response_count")
+                )
+            )
+        else:
+            authorities = authorities.annotate(
+                num_responses=Subquery(
+                    Response.objects.filter(
+                        user=self.request.user,
+                        authority=OuterRef("pk"),
+                        question__in=question_list,
+                    )
+                    .values("authority")
+                    .annotate(response_count=Count("pk"))
+                    .values("response_count")
+                )
+            )
+
         if len(assigned) > 0:
             authorities = authorities.filter(id__in=assigned)
 
