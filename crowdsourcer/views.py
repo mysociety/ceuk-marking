@@ -70,6 +70,11 @@ class SectionAuthorityList(ListView):
 
         return authorities.order_by("name").distinct()
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["section_title"] = self.kwargs["section_title"]
+        return context
+
 
 class SectionQuestionList(ListView):
     template_name = "crowdsourcer/section_question_list.html"

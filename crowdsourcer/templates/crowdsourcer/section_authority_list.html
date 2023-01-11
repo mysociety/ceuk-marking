@@ -2,6 +2,6 @@
 
 {% block content %}
     {% for authority in authorities %}
-    <a href="">{{ authority.name }}</a><br>
+    <a href="{% url 'authority_question_edit' authority.name section_title %}">{{ authority.name }}</a><br>
     {% endfor %}
 {% endblock %}

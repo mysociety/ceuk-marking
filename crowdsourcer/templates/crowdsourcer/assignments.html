@@ -2,6 +2,6 @@
 
 {% block content %}
     {% for assignment in assignments %}
-    {% if show_users %}{{ assignment.user.username }}: {% endif %}<a href="{% url 'section_questions' assignment.section.title %}">{{ assignment.section.title }}</a><br>
+    {% if show_users %}{{ assignment.user.username }}: {% endif %}<a href="{% url 'section_authorities' assignment.section.title %}">{{ assignment.section.title }}</a><br>
     {% endfor %}
 {% endblock %}
