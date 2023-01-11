@@ -1,10 +1,11 @@
 from django.core.exceptions import PermissionDenied
+from django.http import HttpResponseRedirect
 from django.urls import reverse
-from django.views.generic import DetailView, ListView
+from django.views.generic import DetailView, ListView, TemplateView
 from django.views.generic.base import RedirectView
 from django.views.generic.edit import CreateView, UpdateView
 
-from crowdsourcer.forms import ResponseForm
+from crowdsourcer.forms import ResponseForm, ResponseFormset
 from crowdsourcer.models import (
     Assigned,
     Option,
@@ -108,27 +109,87 @@ class SectionQuestionAuthorityList(ListView):
         return context
 
 
-class AuthoritySectionQuestions(ListView):
+class AuthoritySectionQuestions(TemplateView):
     template_name = "crowdsourcer/authority_questions.html"
-    model = Question
-    context_object_name = "questions"
+    model = Response
 
-    def get_queryset(self):
+    def get_initial_obj(self):
+        authority = PublicAuthority.objects.get(name=self.kwargs["name"])
+        questions = Question.objects.filter(
+            section__title=self.kwargs["section_title"],
+            questiongroup=authority.questiongroup,
+            how_marked__in=["volunteer", "national_volunteer"],
+        )
+        responses = Response.objects.filter(
+            authority=authority, question__in=questions
+        ).select_related("question")
+
+        initial = {}
+        for q in questions.all():
+            data = {
+                "authority": authority,
+                "question": q,
+            }
+            initial[q.id] = data
+
+        for r in responses:
+            data = initial[r.question.id]
+            data["id"] = r.id
+            data["option"] = r.option
+            data["public_notes"] = r.public_notes
+            data["private_notes"] = r.private_notes
+
+            initial[r.question.id] = data
+
+        return initial
+
+    def get_form(self):
+        if self.request.POST:
+            formset = ResponseFormset(
+                self.request.POST, initial=list(self.get_initial_obj().values())
+            )
+        else:
+            formset = ResponseFormset(initial=list(self.get_initial_obj().values()))
+        return formset
+
+    def check_permissions(self):
         if self.request.user.is_anonymous:
-            return None
+            raise PermissionDenied
 
         if not Assigned.is_user_assigned(
             self.request.user,
             authority=self.kwargs["name"],
             section=self.kwargs["section_title"],
         ):
-            return None
+            raise PermissionDenied
 
-        authority = PublicAuthority.objects.get(name=self.kwargs["name"])
-        return Question.objects.filter(
-            section__title=self.kwargs["section_title"],
-            questiongroup=authority.questiongroup,
+    def get(self, *args, **kwargs):
+        self.check_permissions()
+        return super().get(*args, **kwargs)
+
+    def post(self, *args, **kwargs):
+        self.check_permissions()
+        formset = self.get_form()
+        if formset.is_valid():
+            for form in formset:
+                form.instance.user = self.request.user
+                form.save()
+        else:
+            return self.render_to_response(self.get_context_data(form=formset))
+
+        return HttpResponseRedirect(
+            reverse(
+                "section_authorities",
+                kwargs={"section_title": self.kwargs["section_title"]},
+            )
         )
+        return self.render_to_response(self.get_context_data())
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["form"] = self.get_form()
+
+        return context
 
 
 class AuthorityQuestion(RedirectView):

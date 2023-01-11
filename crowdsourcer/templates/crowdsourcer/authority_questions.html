@@ -2,13 +2,35 @@
 
 {% block content %}
     {{ authority.name }}</br>
-    {% for question in questions %}
-    {{ question.description }}<br>
-    <ul>
-        {% for option in question.options %}
-        <li>{{ option.description }}({{ option.score }})</li>
-        {% endfor %}
-    </ul>
+    <form method="POST">
+    {% csrf_token %}
+    {{ form.management_form }}
+    {% for q_form in form %}
+        <p>
+            {{q_form.question_obj.description }}
+        </p>
+
+        <p>
+            {{ q_form.option.errors }}
+            <label for="{{ q_form.option.if_for_label">Response:</label>
+            {{ q_form.option }}
+        </p>
+        <p>
+            {{ q_form.private_notes.errors }}
+            <label for="{{ q_form.private_notes.if_for_label">Private notes:</label>
+            {{ q_form.private_notes }}
+        </p>
+        <p>
+            {{ q_form.public_notes.errors }}
+            <label for="{{ q_form.public_notes.if_for_label">Public notes:</label>
+            {{ q_form.public_notes }}
+            {{ q_form.authority }}
+            {{ q_form.question }}
+            ::{{ q_form.id }}::
+        </p>
+
+        <hr>
     {% endfor %}
+    <input type="submit">
 
 {% endblock %}
