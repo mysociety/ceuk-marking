@@ -33,6 +33,13 @@ HIDE_DEBUG_TOOLBAR = env("HIDE_DEBUG_TOOLBAR")
 MAPIT_URL = env("MAPIT_URL")
 MAPIT_API_KEY = env("MAPIT_API_KEY")
 
+# make sure CSRF checking still works behind load balancers
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
+if env.str("BUGS_EMAIL", None):  # pragma: no cover
+    SERVER_EMAIL = env("BUGS_EMAIL")
+    ADMINS = (("mySociety bugs", env("BUGS_EMAIL")),)
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
@@ -132,6 +139,9 @@ STATICFILES_FINDERS = (
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
+# Sending messages
+EMAIL_HOST = env.str("EMAIL_HOST", "localhost")
+EMAIL_PORT = env.str("EMAIL_PORT", 1025)
 
 if DEBUG and HIDE_DEBUG_TOOLBAR is False:  # pragma: no cover
     hostname, _, ips = socket.gethostbyname_ex(socket.gethostname())
