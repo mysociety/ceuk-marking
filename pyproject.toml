@@ -13,6 +13,8 @@ django-sslserver = "^0.22"
 requests-cache = "^0.9.7"
 pandas = "^1.5.2"
 openpyxl = "^3.0.10"
+django-libsass = "^0.9"
+django-bootstrap5 = "^22.2"
 
 [tool.poetry.dev-dependencies]
 black = "^22.12.0"

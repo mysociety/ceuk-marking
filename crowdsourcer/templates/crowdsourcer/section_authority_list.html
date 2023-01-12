@@ -1,6 +1,8 @@
 {% extends 'crowdsourcer/base.html' %}
 
 {% block content %}
+    <h2>{{ section_title }}</h2>
+
     {% for authority in authorities %}
     <a href="{% url 'authority_question_edit' authority.name section_title %}">{{ authority.name }}</a> {{ authority.num_responses }} / {{ authority.num_questions }} {% if authority.num_responses == authority.num_questions %}✓{% endif %}<br>
     {% endfor %}

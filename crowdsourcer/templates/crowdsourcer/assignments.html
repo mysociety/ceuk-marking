@@ -1,7 +1,11 @@
 {% extends 'crowdsourcer/base.html' %}
 
 {% block content %}
-    {% for assignment in progress %}
-    {% if show_users %}{{ assignment.assignment.user.username }}: {% endif %}<a href="{% url 'section_authorities' assignment.assignment.section.title %}">{{ assignment.assignment.section.title }}</a> {{ assignment.complete }} / {{ assignment.total }}<br>
-    {% endfor %}
+    {% if show_login %}
+        <a href="/admin/login/?next=/">Login</a>
+    {% else %}
+        {% for assignment in progress %}
+        {% if show_users %}{{ assignment.assignment.user.username }}: {% endif %}<a href="{% url 'section_authorities' assignment.assignment.section.title %}">{{ assignment.assignment.section.title }}</a> {{ assignment.complete }} / {{ assignment.total }} authorities completed<br>
+        {% endfor %}
+    {% endif %}
 {% endblock %}

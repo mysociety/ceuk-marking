@@ -5,7 +5,6 @@ from crowdsourcer.models import Option, Response
 
 class ResponseFormSet(BaseFormSet):
     def _construct_form(self, i, **kwargs):
-        print(self.initial)
         if self.initial[i].get("id", None) is not None:
             response = Response.objects.get(id=self.initial[i]["id"])
             kwargs["instance"] = response

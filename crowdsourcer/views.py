@@ -38,7 +38,8 @@ class OverviewView(ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        if context["assignments"] is None:
+        if self.request.user.is_anonymous:
+            context["show_login"] = True
             return context
 
         context["show_users"] = self.request.user.is_superuser
@@ -87,6 +88,8 @@ class OverviewView(ListView):
 
             context["progress"] = progress
 
+            context["page_title"] = "Assignments"
+
         return context
 
 
@@ -126,6 +129,7 @@ class SectionAuthorityList(ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["section_title"] = self.kwargs["section_title"]
+        context["page_title"] = context["section_title"]
 
         return context
 
@@ -247,6 +251,11 @@ class AuthoritySectionQuestions(TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["form"] = self.get_form()
+        context["section_title"] = self.kwargs.get("section_title", "")
+        context["authority_name"] = self.kwargs.get("name", "")
+        context[
+            "page_title"
+        ] = f"{context['authority_name']}: {context['section_title']}"
 
         return context
 
