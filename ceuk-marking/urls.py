@@ -22,6 +22,7 @@ from crowdsourcer import views
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+    path("status/", views.StatusPage.as_view()),
     path("", views.OverviewView.as_view(), name="home"),
     path(
         "section/<section_title>/questions/",

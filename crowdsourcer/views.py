@@ -17,6 +17,10 @@ from crowdsourcer.models import (
 )
 
 
+class StatusPage(TemplateView):
+    template_name = "crowdsourcer/status.html"
+
+
 class OverviewView(ListView):
     template_name = "crowdsourcer/assignments.html"
     model = Assigned
