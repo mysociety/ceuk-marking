@@ -1,5 +1,4 @@
 from django.core.exceptions import PermissionDenied
-from django.db.models import Count, OuterRef, Subquery
 from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.views.generic import DetailView, ListView, TemplateView
@@ -27,43 +26,51 @@ class OverviewView(ListView):
     context_object_name = "assignments"
 
     def get_queryset(self):
-        if self.request.user.is_anonymous:
+        user = self.request.user
+        if user.is_anonymous:
             return None
 
         qs = Assigned.objects.all()
-        if self.request.user.is_superuser is False:
-            qs = qs.filter(user=self.request.user)
+        if user.is_superuser is False:
+            qs = qs.filter(user=user)
 
         return qs
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        if context["assignments"] is None:
+            return context
+
         context["show_users"] = self.request.user.is_superuser
 
-        assignment_count = context["assignments"].count()
-        council_assignments = (
-            context["assignments"].filter(authority__isnull=False).count()
+        assignments = (
+            context["assignments"]
+            .distinct("user_id", "section_id")
+            .select_related("section")
         )
-        section_assignments = (
-            context["assignments"].filter(authority__isnull=True).count()
-        )
-
-        print(assignment_count, section_assignments, council_assignments)
 
         progress = []
-        for assignment in context["assignments"]:
-            questions = Question.objects.filter(
-                section=assignment.section, how_marked__in=Question.VOLUNTEER_TYPES
-            )
+        question_cache = {}
+        for assignment in assignments:
+            if question_cache.get(assignment.section_id, None) is not None:
+                question_list = question_cache[assignment.section_id]
+            else:
+                questions = Question.objects.filter(
+                    section=assignment.section, how_marked__in=Question.VOLUNTEER_TYPES
+                )
+                question_list = list(questions.values_list("id", flat=True))
+                question_cache[assignment.section_id] = question_list
 
-            question_list = list(questions.values_list("id", flat=True))
             args = [
                 question_list,
                 assignment.section.title,
                 assignment.user,
             ]
-            if assignment.authority is not None:
-                args.append([assignment.authority_id])
+            if assignment.authority_id is not None:
+                authorities = Assigned.objects.filter(
+                    user=assignment.user_id, section=assignment.section_id
+                ).values_list("authority_id", flat=True)
+                args.append(authorities)
 
             response_counts = PublicAuthority.response_counts(*args).distinct()
 
