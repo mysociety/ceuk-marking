@@ -96,6 +96,8 @@ class Command(BaseCommand):
                         "criteria": row["criteria"],
                         "question_type": question_type,
                         "how_marked": how_marked,
+                        "clarifications": row["clarifications"],
+                        "topic": row["topic"],
                     },
                 )
 
