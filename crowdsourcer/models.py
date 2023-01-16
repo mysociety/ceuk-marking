@@ -37,9 +37,11 @@ class Question(models.Model):
     number = models.IntegerField(blank=True, null=True)
     number_part = models.CharField(max_length=4, blank=True, null=True)
     description = models.TextField()
-    criteria = models.TextField()
+    criteria = models.TextField(blank=True, null=True)
     section = models.ForeignKey(Section, on_delete=models.CASCADE)
     questiongroup = models.ManyToManyField(QuestionGroup)
+    clarifications = models.TextField(blank=True, null=True)
+    topic = models.CharField(max_length=200, blank=True, null=True)
     how_marked = models.CharField(
         max_length=30, default="volunteer", choices=MARKING_TYPES
     )
