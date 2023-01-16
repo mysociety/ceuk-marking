@@ -16,6 +16,16 @@
                     {{q_form.question_obj.description }}
                 </legend>
 
+                <details>
+                    <summary>Criteria</summary>
+                    {{q_form.question_obj.criteria|linebreaks }}
+                </details>
+
+                <details>
+                    <summary>Clarifications</summary>
+                    {{q_form.question_obj.clarifications|linebreaks }}
+                </details>
+
                 <label class="form-label" for="{{ q_form.option.if_for_label">Response</label>
                 <div class="col-9">
                 {% bootstrap_field q_form.option show_label="skip" %}
