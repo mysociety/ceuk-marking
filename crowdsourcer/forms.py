@@ -32,6 +32,8 @@ class ResponseForm(ModelForm):
             "question",
             "option",
             "public_notes",
+            "page_number",
+            "evidence",
             "private_notes",
         ]
         widgets = {
