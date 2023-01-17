@@ -235,8 +235,10 @@ class AuthoritySectionQuestions(TemplateView):
         formset = self.get_form()
         if formset.is_valid():
             for form in formset:
-                form.instance.user = self.request.user
-                form.save()
+                cleaned_data = form.cleaned_data
+                if cleaned_data.get("option", None) is not None:
+                    form.instance.user = self.request.user
+                    form.save()
         else:
             return self.render_to_response(self.get_context_data(form=formset))
 

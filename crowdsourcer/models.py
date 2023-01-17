@@ -137,7 +137,7 @@ class Response(models.Model):
     authority = models.ForeignKey(PublicAuthority, on_delete=models.CASCADE)
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    option = models.ForeignKey(Option, on_delete=models.CASCADE, null=True)
+    option = models.ForeignKey(Option, on_delete=models.CASCADE, blank=True, null=True)
     response_type = models.ForeignKey(ResponseType, on_delete=models.CASCADE, null=True)
     public_notes = models.TextField(
         verbose_name="Public notes (links only)", blank=True, null=True
@@ -155,6 +155,7 @@ class Response(models.Model):
         help_text="Please directly copy any evidence you have found to meet the criteria.",
     )
     private_notes = models.TextField(
+        blank=True,
         verbose_name="Additional Notes",
         help_text="Please feel free to add any notes/comments you may have. These will not be made public but will be sent to the Council in the Right of Reply.",
     )
