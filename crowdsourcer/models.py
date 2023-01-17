@@ -139,8 +139,19 @@ class Response(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     option = models.ForeignKey(Option, on_delete=models.CASCADE, null=True)
     response_type = models.ForeignKey(ResponseType, on_delete=models.CASCADE, null=True)
-    public_notes = models.TextField()
-    private_notes = models.TextField()
+    public_notes = models.TextField(verbose_name="Public notes (links only)")
+    page_number = models.IntegerField(
+        verbose_name="Page Number",
+        help_text="Please directly copy the page number from the document where you have found the evidence.",
+    )
+    evidence = models.TextField(
+        verbose_name="Evidence of criteria met",
+        help_text="Please directly copy any evidence you have found to meet the criteria.",
+    )
+    private_notes = models.TextField(
+        verbose_name="Additional Notes",
+        help_text="Please feel free to add any notes/comments you may have. These will not be made public but will be sent to the Council in the Right of Reply.",
+    )
     revision_type = models.CharField(max_length=200, blank=True, null=True)
     revision_notes = models.TextField(blank=True, null=True)
 
