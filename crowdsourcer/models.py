@@ -139,12 +139,18 @@ class Response(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     option = models.ForeignKey(Option, on_delete=models.CASCADE, null=True)
     response_type = models.ForeignKey(ResponseType, on_delete=models.CASCADE, null=True)
-    public_notes = models.TextField(verbose_name="Public notes (links only)")
+    public_notes = models.TextField(
+        verbose_name="Public notes (links only)", blank=True, null=True
+    )
     page_number = models.IntegerField(
+        blank=True,
+        null=True,
         verbose_name="Page Number",
         help_text="Please directly copy the page number from the document where you have found the evidence.",
     )
     evidence = models.TextField(
+        blank=True,
+        null=True,
         verbose_name="Evidence of criteria met",
         help_text="Please directly copy any evidence you have found to meet the criteria.",
     )
