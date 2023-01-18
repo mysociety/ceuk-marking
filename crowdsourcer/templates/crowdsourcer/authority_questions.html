@@ -26,7 +26,7 @@
                     {{q_form.question_obj.clarifications|linebreaks }}
                 </details>
 
-                <label class="form-label" for="{{ q_form.option.if_for_label">Response</label>
+                <label class="form-label" for="{{ q_form.option.if_for_label">Answer</label>
                 <div class="col-9">
                 {% bootstrap_field q_form.option show_label="skip" %}
                 </div>
@@ -38,13 +38,15 @@
                 <div class="col-9">
                 {% bootstrap_field q_form.evidence %}
                 </div>
-                <div class="col-9">
-                {% bootstrap_field q_form.private_notes %}
-                </div>
 
                 <div class="col-9">
                 {% bootstrap_field q_form.public_notes %}
                 </div>
+
+                <div class="col-9">
+                {% bootstrap_field q_form.private_notes %}
+                </div>
+
 
                 {{ q_form.authority }}
                 {{ q_form.question }}
