@@ -3,6 +3,8 @@ from django.db import models
 from django.db.models import Count, OuterRef, Subquery
 from django.urls import reverse
 
+from simple_history.models import HistoricalRecords
+
 
 class Section(models.Model):
     title = models.CharField(max_length=200)
@@ -161,6 +163,7 @@ class Response(models.Model):
     )
     revision_type = models.CharField(max_length=200, blank=True, null=True)
     revision_notes = models.TextField(blank=True, null=True)
+    history = HistoricalRecords()
 
     def get_absolute_url(self):
         return reverse(
