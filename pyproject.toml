@@ -15,6 +15,7 @@ pandas = "^1.5.2"
 openpyxl = "^3.0.10"
 django-libsass = "^0.9"
 django-bootstrap5 = "^22.2"
+django-simple-history = "^3.2.0"
 
 [tool.poetry.dev-dependencies]
 black = "^22.12.0"
