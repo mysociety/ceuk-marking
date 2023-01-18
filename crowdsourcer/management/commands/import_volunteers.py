@@ -1,3 +1,5 @@
+import re
+
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand
@@ -5,6 +7,11 @@ from django.core.management.base import BaseCommand
 import pandas as pd
 
 from crowdsourcer.models import Assigned, PublicAuthority, Section
+
+YELLOW = "\033[33m"
+RED = "\033[31m"
+GREEN = "\033[32m"
+NOBOLD = "\033[0m"
 
 
 class Command(BaseCommand):
@@ -80,8 +87,15 @@ class Command(BaseCommand):
         df.columns = self.column_names
 
         for index, row in df.iterrows():
+            if pd.isna(row["email"]):
+                continue
+
             user_type = row["type_of_volunteering"]
             if user_type == "FOI_programme":
+                continue
+
+            if pd.isna(user_type):
+                self.stdout.write(f"{YELLOW}No user type for {row['email']}{NOBOLD}")
                 continue
 
             u, created = User.objects.update_or_create(
@@ -102,7 +116,7 @@ class Command(BaseCommand):
                     s = Section.objects.get(title=title)
                 except Section.DoesNotExist:
                     self.stdout.write(
-                        f"could not assign section for {row['email']}, no section {title}"
+                        f"{RED}could not assign section for {row['email']}, no section {title}{NOBOLD}"
                     )
                     continue
 
@@ -112,15 +126,23 @@ class Command(BaseCommand):
 
             existing_assignments = Assigned.objects.filter(user=u)
             if existing_assignments.count() > 0:
-                self.stdout.write(f"Existing assignments: {row['email']}")
+                self.stdout.write(
+                    f"{YELLOW}Existing assignments: {row['email']}{NOBOLD}"
+                )
                 continue
 
-            own_council = PublicAuthority.objects.filter(
-                name__contains=row["council_area"]
-            )
-            if own_council.count() == 0:
+            councils = re.split("[,/]", row["council_area"])
+
+            own_council = PublicAuthority.objects.filter(name__contains=councils[0])
+            if len(councils) > 1:
+                for council in councils[1:]:
+                    own_council = own_council | PublicAuthority.objects.filter(
+                        name__contains=council
+                    )
+
+            if len(councils) > 0 and own_council.count() == 0:
                 self.stdout.write(
-                    f"Bad council: {row['council_area']} (f{row['email']})"
+                    f"{RED}Bad council: {row['council_area']} (f{row['email']}){NOBOLD}"
                 )
                 continue
 
@@ -130,7 +152,8 @@ class Command(BaseCommand):
                 )
             )
 
-            assigned_councils.append(own_council.values_list("id", flat=True)[:])
+            own_council_list = list(own_council.values_list("id", flat=True))
+            assigned_councils = assigned_councils + own_council_list
 
             num_councils = self.num_council_map[user_type]
 
@@ -139,20 +162,30 @@ class Command(BaseCommand):
             )[:num_councils]
 
             if councils_to_assign.count() == 0:
-                self.stdout.write(f"No councils left in {s.title} for {u.email}")
+                self.stdout.write(
+                    f"{YELLOW}No councils left in {s.title} for {u.email}{NOBOLD}"
+                )
 
             for council in councils_to_assign:
                 a, created = Assigned.objects.update_or_create(
                     user=u, section=s, authority=council
                 )
 
-            if index > 3:
-                break
-
         council_count = PublicAuthority.objects.all().count()
         for section in Section.objects.all():
             assigned = Assigned.objects.filter(section=section).count()
             if assigned != council_count:
                 self.stdout.write(
-                    f"Not all councils assigned for {section.title} ({assigned}/{council_count})"
+                    f"{RED}Not all councils assigned for {section.title} ({assigned}/{council_count}){NOBOLD}"
                 )
+            else:
+                self.stdout.write(f"{GREEN}All councils and sections assigned{NOBOLD}")
+
+        volunteer_count = User.objects.all().count()
+        assigned_count = (
+            Assigned.objects.filter(user__is_superuser=False)
+            .distinct("user_id")
+            .count()
+        )
+
+        self.stdout.write(f"{assigned_count}/{volunteer_count} users assigned marking")
