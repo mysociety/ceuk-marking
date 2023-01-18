@@ -139,10 +139,14 @@ class Response(models.Model):
     authority = models.ForeignKey(PublicAuthority, on_delete=models.CASCADE)
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    option = models.ForeignKey(Option, on_delete=models.CASCADE, blank=True, null=True)
+    option = models.ForeignKey(
+        Option, on_delete=models.CASCADE, blank=True, null=True, verbose_name="Answer"
+    )
     response_type = models.ForeignKey(ResponseType, on_delete=models.CASCADE, null=True)
     public_notes = models.TextField(
-        verbose_name="Public notes (links only)", blank=True, null=True
+        verbose_name="Link to evidence (links only to webpages or online documents)",
+        blank=True,
+        null=True,
     )
     page_number = models.IntegerField(
         blank=True,
