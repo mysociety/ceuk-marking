@@ -2,10 +2,12 @@
 
 {% block content %}
     {% if show_login %}
-        <a href="/admin/login/?next=/">Login</a>
+    <a href="{% url 'login' %}">Login</a>
     {% else %}
         {% for assignment in progress %}
         {% if show_users %}{{ assignment.assignment.user.username }}: {% endif %}<a href="{% url 'section_authorities' assignment.assignment.section.title %}">{{ assignment.assignment.section.title }}</a> {{ assignment.complete }} / {{ assignment.total }} authorities completed<br>
+        {% empty %}
+            You have no marking currently assigned.
         {% endfor %}
     {% endif %}
 {% endblock %}

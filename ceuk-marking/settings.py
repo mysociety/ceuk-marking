@@ -36,6 +36,9 @@ MAPIT_API_KEY = env("MAPIT_API_KEY")
 # make sure CSRF checking still works behind load balancers
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
+LOGIN_REDIRECT_URL = "home"
+LOGOUT_REDIRECT_URL = "home"
+
 if env.str("BUGS_EMAIL", None):  # pragma: no cover
     SERVER_EMAIL = env("BUGS_EMAIL")
     ADMINS = (("mySociety bugs", env("BUGS_EMAIL")),)
@@ -72,7 +75,7 @@ ROOT_URLCONF = "ceuk-marking.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [BASE_DIR / "templates"],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [

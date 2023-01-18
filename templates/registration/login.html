@@ -1,0 +1,24 @@
+{% extends 'crowdsourcer/base.html' %}
+
+{% load django_bootstrap5 %}
+
+{% block content %}
+    <h2>Log In</h2>
+    <form method="post">
+        {% csrf_token %}
+
+        <div class="col-4">
+        {% bootstrap_field form.username %}
+        </div>
+
+        <div class="col-4">
+        {% bootstrap_field form.password %}
+        </div>
+
+        <button class="btn btn-primary" type="submit">Log In</button>
+    </form>
+
+    <p>
+        Forgot your password? <a href="{% url 'password_reset' %}">Reset password</a>
+    </p>
+{% endblock %}
