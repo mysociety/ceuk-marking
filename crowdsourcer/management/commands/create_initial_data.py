@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand
 
-from crowdsourcer.models import PublicAuthority, QuestionGroup, Section
+from crowdsourcer.models import PublicAuthority, QuestionGroup, ResponseType, Section
 from utils import mapit
 
 
@@ -18,6 +18,8 @@ class Command(BaseCommand):
         "Collaboration & Engagement",
         "Waste Reduction & Food",
     ]
+
+    response_types = ["First Mark", "Right of Reply", "Audit"]
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -48,6 +50,9 @@ class Command(BaseCommand):
 
         for group in self.groups:
             g, c = QuestionGroup.objects.get_or_create(description=group)
+
+        for r_type in self.response_types:
+            r, c = ResponseType.objects.get_or_create(type=r_type, priority=1)
 
         mapit_client = mapit.MapIt()
         areas = mapit_client.areas_of_type(
