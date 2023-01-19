@@ -163,6 +163,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # Sending messages
 EMAIL_HOST = env.str("EMAIL_HOST", "localhost")
 EMAIL_PORT = env.str("EMAIL_PORT", 1025)
+DEFAULT_FROM_EMAIL = env.str("DEFAULT_FROM_EMAIL", "webmaster@localhost")
 
 if DEBUG and HIDE_DEBUG_TOOLBAR is False:  # pragma: no cover
     hostname, _, ips = socket.gethostbyname_ex(socket.gethostname())
