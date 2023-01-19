@@ -142,6 +142,9 @@ class Response(models.Model):
     option = models.ForeignKey(
         Option, on_delete=models.CASCADE, blank=True, null=True, verbose_name="Answer"
     )
+    multi_option = models.ManyToManyField(
+        Option, blank=True, null=True, verbose_name="Multi", related_name="multi_option"
+    )
     response_type = models.ForeignKey(ResponseType, on_delete=models.CASCADE, null=True)
     public_notes = models.TextField(
         verbose_name="Link to evidence (links only to webpages or online documents)",
