@@ -12,6 +12,7 @@ from crowdsourcer.models import (
     PublicAuthority,
     Question,
     Response,
+    ResponseType,
     Section,
 )
 
@@ -233,6 +234,7 @@ class AuthoritySectionQuestions(TemplateView):
     def post(self, *args, **kwargs):
         self.check_permissions()
         formset = self.get_form()
+        rt = ResponseType.objects.get(type="First Mark")
         if formset.is_valid():
             for form in formset:
                 cleaned_data = form.cleaned_data
@@ -240,6 +242,7 @@ class AuthoritySectionQuestions(TemplateView):
                     cleaned_data.get("option", None) is not None
                     or len(list(cleaned_data.get("multi_option", None))) > 0
                 ):
+                    form.instance.response_type = rt
                     form.instance.user = self.request.user
                     form.save()
         else:

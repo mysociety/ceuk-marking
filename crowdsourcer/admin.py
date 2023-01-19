@@ -56,6 +56,7 @@ class ResponseAdmin(admin.ModelAdmin):
     list_display = (
         "authority",
         "question",
+        "response_type",
         "option",
     )
 
