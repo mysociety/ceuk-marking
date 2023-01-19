@@ -22,7 +22,7 @@ class Command(BaseCommand):
                         request=request,
                         domain_override="marking.councilclimatescorecards.uk",
                         use_https=True,
-                        from_email="admin@mysite.com",
+                        from_email="CEUK Scorecards Marking <climate-right-of-reply@mysociety.org>",
                         subject_template_name="registration/initial_password_email_subject.txt",
                         email_template_name="registration/initial_password_email.html",
                     )
