@@ -182,7 +182,7 @@ class AuthoritySectionQuestions(TemplateView):
             section__title=self.kwargs["section_title"],
             questiongroup=authority.questiongroup,
             how_marked__in=["volunteer", "national_volunteer"],
-        )
+        ).order_by("number", "number_part")
         responses = Response.objects.filter(
             authority=authority, question__in=questions
         ).select_related("question")
@@ -236,7 +236,10 @@ class AuthoritySectionQuestions(TemplateView):
         if formset.is_valid():
             for form in formset:
                 cleaned_data = form.cleaned_data
-                if cleaned_data.get("option", None) is not None:
+                if (
+                    cleaned_data.get("option", None) is not None
+                    or len(list(cleaned_data.get("multi_option", None))) > 0
+                ):
                     form.instance.user = self.request.user
                     form.save()
         else:

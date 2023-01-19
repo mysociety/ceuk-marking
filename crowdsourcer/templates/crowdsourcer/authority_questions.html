@@ -28,7 +28,11 @@
 
                 <label class="form-label" for="{{ q_form.option.if_for_label">Answer</label>
                 <div class="col-9">
-                {% bootstrap_field q_form.option show_label="skip" %}
+                {% if q_form.question_obj.question_type == "multiple_choice" %}
+                    {% bootstrap_field q_form.multi_option %}
+                {% else %}
+                    {% bootstrap_field q_form.option show_label="skip" %}
+                {% endif %}
                 </div>
 
                 <div class="col-9">

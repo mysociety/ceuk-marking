@@ -1,4 +1,11 @@
-from django.forms import BaseFormSet, HiddenInput, ModelForm, formset_factory
+from django.db.models.query import QuerySet
+from django.forms import (
+    BaseFormSet,
+    CheckboxSelectMultiple,
+    HiddenInput,
+    ModelForm,
+    formset_factory,
+)
 
 from crowdsourcer.models import Option, Response
 
@@ -14,7 +21,7 @@ class ResponseFormSet(BaseFormSet):
 
 
 class ResponseForm(ModelForm):
-    mandatory_if_no = ["private_evidence"]
+    mandatory_if_no = ["private_notes"]
     mandatory_if_response = ["public_notes", "page_number", "evidence", "private_notes"]
 
     def __init__(self, *args, **kwargs):
@@ -27,10 +34,24 @@ class ResponseForm(ModelForm):
             question=self.question_obj
         )
 
+        self.fields["multi_option"].queryset = Option.objects.filter(
+            question=self.question_obj
+        )
+
     def clean(self):
         cleaned_data = super().clean()
 
-        response = cleaned_data.get("option", None)
+        option_field = "option"
+        if self.question_obj.question_type == "multiple_choice":
+            option_field = "multi_option"
+
+        response = cleaned_data.get(option_field, None)
+        if isinstance(response, QuerySet):
+            length = len(list(response))
+            if length == 0:
+                response = None
+            elif length == 1:
+                response = response.first()
 
         if response is None:
             values = False
@@ -40,10 +61,10 @@ class ResponseForm(ModelForm):
                     values = True
 
             if values:
-                self.add_error("option", "This field is required")
+                self.add_error(option_field, "This field is required")
 
         else:
-            if response in ["No", "None"]:
+            if str(response) in ["No", "None"]:
                 mandatory = self.mandatory_if_no
             else:
                 mandatory = self.mandatory_if_response
@@ -62,6 +83,7 @@ class ResponseForm(ModelForm):
             "authority",
             "question",
             "option",
+            "multi_option",
             "public_notes",
             "page_number",
             "evidence",
@@ -71,6 +93,7 @@ class ResponseForm(ModelForm):
             "authority": HiddenInput(),
             "question": HiddenInput(),
             "id": HiddenInput(),
+            "multi_option": CheckboxSelectMultiple(),
         }
 
 
