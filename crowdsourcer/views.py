@@ -260,6 +260,9 @@ class AuthoritySectionQuestions(TemplateView):
         context = super().get_context_data(**kwargs)
         context["form"] = self.get_form()
         context["section_title"] = self.kwargs.get("section_title", "")
+        context["authority"] = PublicAuthority.objects.get(
+            name=self.kwargs.get("name", "")
+        )
         context["authority_name"] = self.kwargs.get("name", "")
         context[
             "page_title"
