@@ -61,6 +61,7 @@ class Question(models.Model):
 class PublicAuthority(models.Model):
     unique_id = models.CharField(max_length=100, unique=True)
     name = models.TextField(max_length=300)
+    website = models.URLField(null=True)
     questiongroup = models.ForeignKey(QuestionGroup, on_delete=models.CASCADE)
 
     def __str__(self):
