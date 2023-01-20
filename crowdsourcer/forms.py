@@ -4,6 +4,9 @@ from django.forms import (
     CheckboxSelectMultiple,
     HiddenInput,
     ModelForm,
+    Select,
+    Textarea,
+    TextInput,
     formset_factory,
 )
 
@@ -79,21 +82,41 @@ class ResponseForm(ModelForm):
     class Meta:
         model = Response
         fields = [
-            "id",
             "authority",
-            "question",
-            "option",
-            "multi_option",
-            "public_notes",
-            "page_number",
             "evidence",
+            "id",
+            "multi_option",
+            "option",
+            "page_number",
             "private_notes",
+            "public_notes",
+            "question",
         ]
         widgets = {
             "authority": HiddenInput(),
-            "question": HiddenInput(),
+            "evidence": Textarea(attrs={
+                # "placeholder": False,
+                "rows": 3,
+            }),
             "id": HiddenInput(),
+            "option": Select(attrs={
+                # "placeholder": False,
+            }),
             "multi_option": CheckboxSelectMultiple(),
+            "page_number": TextInput(attrs={
+                # "placeholder": False,
+                "inputmode": "numeric",
+                "pattern": "[0-9]*",
+            }),
+            "private_notes": Textarea(attrs={
+                # "placeholder": False,
+                "rows": 3,
+            }),
+            "public_notes": Textarea(attrs={
+                # "placeholder": False,
+                "rows": 3,
+            }),
+            "question": HiddenInput(),
         }
 
 

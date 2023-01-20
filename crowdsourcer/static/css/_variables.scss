@@ -1,0 +1,124 @@
+// Options
+
+$enable-shadows: true;
+$enable-negative-margins: true;
+
+// Gradient
+
+// Spacing
+
+$spacer: 1rem;
+$spacers: (
+  0: 0,
+  1: $spacer * .25,
+  2: $spacer * .5,
+  3: $spacer,
+  4: $spacer * 1.5,
+  5: $spacer * 3,
+  6: $spacer * 4.5,
+  7: $spacer * 6,
+  8: $spacer * 8
+);
+
+// Position
+
+// Body
+
+// Utilities maps
+
+// Links
+
+// Paragraphs
+
+// Grid breakpoints
+
+// Grid containers
+
+// Grid columns
+
+// Container padding
+
+// Components
+
+// Typography
+
+$headings-font-weight: 800;
+$headings-line-height: 1.1;
+
+$display-font-weight: 800;
+
+$lead-font-weight: 500;
+
+$legend-font-size: 1rem;
+
+$mark-padding: 0;
+$mark-bg: #fff55a;
+
+// Tables
+
+$table-cell-padding-y: 1rem;
+$table-cell-padding-x: 1rem;
+$table-cell-padding-y-sm: 0.25rem;
+$table-cell-padding-x-sm: 0.25rem;
+
+// Buttons + Forms
+
+// Buttons
+
+$btn-font-weight: bold;
+
+// Forms
+
+$form-label-font-weight: bold;
+
+// Form validation
+
+// Z-index master list
+
+// Navs
+
+// Navbar
+
+$navbar-brand-font-size: 1.5rem;
+
+// Dropdowns
+
+// Pagination
+
+// Placeholders
+
+// Cards
+
+// Accordion
+
+// Tooltips
+
+// Popovers
+
+// Toasts
+
+// Badges
+
+// Modals
+
+// Alerts
+
+// Progress bars
+
+// List group
+
+// Image thumbnails
+
+// Figures
+
+// Breadcrumbs
+
+// Carousel
+
+// Spinners
+
+// Close
+
+// Offcanvas
+
+// Code

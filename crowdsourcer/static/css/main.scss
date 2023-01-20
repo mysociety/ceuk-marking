@@ -29,13 +29,13 @@
 // @import "../../../vendor/bootstrap/scss/accordion";
 // @import "../../../vendor/bootstrap/scss/breadcrumb";
 // @import "../../../vendor/bootstrap/scss/pagination";
-@import "../../../vendor/bootstrap/scss/badge";
-@import "../../../vendor/bootstrap/scss/alert";
-// @import "../../../vendor/bootstrap/scss/progress";
-@import "../../../vendor/bootstrap/scss/list-group";
-@import "../../../vendor/bootstrap/scss/close";
+// @import "../../../vendor/bootstrap/scss/badge";
+// @import "../../../vendor/bootstrap/scss/alert";
+@import "../../../vendor/bootstrap/scss/progress";
+// @import "../../../vendor/bootstrap/scss/list-group";
+// @import "../../../vendor/bootstrap/scss/close";
 // @import "../../../vendor/bootstrap/scss/toasts";
-@import "../../../vendor/bootstrap/scss/modal";
+// @import "../../../vendor/bootstrap/scss/modal";
 // @import "../../../vendor/bootstrap/scss/tooltip";
 // @import "../../../vendor/bootstrap/scss/popover";
 // @import "../../../vendor/bootstrap/scss/carousel";
@@ -44,3 +44,8 @@
 // @import "../../../vendor/bootstrap/scss/placeholders";
 @import "../../../vendor/bootstrap/scss/helpers";
 @import "../../../vendor/bootstrap/scss/utilities/api";
+
+@import "img";
+@import "navbar";
+@import "tables";
+@import "progress";

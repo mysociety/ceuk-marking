@@ -189,3 +189,8 @@ if DEBUG and HIDE_DEBUG_TOOLBAR is False:  # pragma: no cover
         "debug_toolbar.panels.logging.LoggingPanel",
         "debug_toolbar.panels.redirects.RedirectsPanel",
     ]
+
+BOOTSTRAP5 = {
+    "wrapper_class": "mb-3 mb-md-4",
+    "set_placeholder": False,
+}

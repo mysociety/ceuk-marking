@@ -1,0 +1,9 @@
+.table {
+    tr > :first-child {
+        padding-left: 0;
+    }
+
+    tr > :last-child {
+        padding-right: 0;
+    }
+}
