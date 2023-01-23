@@ -20,6 +20,7 @@ class AssignedAdmin(admin.ModelAdmin):
         "authority",
         "question",
     )
+    list_filter = ["section"]
 
 
 @admin.register(Option)
