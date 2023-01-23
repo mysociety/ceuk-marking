@@ -14,6 +14,13 @@
 
     <form method="POST">
         {% csrf_token %}
+        {% if form.errors %}
+          <div class="row">
+              <div class="col-md-7 text-danger">
+                There were some errors which are highlighted in red below.
+              </div>
+          </div>
+        {% endif %}
         {{ form.management_form }}
       {% for q_form in form %}
         <fieldset class="py-4 py-md-5 border-top">
