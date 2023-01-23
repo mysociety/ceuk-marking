@@ -105,28 +105,31 @@ class Command(BaseCommand):
                     o, c = Option.objects.update_or_create(
                         question=q,
                         description="None",
-                        defaults={"score": 0},
+                        defaults={"score": 0, "ordering": 100},
                     )
                     for i in range(1, options):
                         desc = row[f"option_{i}"]
                         score = 1
+                        ordering = i
                         if q.question_type == "tiered":
                             score = i
                         if not pd.isna(desc):
                             o, c = Option.objects.update_or_create(
                                 question=q,
                                 description=desc,
-                                defaults={"score": score},
+                                defaults={"score": score, "ordering": ordering},
                             )
                 elif q.question_type == "yes_no":
                     for desc in ["Yes", "No"]:
+                        ordering = 1
                         score = 1
                         if desc == "No":
                             score = 0
+                            ordering = 2
                         o, c = Option.objects.update_or_create(
                             question=q,
                             description=desc,
-                            defaults={"score": score},
+                            defaults={"score": score, "ordering": ordering},
                         )
 
                 for col, group in q_groups.items():
