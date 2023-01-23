@@ -55,7 +55,7 @@ class Question(models.Model):
         return self.description
 
     def options(self):
-        return Option.objects.filter(question=self).order_by("score")
+        return Option.objects.filter(question=self).order_by("ordering")
 
 
 class PublicAuthority(models.Model):
