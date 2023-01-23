@@ -25,8 +25,14 @@ class AssignedAdmin(admin.ModelAdmin):
 
 @admin.register(Option)
 class OptionAdmin(admin.ModelAdmin):
+    ordering = [
+        "question__section",
+        "question__number",
+        "question__number_part",
+        "ordering",
+    ]
     list_filter = ["question__section", "question__question_type"]
-    list_display = ("question", "description", "score")
+    list_display = ("question", "description", "score", "ordering")
 
 
 @admin.register(PublicAuthority)
