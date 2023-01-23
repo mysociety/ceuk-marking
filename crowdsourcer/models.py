@@ -123,9 +123,13 @@ class Option(models.Model):
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
     score = models.IntegerField()
     description = models.TextField(max_length=200)
+    ordering = models.IntegerField(blank=True, null=True)
 
     def __str__(self):
         return self.description
+
+    class Meta:
+        ordering = ["ordering"]
 
 
 class ResponseType(models.Model):
