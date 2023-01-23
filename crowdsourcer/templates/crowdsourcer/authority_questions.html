@@ -20,7 +20,7 @@
             <div class="row">
                 <div class="col-md-7">
                     <legend class="h4 mb-3 mb-sm-4">
-                        {{ q_form.question_obj.description }}
+                      {{q_form.question_obj.number}}{% if q_form.question_obj.number_part %}{{ q_form.question_obj.number_part}}{% endif %}. {{ q_form.question_obj.description }}
                     </legend>
                 </div>
             </div>
