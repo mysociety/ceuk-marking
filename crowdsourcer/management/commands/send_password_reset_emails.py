@@ -1,7 +1,10 @@
+from time import sleep
+
 from django.contrib.auth.forms import PasswordResetForm
 from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand
 from django.http import HttpRequest
+from django.utils.crypto import get_random_string
 
 
 class Command(BaseCommand):
@@ -12,6 +15,8 @@ class Command(BaseCommand):
         for user in users:
             try:
                 if user.email:
+                    user.set_password(get_random_string(length=20))
+                    user.save()
                     print("Sending email for to this email:", user.email)
                     form = PasswordResetForm({"email": user.email})
                     assert form.is_valid()
@@ -26,6 +31,7 @@ class Command(BaseCommand):
                         subject_template_name="registration/initial_password_email_subject.txt",
                         email_template_name="registration/initial_password_email.html",
                     )
+                    sleep(1)
             except Exception as e:
                 print(e)
                 continue
