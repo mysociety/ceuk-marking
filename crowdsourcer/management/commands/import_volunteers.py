@@ -83,6 +83,7 @@ class Command(BaseCommand):
         df = pd.read_excel(
             self.volunteer_file,
             usecols=lambda name: "Unnamed" not in name,
+            sheet_name="Volunteer Recruitment Cohort 1",
         )
         df.columns = self.column_names
 
@@ -133,11 +134,11 @@ class Command(BaseCommand):
 
             councils = re.split("[,/]", row["council_area"])
 
-            own_council = PublicAuthority.objects.filter(name__contains=councils[0])
+            own_council = PublicAuthority.objects.filter(name__icontains=councils[0])
             if len(councils) > 1:
                 for council in councils[1:]:
                     own_council = own_council | PublicAuthority.objects.filter(
-                        name__contains=council
+                        name__icontains=council
                     )
 
             if len(councils) > 0 and own_council.count() == 0:
