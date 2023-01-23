@@ -94,28 +94,38 @@ class ResponseForm(ModelForm):
         ]
         widgets = {
             "authority": HiddenInput(),
-            "evidence": Textarea(attrs={
-                # "placeholder": False,
-                "rows": 3,
-            }),
+            "evidence": Textarea(
+                attrs={
+                    # "placeholder": False,
+                    "rows": 3,
+                }
+            ),
             "id": HiddenInput(),
-            "option": Select(attrs={
-                # "placeholder": False,
-            }),
+            "option": Select(
+                attrs={
+                    # "placeholder": False,
+                }
+            ),
             "multi_option": CheckboxSelectMultiple(),
-            "page_number": TextInput(attrs={
-                # "placeholder": False,
-                "inputmode": "numeric",
-                "pattern": "[0-9]*",
-            }),
-            "private_notes": Textarea(attrs={
-                # "placeholder": False,
-                "rows": 3,
-            }),
-            "public_notes": Textarea(attrs={
-                # "placeholder": False,
-                "rows": 3,
-            }),
+            "page_number": TextInput(
+                attrs={
+                    # "placeholder": False,
+                    "inputmode": "numeric",
+                    "pattern": "[0-9]*",
+                }
+            ),
+            "private_notes": Textarea(
+                attrs={
+                    # "placeholder": False,
+                    "rows": 3,
+                }
+            ),
+            "public_notes": Textarea(
+                attrs={
+                    # "placeholder": False,
+                    "rows": 3,
+                }
+            ),
             "question": HiddenInput(),
         }
 
