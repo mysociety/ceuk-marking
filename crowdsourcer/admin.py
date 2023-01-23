@@ -20,11 +20,12 @@ class AssignedAdmin(admin.ModelAdmin):
         "authority",
         "question",
     )
-    list_filter = ["section"]
+    list_filter = ["section", "authority__questiongroup"]
 
 
 @admin.register(Option)
 class OptionAdmin(admin.ModelAdmin):
+    list_filter = ["question__section", "question__question_type"]
     list_display = ("question", "description", "score")
 
 
@@ -43,7 +44,7 @@ class QuestionAdmin(admin.ModelAdmin):
         "number_part",
         "description",
     )
-    list_filter = ["section"]
+    list_filter = ["section", "how_marked", "questiongroup"]
     ordering = ("section", "number", "number_part")
 
 
