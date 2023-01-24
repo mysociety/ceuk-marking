@@ -52,7 +52,9 @@ class Question(models.Model):
     )
 
     def __str__(self):
-        return self.description
+        if self.number_part is not None:
+            return f"{self.number}{self.number_part}. {self.description}"
+        return f"{self.number}. {self.description}"
 
     def options(self):
         return Option.objects.filter(question=self).order_by("ordering", "score")
