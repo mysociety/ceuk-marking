@@ -12,10 +12,16 @@
         {{section_title}}
     </h1>
 
+    {% if message %}
+      <h3 class="mb-4 mb-md-5 text-success">
+        {{ message }}
+      </h3>
+    {% endif %}
+
     <form method="POST">
         {% csrf_token %}
-        {% if form.errors %}
-          <div class="row">
+        {% if form.total_error_count > 0 %}
+          <div class="mb-4">
               <div class="col-md-7 text-danger">
                 There were some errors which are highlighted in red below.
               </div>

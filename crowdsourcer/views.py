@@ -1,5 +1,4 @@
 from django.core.exceptions import PermissionDenied
-from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.views.generic import DetailView, ListView, TemplateView
 from django.views.generic.base import RedirectView
@@ -248,13 +247,9 @@ class AuthoritySectionQuestions(TemplateView):
         else:
             return self.render_to_response(self.get_context_data(form=formset))
 
-        return HttpResponseRedirect(
-            reverse(
-                "section_authorities",
-                kwargs={"section_title": self.kwargs["section_title"]},
-            )
-        )
-        return self.render_to_response(self.get_context_data())
+        context = self.get_context_data()
+        context["message"] = "Your answers have been saved."
+        return self.render_to_response(context)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
