@@ -20,6 +20,7 @@ class AssignedAdmin(admin.ModelAdmin):
         "authority",
         "question",
     )
+    search_fields = ["user__username", "authority__name"]
     list_filter = ["section", "authority__questiongroup"]
 
 
