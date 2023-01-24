@@ -55,7 +55,7 @@ class Question(models.Model):
         return self.description
 
     def options(self):
-        return Option.objects.filter(question=self).order_by("ordering")
+        return Option.objects.filter(question=self).order_by("ordering", "score")
 
 
 class PublicAuthority(models.Model):
@@ -129,7 +129,7 @@ class Option(models.Model):
         return self.description
 
     class Meta:
-        ordering = ["ordering"]
+        ordering = ["ordering", "score"]
 
 
 class ResponseType(models.Model):
