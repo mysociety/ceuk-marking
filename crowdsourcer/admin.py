@@ -69,6 +69,9 @@ class ResponseAdmin(admin.ModelAdmin):
         "option",
     )
 
+    search_fields = ["question__description", "authority__name"]
+    list_filter = ["question__section"]
+
 
 @admin.register(ResponseType)
 class ResponseTypeAdmin(admin.ModelAdmin):
