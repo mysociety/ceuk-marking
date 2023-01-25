@@ -1,3 +1,4 @@
+from django.core.validators import validate_comma_separated_integer_list
 from django.db.models.query import QuerySet
 from django.forms import (
     BaseFormSet,
@@ -40,6 +41,13 @@ class ResponseForm(ModelForm):
         self.fields["multi_option"].queryset = Option.objects.filter(
             question=self.question_obj
         )
+
+    def clean_page_number(self):
+        page_number = self.cleaned_data["page_number"]
+        if page_number == "" or page_number is None:
+            return page_number
+        validate_comma_separated_integer_list(page_number)
+        return page_number
 
     def clean(self):
         cleaned_data = super().clean()
@@ -111,7 +119,7 @@ class ResponseForm(ModelForm):
                 attrs={
                     # "placeholder": False,
                     "inputmode": "numeric",
-                    "pattern": "[0-9]*",
+                    "pattern": "[0-9,]*",
                 }
             ),
             "private_notes": Textarea(
