@@ -161,6 +161,43 @@ class AuthorityProgressView(ListView):
         return context
 
 
+class AuthorityAssignmentView(ListView):
+    template_name = "crowdsourcer/authorities_assigned.html"
+    model = PublicAuthority
+    context_object_name = "authorities"
+
+    def get_queryset(self):
+        qs = PublicAuthority.objects.all().annotate(
+            num_sections=Subquery(
+                Assigned.objects.filter(authority=OuterRef("pk"))
+                .values("authority")
+                .annotate(num_sections=Count("pk"))
+                .values("num_sections")
+            )
+        )
+
+        return qs
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        authorities = context["authorities"]
+        sort_order = self.request.GET.get("sort", None)
+        if sort_order is None or sort_order != "asc":
+            authorities = authorities.order_by(
+                F("num_sections").desc(nulls_last=True), "name"
+            )
+
+        else:
+            authorities = authorities.order_by(
+                F("num_sections").asc(nulls_first=True), "name"
+            )
+
+        context["authorities"] = authorities
+
+        return context
+
+
 class SectionAuthorityList(ListView):
     template_name = "crowdsourcer/section_authority_list.html"
     model = Section
