@@ -1,4 +1,6 @@
 from django.core.exceptions import PermissionDenied
+from django.db.models import Count, F, FloatField, OuterRef, Subquery
+from django.db.models.functions import Cast
 from django.urls import reverse
 from django.views.generic import DetailView, ListView, TemplateView
 from django.views.generic.base import RedirectView
@@ -89,6 +91,72 @@ class OverviewView(ListView):
             context["progress"] = progress
 
             context["page_title"] = "Assignments"
+
+        return context
+
+
+class AuthorityProgressView(ListView):
+    template_name = "crowdsourcer/authority_progress.html"
+    model = PublicAuthority
+    context_object_name = "authorities"
+
+    def get_queryset(self):
+        qs = (
+            PublicAuthority.objects.all()
+            .annotate(
+                num_questions=Subquery(
+                    Question.objects.filter(
+                        questiongroup=OuterRef("questiongroup"),
+                        how_marked__in=Question.VOLUNTEER_TYPES,
+                    )
+                    .values("questiongroup")
+                    .annotate(num_questions=Count("pk"))
+                    .values("num_questions")
+                ),
+            )
+            .annotate(
+                num_responses=Subquery(
+                    Response.objects.filter(
+                        authority=OuterRef("pk"),
+                    )
+                    .values("authority")
+                    .annotate(response_count=Count("pk"))
+                    .values("response_count")
+                )
+            )
+            .annotate(
+                qs_left=Cast(F("num_responses"), FloatField())
+                / Cast(F("num_questions"), FloatField())
+            )
+        )
+
+        return qs
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        authorities = context["authorities"]
+        sort_order = self.request.GET.get("sort", None)
+        if sort_order is None or sort_order != "asc":
+            authorities = authorities.order_by(
+                F("qs_left").desc(nulls_last=True), "name"
+            )
+
+        else:
+            authorities = authorities.order_by(
+                F("qs_left").asc(nulls_first=True), "name"
+            )
+
+        council_totals = {"total": 0, "complete": 0}
+
+        for a in authorities:
+            council_totals["total"] = council_totals["total"] + 1
+            if a.num_questions == a.num_responses:
+                council_totals["complete"] = council_totals["complete"] + 1
+
+        context["councils"] = council_totals
+        context["authorities"] = authorities
+        context["page_title"] = "Authorities Progress"
 
         return context
 

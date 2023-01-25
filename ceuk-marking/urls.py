@@ -26,6 +26,11 @@ urlpatterns = [
     path("status/", views.StatusPage.as_view()),
     path("", views.OverviewView.as_view(), name="home"),
     path(
+        "authority_progress/",
+        views.AuthorityProgressView.as_view(),
+        name="authority_progress",
+    ),
+    path(
         "section/<section_title>/questions/",
         views.SectionQuestionList.as_view(),
         name="section_questions",
