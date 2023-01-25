@@ -158,7 +158,8 @@ class Response(models.Model):
         blank=True,
         null=True,
     )
-    page_number = models.IntegerField(
+    page_number = models.CharField(
+        max_length=50,
         blank=True,
         null=True,
         verbose_name="Page Number",
