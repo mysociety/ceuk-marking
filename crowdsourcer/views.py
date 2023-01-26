@@ -1,3 +1,4 @@
+from django.contrib.auth.mixins import UserPassesTestMixin
 from django.core.exceptions import PermissionDenied
 from django.db.models import Count, F, FloatField, OuterRef, Subquery
 from django.db.models.functions import Cast
@@ -95,10 +96,13 @@ class OverviewView(ListView):
         return context
 
 
-class AuthorityProgressView(ListView):
+class AuthorityProgressView(UserPassesTestMixin, ListView):
     template_name = "crowdsourcer/authority_progress.html"
     model = PublicAuthority
     context_object_name = "authorities"
+
+    def test_func(self):
+        return self.request.user.is_superuser
 
     def get_queryset(self):
         qs = (
@@ -161,10 +165,13 @@ class AuthorityProgressView(ListView):
         return context
 
 
-class AuthorityAssignmentView(ListView):
+class AuthorityAssignmentView(UserPassesTestMixin, ListView):
     template_name = "crowdsourcer/authorities_assigned.html"
     model = PublicAuthority
     context_object_name = "authorities"
+
+    def test_func(self):
+        return self.request.user.is_superuser
 
     def get_queryset(self):
         qs = PublicAuthority.objects.all().annotate(
