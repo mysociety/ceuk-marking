@@ -36,7 +36,7 @@ class Command(BaseCommand):
             group = "Single Tier"
         elif props["country"] == "S":
             group = "Single Tier"
-        elif props["type"] in ["CC", "MTD", "LBO", "UA"]:
+        elif props["type"] in ["CC", "MTD", "LBO", "UTA"]:
             group = "Single Tier"
         elif props["type"] in ["CTY"]:
             group = "County"
