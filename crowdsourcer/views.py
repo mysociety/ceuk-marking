@@ -96,6 +96,96 @@ class OverviewView(ListView):
         return context
 
 
+class AllSectionProgressView(UserPassesTestMixin, ListView):
+    template_name = "crowdsourcer/all_section_progress.html"
+    model = Section
+    context_object_name = "sections"
+
+    def test_func(self):
+        return self.request.user.is_superuser
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        types = ["volunteer", "national_volunteer"]
+
+        progress = {}
+        for section in context["sections"]:
+            questions = Question.objects.filter(section=section, how_marked__in=types)
+            question_list = list(questions.values_list("id", flat=True))
+            authorities = PublicAuthority.response_counts(
+                question_list, section.title, self.request.user
+            ).distinct()
+
+            total = 0
+            complete = 0
+            for authority in authorities:
+                total = total + 1
+                if authority.num_responses == authority.num_questions:
+                    complete = complete + 1
+
+            progress[section.title] = {"total": total, "complete": complete}
+
+        context["page_title"] = "Section Progress"
+        context["progress"] = progress
+
+        return context
+
+
+class SectionProgressView(UserPassesTestMixin, ListView):
+    template_name = "crowdsourcer/section_progress.html"
+    model = Section
+    context_object_name = "sections"
+
+    def test_func(self):
+        return self.request.user.is_superuser
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        types = ["volunteer", "national_volunteer"]
+        section = Section.objects.get(title=self.kwargs["section_title"])
+        questions = Question.objects.filter(section=section, how_marked__in=types)
+
+        question_list = list(questions.values_list("id", flat=True))
+
+        authorities = (
+            PublicAuthority.response_counts(
+                question_list, section.title, self.request.user
+            )
+            .distinct()
+            .annotate(
+                qs_left=Cast(F("num_responses"), FloatField())
+                / Cast(F("num_questions"), FloatField())
+            )
+        )
+
+        sort_order = self.request.GET.get("sort", None)
+        if sort_order is None or sort_order != "asc":
+            authorities = authorities.order_by(
+                F("qs_left").desc(nulls_last=True), "name"
+            )
+
+        else:
+            authorities = authorities.order_by(
+                F("qs_left").asc(nulls_first=True), "name"
+            )
+
+        total = 0
+        complete = 0
+        for authority in authorities:
+            total = total + 1
+            if authority.num_responses == authority.num_questions:
+                complete = complete + 1
+
+        context["page_title"] = f"{section.title} Section Progress"
+        context["section"] = section
+        context["totals"] = {"total": total, "complete": complete}
+        context["authorities"] = authorities
+
+        return context
+
+
 class AllAuthorityProgressView(UserPassesTestMixin, ListView):
     template_name = "crowdsourcer/all_authority_progress.html"
     model = PublicAuthority
