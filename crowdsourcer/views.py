@@ -96,8 +96,8 @@ class OverviewView(ListView):
         return context
 
 
-class AuthorityProgressView(UserPassesTestMixin, ListView):
-    template_name = "crowdsourcer/authority_progress.html"
+class AllAuthorityProgressView(UserPassesTestMixin, ListView):
+    template_name = "crowdsourcer/all_authority_progress.html"
     model = PublicAuthority
     context_object_name = "authorities"
 
@@ -161,6 +161,67 @@ class AuthorityProgressView(UserPassesTestMixin, ListView):
         context["councils"] = council_totals
         context["authorities"] = authorities
         context["page_title"] = "Authorities Progress"
+
+        return context
+
+
+class AuthorityProgressView(UserPassesTestMixin, ListView):
+    template_name = "crowdsourcer/authority_progress.html"
+    model = Section
+    context_object_name = "sections"
+
+    def test_func(self):
+        return self.request.user.is_superuser
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        name = self.kwargs["name"]
+        progress = {}
+
+        types = ["volunteer", "national_volunteer"]
+        sections = context["sections"]
+        for section in sections:
+            questions = Question.objects.filter(section=section, how_marked__in=types)
+            question_list = list(questions.values_list("id", flat=True))
+            qs = (
+                PublicAuthority.objects.filter(name=name)
+                .annotate(
+                    num_questions=Subquery(
+                        Question.objects.filter(
+                            questiongroup=OuterRef("questiongroup"),
+                            how_marked__in=Question.VOLUNTEER_TYPES,
+                            pk__in=question_list,
+                        )
+                        .values("questiongroup")
+                        .annotate(num_questions=Count("pk"))
+                        .values("num_questions")
+                    ),
+                )
+                .annotate(
+                    num_responses=Subquery(
+                        Response.objects.filter(
+                            authority=OuterRef("pk"),
+                            question__in=question_list,
+                        )
+                        .values("authority")
+                        .annotate(response_count=Count("pk"))
+                        .values("response_count")
+                    )
+                )
+            )
+            authority = qs.first()
+            responses = authority.num_responses
+            if responses is None:
+                responses = 0
+            progress[section.title] = {
+                "responses": responses,
+                "total": authority.num_questions,
+            }
+
+        context["sections"] = progress
+        context["authority_name"] = name
+        context["page_title"] = f"{name} Progress"
 
         return context
 

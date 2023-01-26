@@ -27,6 +27,11 @@ urlpatterns = [
     path("", views.OverviewView.as_view(), name="home"),
     path(
         "authority_progress/",
+        views.AllAuthorityProgressView.as_view(),
+        name="all_authority_progress",
+    ),
+    path(
+        "authority_progress/<name>/",
         views.AuthorityProgressView.as_view(),
         name="authority_progress",
     ),
