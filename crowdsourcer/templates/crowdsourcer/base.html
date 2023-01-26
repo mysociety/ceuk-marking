@@ -21,6 +21,14 @@
                 </button>
                 <div class="collapse navbar-collapse" id="navbarSupportedContent">
                     <ul class="navbar-nav ms-sm-auto pt-2 pt-sm-0">
+                      {% if user.is_superuser %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'authority_assignments' %}">Authorities assigned</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'authority_progress' %}">Progress</a>
+                        </li>
+                      {% endif %}
                       {% if user.is_authenticated %}
                         <li class="nav-item">
                             <a class="nav-link" href="{% url 'home' %}">My assignments</a>
