@@ -21,6 +21,10 @@ class Command(BaseCommand):
 
     response_types = ["First Mark", "Right of Reply", "Audit"]
 
+    name_map = {
+        "Southend-on-Sea Borough Council": "Southend-on-Sea City Council",
+    }
+
     def add_arguments(self, parser):
         parser.add_argument(
             "-q", "--quiet", action="store_true", help="Silence progress bars."
@@ -65,7 +69,7 @@ class Command(BaseCommand):
             a, created = PublicAuthority.objects.update_or_create(
                 unique_id=area["codes"]["gss"],
                 defaults={
-                    "name": area["name"],
+                    "name": self.name_map.get(area["name"], area["name"]),
                     "questiongroup": self.get_group(area),
                 },
             )
