@@ -36,6 +36,8 @@ class OverviewView(ListView):
         qs = Assigned.objects.all()
         if user.is_superuser is False:
             qs = qs.filter(user=user)
+        else:
+            qs = qs.filter(user__is_active=True)
 
         return qs
 
