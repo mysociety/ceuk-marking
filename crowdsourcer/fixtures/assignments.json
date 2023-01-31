@@ -1,0 +1,32 @@
+[
+{
+  "model": "crowdsourcer.assigned",
+  "pk": 1,
+  "fields": {
+    "user": 2,
+    "section": 1,
+    "authority": 1,
+    "question": null
+  }
+},
+{
+  "model": "crowdsourcer.assigned",
+  "pk": 2,
+  "fields": {
+    "user": 2,
+    "section": 2,
+    "authority": 2,
+    "question": null
+  }
+},
+{
+  "model": "crowdsourcer.assigned",
+  "pk": 3,
+  "fields": {
+    "user": 2,
+    "section": 2,
+    "authority": 3,
+    "question": null
+  }
+}
+]

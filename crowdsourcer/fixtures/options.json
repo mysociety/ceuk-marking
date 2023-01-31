@@ -1,0 +1,672 @@
+[
+{
+  "model": "crowdsourcer.option",
+  "pk": 1,
+  "fields": {
+    "question": 269,
+    "score": 0,
+    "description": "None",
+    "ordering": 100
+  }
+},
+{
+  "model": "crowdsourcer.option",
+  "pk": 2,
+  "fields": {
+    "question": 269,
+    "score": 1,
+    "description": "One or more significant building have been retrofitted",
+    "ordering": 1
+  }
+},
+{
+  "model": "crowdsourcer.option",
+  "pk": 3,
+  "fields": {
+    "question": 269,
+    "score": 2,
+    "description": "One or more buildings have been retrofitted to a recognised standard",
+    "ordering": 2
+  }
+},
+{
+  "model": "crowdsourcer.option",
+  "pk": 4,
+  "fields": {
+    "question": 272,
+    "score": 0,
+    "description": "None",
+    "ordering": 100
+  }
+},
+{
+  "model": "crowdsourcer.option",
+  "pk": 5,
+  "fields": {
+    "question": 273,
+    "score": 0,
+    "description": "None",
+    "ordering": 100
+  }
+},
+{
+  "model": "crowdsourcer.option",
+  "pk": 6,
+  "fields": {
+    "question": 273,
+    "score": 1,
+    "description": "The council convenes or is a member of a local retrofit partnership",
+    "ordering": 1
+  }
+},
+{
+  "model": "crowdsourcer.option",
+  "pk": 7,
+  "fields": {
+    "question": 273,
+    "score": 1,
+    "description": "The council convenes or supports a programme for retro-fitting locally",
+    "ordering": 1
+  }
+},
+{
+  "model": "crowdsourcer.option",
+  "pk": 8,
+  "fields": {
+    "question": 277,
+    "score": 0,
+    "description": "None",
+    "ordering": 100
+  }
+},
+{
+  "model": "crowdsourcer.option",
+  "pk": 9,
+  "fields": {
+    "question": 277,
+    "score": 1,
+    "description": "The council provides tailor-made advice to residents on home energy efficiency",
+    "ordering": 1
+  }
+},
+{
+  "model": "crowdsourcer.option",
+  "pk": 10,
+  "fields": {
+    "question": 277,
+    "score": 1,
+    "description": "The council connects residents with local trades people and suppliers for energy effiiciency measures",
+    "ordering": 1
+  }
+},
+{
+  "model": "crowdsourcer.option",
+  "pk": 11,
+  "fields": {
+    "question": 277,
+    "score": 1,
+    "description": "Other",
+    "ordering": 1
+  }
+},
+{
+  "model": "crowdsourcer.option",
+  "pk": 12,
+  "fields": {
+    "question": 278,
+    "score": 1,
+    "description": "Yes",
+    "ordering": 1
+  }
+},
+{
+  "model": "crowdsourcer.option",
+  "pk": 13,
+  "fields": {
+    "question": 278,
+    "score": 0,
+    "description": "No",
+    "ordering": 100
+  }
+},
+{
+  "model": "crowdsourcer.option",
+  "pk": 14,
+  "fields": {
+    "question": 281,
+    "score": 1,
+    "description": "Yes",
+    "ordering": 1
+  }
+},
+{
+  "model": "crowdsourcer.option",
+  "pk": 15,
+  "fields": {
+    "question": 281,
+    "score": 0,
+    "description": "No",
+    "ordering": 100
+  }
+},
+{
+  "model": "crowdsourcer.option",
+  "pk": 30,
+  "fields": {
+    "question": 294,
+    "score": 1,
+    "description": "Yes",
+    "ordering": 1
+  }
+},
+{
+  "model": "crowdsourcer.option",
+  "pk": 31,
+  "fields": {
+    "question": 294,
+    "score": 0,
+    "description": "No",
+    "ordering": 100
+  }
+},
+{
+  "model": "crowdsourcer.option",
+  "pk": 32,
+  "fields": {
+    "question": 295,
+    "score": 0,
+    "description": "None",
+    "ordering": 100
+  }
+},
+{
+  "model": "crowdsourcer.option",
+  "pk": 33,
+  "fields": {
+    "question": 295,
+    "score": 1,
+    "description": "Plan to implement policy by between 2031 and 2040",
+    "ordering": 1
+  }
+},
+{
+  "model": "crowdsourcer.option",
+  "pk": 34,
+  "fields": {
+    "question": 295,
+    "score": 2,
+    "description": "Plan to implement policy since 2019 or by 2030",
+    "ordering": 2
+  }
+},
+{
+  "model": "crowdsourcer.option",
+  "pk": 56,
+  "fields": {
+    "question": 308,
+    "score": 1,
+    "description": "Yes",
+    "ordering": 1
+  }
+},
+{
+  "model": "crowdsourcer.option",
+  "pk": 57,
+  "fields": {
+    "question": 308,
+    "score": 0,
+    "description": "No",
+    "ordering": 100
+  }
+},
+{
+  "model": "crowdsourcer.option",
+  "pk": 58,
+  "fields": {
+    "question": 309,
+    "score": 1,
+    "description": "Yes",
+    "ordering": 1
+  }
+},
+{
+  "model": "crowdsourcer.option",
+  "pk": 59,
+  "fields": {
+    "question": 309,
+    "score": 0,
+    "description": "No",
+    "ordering": 100
+  }
+},
+{
+  "model": "crowdsourcer.option",
+  "pk": 60,
+  "fields": {
+    "question": 310,
+    "score": 1,
+    "description": "Yes",
+    "ordering": 1
+  }
+},
+{
+  "model": "crowdsourcer.option",
+  "pk": 61,
+  "fields": {
+    "question": 310,
+    "score": 0,
+    "description": "No",
+    "ordering": 100
+  }
+},
+{
+  "model": "crowdsourcer.option",
+  "pk": 86,
+  "fields": {
+    "question": 325,
+    "score": 1,
+    "description": "Yes",
+    "ordering": 1
+  }
+},
+{
+  "model": "crowdsourcer.option",
+  "pk": 87,
+  "fields": {
+    "question": 325,
+    "score": 0,
+    "description": "No",
+    "ordering": 100
+  }
+},
+{
+  "model": "crowdsourcer.option",
+  "pk": 96,
+  "fields": {
+    "question": 334,
+    "score": 1,
+    "description": "Yes",
+    "ordering": 1
+  }
+},
+{
+  "model": "crowdsourcer.option",
+  "pk": 97,
+  "fields": {
+    "question": 334,
+    "score": 0,
+    "description": "No",
+    "ordering": 100
+  }
+},
+{
+  "model": "crowdsourcer.option",
+  "pk": 98,
+  "fields": {
+    "question": 335,
+    "score": 1,
+    "description": "Yes",
+    "ordering": 1
+  }
+},
+{
+  "model": "crowdsourcer.option",
+  "pk": 99,
+  "fields": {
+    "question": 335,
+    "score": 0,
+    "description": "No",
+    "ordering": 100
+  }
+},
+{
+  "model": "crowdsourcer.option",
+  "pk": 112,
+  "fields": {
+    "question": 347,
+    "score": 1,
+    "description": "Yes",
+    "ordering": 1
+  }
+},
+{
+  "model": "crowdsourcer.option",
+  "pk": 113,
+  "fields": {
+    "question": 347,
+    "score": 0,
+    "description": "No",
+    "ordering": 100
+  }
+},
+{
+  "model": "crowdsourcer.option",
+  "pk": 114,
+  "fields": {
+    "question": 348,
+    "score": 0,
+    "description": "None",
+    "ordering": 100
+  }
+},
+{
+  "model": "crowdsourcer.option",
+  "pk": 115,
+  "fields": {
+    "question": 348,
+    "score": 1,
+    "description": "The council requires event organisers to provide additional information about their environmental commitments",
+    "ordering": 1
+  }
+},
+{
+  "model": "crowdsourcer.option",
+  "pk": 116,
+  "fields": {
+    "question": 348,
+    "score": 2,
+    "description": "The council has banned single use plastic at their events",
+    "ordering": 2
+  }
+},
+{
+  "model": "crowdsourcer.option",
+  "pk": 117,
+  "fields": {
+    "question": 349,
+    "score": 1,
+    "description": "None",
+    "ordering": 1
+  }
+},
+{
+  "model": "crowdsourcer.option",
+  "pk": 118,
+  "fields": {
+    "question": 349,
+    "score": 1,
+    "description": "Funding or space provided for a repair cafe or similar",
+    "ordering": 1
+  }
+},
+{
+  "model": "crowdsourcer.option",
+  "pk": 119,
+  "fields": {
+    "question": 349,
+    "score": 1,
+    "description": "Funding or space provided for exchange shops or similar",
+    "ordering": 1
+  }
+},
+{
+  "model": "crowdsourcer.option",
+  "pk": 120,
+  "fields": {
+    "question": 349,
+    "score": 1,
+    "description": "Signed up as part of a circular economy projects",
+    "ordering": 1
+  }
+},
+{
+  "model": "crowdsourcer.option",
+  "pk": 135,
+  "fields": {
+    "question": 279,
+    "score": 0,
+    "description": "None",
+    "ordering": 100
+  }
+},
+{
+  "model": "crowdsourcer.option",
+  "pk": 136,
+  "fields": {
+    "question": 279,
+    "score": 1,
+    "description": "Solar streets or equivalent project",
+    "ordering": 1
+  }
+},
+{
+  "model": "crowdsourcer.option",
+  "pk": 137,
+  "fields": {
+    "question": 279,
+    "score": 2,
+    "description": "Solar Together or equivalent project",
+    "ordering": 2
+  }
+},
+{
+  "model": "crowdsourcer.option",
+  "pk": 138,
+  "fields": {
+    "question": 280,
+    "score": 1,
+    "description": "Yes",
+    "ordering": 1
+  }
+},
+{
+  "model": "crowdsourcer.option",
+  "pk": 139,
+  "fields": {
+    "question": 280,
+    "score": 0,
+    "description": "No",
+    "ordering": 100
+  }
+},
+{
+  "model": "crowdsourcer.option",
+  "pk": 160,
+  "fields": {
+    "question": 282,
+    "score": 0,
+    "description": "None",
+    "ordering": 100
+  }
+},
+{
+  "model": "crowdsourcer.option",
+  "pk": 161,
+  "fields": {
+    "question": 282,
+    "score": 1,
+    "description": "Car share",
+    "ordering": 1
+  }
+},
+{
+  "model": "crowdsourcer.option",
+  "pk": 162,
+  "fields": {
+    "question": 282,
+    "score": 1,
+    "description": "Bike share",
+    "ordering": 1
+  }
+},
+{
+  "model": "crowdsourcer.option",
+  "pk": 163,
+  "fields": {
+    "question": 282,
+    "score": 1,
+    "description": "E-bike or cargo bike share",
+    "ordering": 1
+  }
+},
+{
+  "model": "crowdsourcer.option",
+  "pk": 164,
+  "fields": {
+    "question": 282,
+    "score": 1,
+    "description": "E-scooter",
+    "ordering": 1
+  }
+},
+{
+  "model": "crowdsourcer.option",
+  "pk": 165,
+  "fields": {
+    "question": 282,
+    "score": 1,
+    "description": "Mobility devices",
+    "ordering": 1
+  }
+},
+{
+  "model": "crowdsourcer.option",
+  "pk": 166,
+  "fields": {
+    "question": 282,
+    "score": 1,
+    "description": "Wheels to work",
+    "ordering": 1
+  }
+},
+{
+  "model": "crowdsourcer.option",
+  "pk": 171,
+  "fields": {
+    "question": 336,
+    "score": 0,
+    "description": "None",
+    "ordering": 100
+  }
+},
+{
+  "model": "crowdsourcer.option",
+  "pk": 172,
+  "fields": {
+    "question": 336,
+    "score": 1,
+    "description": "The council has published an annual report",
+    "ordering": 1
+  }
+},
+{
+  "model": "crowdsourcer.option",
+  "pk": 173,
+  "fields": {
+    "question": 336,
+    "score": 1,
+    "description": "The annual report is easy to read",
+    "ordering": 1
+  }
+},
+{
+  "model": "crowdsourcer.option",
+  "pk": 174,
+  "fields": {
+    "question": 336,
+    "score": 1,
+    "description": "The annual report includes reporting on the climate action plan SMART targets",
+    "ordering": 1
+  }
+},
+{
+  "model": "crowdsourcer.option",
+  "pk": 181,
+  "fields": {
+    "question": 272,
+    "score": 1,
+    "description": "The council has completed an exercise to measure how much, approximately, it will cost them to retrofit all homes (to EPC C or higher, or equivalent) and there is a target date of 2030.",
+    "ordering": 1
+  }
+},
+{
+  "model": "crowdsourcer.option",
+  "pk": 182,
+  "fields": {
+    "question": 272,
+    "score": 2,
+    "description": "The council has completed an exercise to measure how much, approximately, it will cost them to retrofit all homes (to EPC C or higher, or equivalent) and there is a target date of 2040.",
+    "ordering": 2
+  }
+},
+{
+  "model": "crowdsourcer.option",
+  "pk": 183,
+  "fields": {
+    "question": 272,
+    "score": 3,
+    "description": "The council has completed an exercise to measure how much, approximately, it will cost them to retrofit all homes (to EPC C or higher, or equivalent) and there is a target date of 2050.",
+    "ordering": 3
+  }
+},
+{
+  "model": "crowdsourcer.option",
+  "pk": 186,
+  "fields": {
+    "question": 269,
+    "score": 2,
+    "description": "One or more significant buildings have been retrofitted to a recognised standard",
+    "ordering": 2
+  }
+},
+{
+  "model": "crowdsourcer.option",
+  "pk": 187,
+  "fields": {
+    "question": 272,
+    "score": 1,
+    "description": "No",
+    "ordering": 1
+  }
+},
+{
+  "model": "crowdsourcer.option",
+  "pk": 188,
+  "fields": {
+    "question": 272,
+    "score": 2,
+    "description": "Yes, and there is target of 2030",
+    "ordering": 2
+  }
+},
+{
+  "model": "crowdsourcer.option",
+  "pk": 189,
+  "fields": {
+    "question": 272,
+    "score": 3,
+    "description": "Yes, and there is target of 2040",
+    "ordering": 3
+  }
+},
+{
+  "model": "crowdsourcer.option",
+  "pk": 190,
+  "fields": {
+    "question": 272,
+    "score": 4,
+    "description": "Yes, and there is target of 2050",
+    "ordering": 4
+  }
+},
+{
+  "model": "crowdsourcer.option",
+  "pk": 191,
+  "fields": {
+    "question": 273,
+    "score": 1,
+    "description": "The council convenes or is a member of a local retrofit partnership AND convenes or supports a programme for retro-fitting locally",
+    "ordering": 1
+  }
+},
+{
+  "model": "crowdsourcer.option",
+  "pk": 192,
+  "fields": {
+    "question": 277,
+    "score": 1,
+    "description": "Both of the above or Other",
+    "ordering": 1
+  }
+}
+]

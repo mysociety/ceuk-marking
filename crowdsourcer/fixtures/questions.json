@@ -1,0 +1,537 @@
+[
+{
+  "model": "crowdsourcer.question",
+  "pk": 269,
+  "fields": {
+    "number": 1,
+    "number_part": "",
+    "description": "Has the council completed extensive retrofit work on any of its significant buildings to make them low carbon?",
+    "criteria": "Criteria met if the council have done any of the following extensive retrofit works for any one of its significant buildings:\n- created on-site renewable energy\n- whole building retrofitting, including heat pump installations\n- extensive insulation of walls and floors\n- replacing gas boilers or installing a combined heating system\n\nAdditional points awarded if the retrofit has been awarded a standard such as BREEAM Refurbishment and fit-out (any level), AECB Retrofit standard (Bronze, Silver or Gold) or any other recognised standard.",
+    "section": 1,
+    "clarifications": "Significant council buildings refers to leisure centres, libraries, council town halls or offices, community centres, schools & colleges (not academies or private schools) or care homes.\n\nExtensive retrofit (sometimes called deep retrofit) refers to significant works of size or scale that result in a fundamental change to the building structure and/or services. This could be a collection of lots of small retrofit enhancements, or a single larger and disruptive measure, such as installing a combined heat system. \n\nThe work must be completed, not in progress.",
+    "topic": "Council buildings - retrofit",
+    "how_marked": "volunteer",
+    "question_type": "tiered",
+    "questiongroup": [
+      1,
+      2,
+      3,
+      4
+    ]
+  }
+},
+{
+  "model": "crowdsourcer.question",
+  "pk": 270,
+  "fields": {
+    "number": 2,
+    "number_part": "",
+    "description": "Are the council's operations powered by renewable energy?  ",
+    "criteria": "Criteria met if the council has a green tariff that is 100% renewable or if the council creates its own energy equivalent to 20% of more of its energy consumption through energy from waste. \n\nAdditional points awarded if the council has a green tariff with Green Energy UK plc, Good Energy Limited or Ecotricity, or if the council creates its own renewable energy equivalent to 20% or its energy consumption. This could be through on-site energy generation, or if the council has built or bought a solar/wind farm elsewhere. \n",
+    "section": 1,
+    "clarifications": "This includes all energy that the council is directly responsible for, in council offices and any other buildings leased and managed by the council where the council pays the energy tariff. \nThis includes all electricity used in these buildings (not gas). \nThis does not include homes owned or managed by the council.",
+    "topic": "Council buildings - renewable energy tariff",
+    "how_marked": "foi",
+    "question_type": "foi",
+    "questiongroup": [
+      1,
+      2,
+      3,
+      4
+    ]
+  }
+},
+{
+  "model": "crowdsourcer.question",
+  "pk": 271,
+  "fields": {
+    "number": 3,
+    "number_part": "",
+    "description": "Are the homes owned and managed by the council energy efficient?",
+    "criteria": "Three Tier Criteria\nCriteria met if 50% or more of the council's homes receive C or above in their Environmental Performance Certificate ratings.\n\nAdditional points awarded if 60% or more, and then if 90% or more of their buildings received C or above EPC ratings.",
+    "section": 1,
+    "clarifications": "Environmental Performance Certificates (EPCs) show home buyers or tenants how energy efficient the building is. The EPC contains information on potential energy costs and carbon dioxide emissions.\n\nCouncil owned or managed homes includes arms-length management organisation (ALMO) if the homes are owned by the Council but not Housing Associations. \n\nThis question applies only to homes that councils have an available EPC rating for. \nThis question applies only to councils that own or manage any number of council homes. ",
+    "topic": "Council homes - EPC ratings",
+    "how_marked": "foi",
+    "question_type": "foi",
+    "questiongroup": [
+      1,
+      2,
+      3
+    ]
+  }
+},
+{
+  "model": "crowdsourcer.question",
+  "pk": 272,
+  "fields": {
+    "number": 4,
+    "number_part": "",
+    "description": "Does the council have a target to retrofit all council owned and managed homes and has this been costed?",
+    "criteria": "Three Tier Criteria\nCriteria met if the council has completed an exercise to measure how much, approximately, it will cost them to retrofit all homes (to EPC C or higher, or equivalent) and there is a target date provided. \n\nAdditional points will be awarded depending on the councils' target dates, with tiers for 2030, 2040 and 2050.",
+    "section": 1,
+    "clarifications": "Home retrofit is the process of making changes to existing buildings so that energy consumption and emissions are reduced. These changes also provide more comfortable and healthier homes with lower fuel bills.\n\nThe council doesn't need to have all the funds available for the retrofit.\n\nThis question applies only to councils that own or manage any number of homes. ",
+    "topic": "Council homes - target to retrofit",
+    "how_marked": "volunteer",
+    "question_type": "tiered",
+    "questiongroup": [
+      1,
+      2,
+      3
+    ]
+  }
+},
+{
+  "model": "crowdsourcer.question",
+  "pk": 273,
+  "fields": {
+    "number": 5,
+    "number_part": null,
+    "description": "Is the council part of a programme or partnership to support home retrofitting, through providing the skills and training needed or in other ways?",
+    "criteria": "Criteria met if either:\n- the council convenes or is a member of a local retrofit partnership, that focuses on developing the skills and training needed for retrofit or sharing knowledge around retrofitting. \nEvidence of this partnership is needed. At least two of the following must be visible:\n1. A named partnership with a public membership list\n2. A terms of reference or aims of the group\n3. Evidence of previous meetings, via notes, agendas, videos or in news stories\n\n- alternatively, the criteria will be met if the council convenes or supports a programme for retrofitting locally through providing training or skills support.",
+    "section": 1,
+    "clarifications": "The criteria will be met if this partnership is a council task and finish group or sub-committee group with external members.",
+    "topic": "Retrofit partnerships",
+    "how_marked": "volunteer",
+    "question_type": "select_one",
+    "questiongroup": [
+      1,
+      2,
+      3,
+      4
+    ]
+  }
+},
+{
+  "model": "crowdsourcer.question",
+  "pk": 274,
+  "fields": {
+    "number": 6,
+    "number_part": null,
+    "description": "Does the council have a staff member employed to work on retrofitting across the council area?",
+    "criteria": "Criteria met if a staff member is employed to work on retrofitting for 3 or more days a week and is working on any retrofit projects, including council buildings, council homes or private rented or owned households. \n\nStaff can be as a project manager or officer on 3 or more days a week. We would accept contractors as long as they are equivalent to 3 days or more a week (0.6 FTE).",
+    "section": 1,
+    "clarifications": "nan",
+    "topic": "Staff working on retrofit",
+    "how_marked": "foi",
+    "question_type": "foi",
+    "questiongroup": [
+      1,
+      2,
+      3,
+      4
+    ]
+  }
+},
+{
+  "model": "crowdsourcer.question",
+  "pk": 275,
+  "fields": {
+    "number": 7,
+    "number_part": null,
+    "description": "Are the homes and buildings in the council area energy efficient?",
+    "criteria": "Three Tier Criteria\nCriteria met if 50% or more of buildings in the area that have an EPC rating are rated C or above.\nAdditional points awarded if the more than 60% and then more than 90% of buildings in the area that have an EPC rating are rated C or above.\n",
+    "section": 1,
+    "clarifications": "Environmental Performance Certificates (EPCs) show home buyers or tenants how energy efficient the building is. The EPC contains information on potential energy costs and carbon dioxide emissions. \n\nNot all buildings in the area have an EPC rating. We will be looking at only the ratings of the buildings that do have a rating. \n\nMarked using data provided by UK Government, Scottish EPC Register and the Department of Finance NI",
+    "topic": "EPC ratings - whole area",
+    "how_marked": "national_data",
+    "question_type": "national_data",
+    "questiongroup": [
+      1,
+      2,
+      4,
+      3
+    ]
+  }
+},
+{
+  "model": "crowdsourcer.question",
+  "pk": 276,
+  "fields": {
+    "number": 8,
+    "number_part": null,
+    "description": "Is the council actively enforcing Minimum Energy Efficiency Standards of homes in the private rented sector? ",
+    "criteria": "Two Tier Criteria\nCriteria met if the council has carried out 1-100 compliance or enforcement notices in the last financial year 2021/22.\nAdditional points if more than 100 compliance or enforcement notices have been carried out by a council. \n\n",
+    "section": 1,
+    "clarifications": "This question is applicable to English and Welsh District and Single tier councils only. \n\nAll district and single tier councils have legal powers to enforce Minimum Energy Efficiency Standards. This legislation states that a home cannot be rented out by a landlord if the home has an EPC rating of E or lower. The council can enforce this requirement through enforcement notices and fining landlords if they continue to rent out homes that have an EPC rating of E or lower. ",
+    "topic": "Housing Efficiency Standards Enforcement ",
+    "how_marked": "foi",
+    "question_type": "foi",
+    "questiongroup": [
+      1,
+      2,
+      3
+    ]
+  }
+},
+{
+  "model": "crowdsourcer.question",
+  "pk": 277,
+  "fields": {
+    "number": 9,
+    "number_part": null,
+    "description": "Does the council provide a service to support private homeowners to make their homes more energy efficient? ",
+    "criteria": "Criteria is met if the council is either providing a tailor-made advice to residents on home energy efficiency, or connecting residents with local trades people and suppliers for energy efficiency measures that can be carried out in their homes.",
+    "section": 1,
+    "clarifications": "Points will not be awarded for webpages with standardised information on the council website. There must be links to a wider project or product being offered.",
+    "topic": "Homeowner support - retrofit",
+    "how_marked": "volunteer",
+    "question_type": "select_one",
+    "questiongroup": [
+      1,
+      2,
+      3,
+      4
+    ]
+  }
+},
+{
+  "model": "crowdsourcer.question",
+  "pk": 278,
+  "fields": {
+    "number": 10,
+    "number_part": null,
+    "description": "Does the council offer funding to private renters or homeowners to retrofit their homes?",
+    "criteria": "Criteria met if the council provides any amount of funding to any number of private renters, landlords or homeowners to retrofit their homes. This would include grant funding councils have secured from the Green Homes Grants and the Sustainable Warmth national government programmes if the council are administering them. \n\n",
+    "section": 1,
+    "clarifications": "This does not include services provided under the Energy Companies Obligation to replace or upgrade boilers to homes on low income as this is already required and administered by councils. The project cannot be a trial project.",
+    "topic": "Homeowner funding - retrofit",
+    "how_marked": "volunteer",
+    "question_type": "yes_no",
+    "questiongroup": [
+      1,
+      2,
+      3,
+      4
+    ]
+  }
+},
+{
+  "model": "crowdsourcer.question",
+  "pk": 279,
+  "fields": {
+    "number": 11,
+    "number_part": null,
+    "description": "Does the council have a scheme to allow residents to purchase renewable energy cheaply, through collective buying?",
+    "criteria": "Two tier criteria\nCriteria met if the council is running a Solar Streets or equivalent collective energy buying project.\n\nAdditional points awarded if the council is running a Solar Together or equivalent project, such as iChoosr. Points awarded to any other scheme councils are doing that are on a similar scale to Solar Together. ",
+    "section": 1,
+    "clarifications": "If the project is being led by the County Council and all other district councils are involved too, then all those district councils will be awarded the points. \n\nThe project cannot be a trial project.\n\nMarked using data provided by Solar Streets - https://solarstreets.co.uk/ and Solar Together - https://solartogether.co.uk/landing ",
+    "topic": "Renewable Energy purchasing schemes",
+    "how_marked": "volunteer",
+    "question_type": "tiered",
+    "questiongroup": [
+      1,
+      2,
+      3,
+      4
+    ]
+  }
+},
+{
+  "model": "crowdsourcer.question",
+  "pk": 280,
+  "fields": {
+    "number": 12,
+    "number_part": null,
+    "description": "Has the council supported local community renewable energy creation?",
+    "criteria": "Criteria met if there is public information about a council working with a local community energy generation infrastructure project, such as wind, solar or hydro. Evidence of this could include: \n- Being formally listed as a partner on the community energy projects' website\n- Evidence on the councils' website of the council providing funding, land or other support to the community energy project. \n",
+    "section": 1,
+    "clarifications": "Marked using data provided by Community Energy England",
+    "topic": "Community Renewable Energy",
+    "how_marked": "volunteer",
+    "question_type": "yes_no",
+    "questiongroup": [
+      1,
+      2,
+      3,
+      4
+    ]
+  }
+},
+{
+  "model": "crowdsourcer.question",
+  "pk": 281,
+  "fields": {
+    "number": 1,
+    "number_part": "",
+    "description": "Is the council transitioning their vehicle fleet to electric?",
+    "criteria": "Criteria met if over 10% of the council's fleet are electric vehicles.",
+    "section": 2,
+    "clarifications": "A council's fleet includes council owned or leased vehicles, and may include street cleaners and waste collection vehicles.",
+    "topic": "Council Fleet",
+    "how_marked": "volunteer",
+    "question_type": "yes_no",
+    "questiongroup": [
+      1,
+      2,
+      3,
+      4
+    ]
+  }
+},
+{
+  "model": "crowdsourcer.question",
+  "pk": 282,
+  "fields": {
+    "number": 2,
+    "number_part": null,
+    "description": "Has the council set up or supported a shared transport scheme that can be used across their whole area?",
+    "criteria": "Criteria met for each type of scheme where a member of the public can hire a vehicle (e.g. car/scooter/bike/mobility device) within the local authorities area.\n\nThe following schemes will be awarded points:\n- Car share scheme of any size in the area. Including:\n        - Community car clubs.\n        - Car clubs provided by private companies\n        - Hiring of council vehicles when not in use\n- Bike share scheme\n- E-bike or cargo bike share scheme\n- E-scooter scheme\n- Mobility Devices\n- Wheels 2 Work scheme\n\nTrial schemes that are active at the time of marking will be accepted.",
+    "section": 2,
+    "clarifications": "Marked mainly using Coordinated Mobility's publicly available data on shared transport schemes.",
+    "topic": "Shared Transport Schemes",
+    "how_marked": "volunteer",
+    "question_type": "multiple_choice",
+    "questiongroup": [
+      1,
+      2,
+      3,
+      4
+    ]
+  }
+},
+{
+  "model": "crowdsourcer.question",
+  "pk": 294,
+  "fields": {
+    "number": 1,
+    "number_part": null,
+    "description": "Is the council's area wide net zero target a strategic objective of the Local Plan?        ",
+    "criteria": "Points awarded if the Local Plan includes:\n- reaching net zero as a strategic objective of the Local Plan\n- The council's net zero target date is also found within the Plan.\n\nThe net-zero target must be an area wide net-zero target.",
+    "section": 3,
+    "clarifications": "Reaching net-zero must be part of the strategic objectives listed initially in the council's Local Plan - even if the target date is not listed in the strategic objective. This is because the objectives are broader and Joint Local Plans may have different targets between the local authorities.\n\nWe will accept other language for target dates, including carbon neutrality or the carbon budget the council has committed to stay within.\n\nIf the Local Plan references a national net-zero target it must still be a strategic objective of the local plan to meet the national target, rather than the national target just being stated.",
+    "topic": "Net-zero in Local Plan",
+    "how_marked": "volunteer",
+    "question_type": "yes_no",
+    "questiongroup": [
+      1,
+      2,
+      4
+    ]
+  }
+},
+{
+  "model": "crowdsourcer.question",
+  "pk": 295,
+  "fields": {
+    "number": 2,
+    "number_part": null,
+    "description": "Has the council committed to building all future council owned or managed housing to a high energy efficiency or operationally net-zero standard?",
+    "criteria": "Two tier criteria\nPoints awarded if the council has a policy to build new council owned or managed housing as highly energy efficient or operationally net zero with the policy implemented from 2030 to 2040.\n\nAdditional points awarded if the council has a policy to build new council owned or managed housing as highly energy efficient or operationally net zero with the policy already implemented since 2019 or with implementation by 2030.",
+    "section": 3,
+    "clarifications": "High energy efficiency includes building new council owned or managed housing building standards such as Passivhaus/BREAM excellent or LEED standard or a similar council own standard.\n\nFor operationally net-zero policies, we will accept those that define this as only concerning regulated emissions. Definitions for operationally net-zero and regulated emissions are below.\n\nOperationally net-zero: when the amount of carbon emissions associated with the building’s operational energy on an annual basis is zero or negative. A net zero carbon building is highly energy efficient and powered from on-site and/or off-site renewable energy sources, with any remaining carbon balance offset.” Definition from:\nhttps://ukgbc.s3.eu-west-2.amazonaws.com/wp-content/uploads/2019/04/05150856/Net-Zero-Carbon-Buildings-A-framework-definition.pdf\n\nRegulated emissions: Emissions generated through building energy consumption resulting from the specification of controlled, fixed building services and fittings, including space heating and cooling, hot water, ventilation, fans, pumps and lighting. Such energy uses are inherent in the design of a building.\" For more information: https://www.designingbuildings.co.uk/wiki/Regulated_and_unregulated_energy_consumption \n\nCouncil owned or managed housing: This includes arms-length management organisation (ALMO) if the homes are owned by the Council but not Housing Associations. ",
+    "topic": "Council homes - energy efficient and low carbon",
+    "how_marked": "volunteer",
+    "question_type": "tiered",
+    "questiongroup": [
+      1,
+      2
+    ]
+  }
+},
+{
+  "model": "crowdsourcer.question",
+  "pk": 308,
+  "fields": {
+    "number": 1,
+    "number_part": "a",
+    "description": "Does the council's corporate plan include a net-zero target and make tackling the climate emergency one of its main priorities?",
+    "criteria": "Criteria met if climate action (alternatively called Sustainability or Environment) is listed as one of the council's core priorities or equivalent. It must have its own heading or section and a net zero target date must be referenced.\n\nThe net-zero target date must be an area-wide target, either the UK Government's national target, the devolved nation's target or the council's area-wide net zero target. \n\n",
+    "section": 4,
+    "clarifications": "A corporate plan is a business planning document that sets out the council's future priorities and objectives to help ensure that the council manages its resources effectively.\n\nFor County Councils the document is called a(Strategic) Economic Plan\n\nWe will accept other language for target dates being used such as carbon neutrality. ",
+    "topic": "Net Zero Embedded in Corporate Plan",
+    "how_marked": "volunteer",
+    "question_type": "yes_no",
+    "questiongroup": [
+      1,
+      2,
+      3,
+      4
+    ]
+  }
+},
+{
+  "model": "crowdsourcer.question",
+  "pk": 309,
+  "fields": {
+    "number": 1,
+    "number_part": "b",
+    "description": "Does the council's medium term financial plan include the council's net zero target and make tackling the climate emergency one of its main priorities?\n",
+    "criteria": "Criteria met if climate action (alternatively called sustainability or environment) is listed as one of the council's core priorities or equivalent. It must have its own heading or section and a net-zero target date must be referenced.\n\nThe net-zero target date must be an area-wide target, either the UK Government's national target, the devolved nation's target or the council's area-wide net-zero target. ",
+    "section": 4,
+    "clarifications": "A mid-term Financial Plan is a plan (often covering four years) which sets out the council's commitment to provide services that meet the needs of people locally and that represent value for money within the overall resources available to the council. \n\nWe will accept other language for target dates being used such as carbon neutrality. ",
+    "topic": "Net-Zero Embedded in mid-term Financial Plan",
+    "how_marked": "volunteer",
+    "question_type": "yes_no",
+    "questiongroup": [
+      1,
+      2,
+      3,
+      4
+    ]
+  }
+},
+{
+  "model": "crowdsourcer.question",
+  "pk": 310,
+  "fields": {
+    "number": 2,
+    "number_part": "",
+    "description": "Has the council published a climate change risk register? ",
+    "criteria": "Criteria met if the council has accurately identified the environmental risks of climate change to the local area, either in a stand alone climate change or adaptation risk register, or incorporated into the council's corporate risk register. There must be an explicit link between climate change and the increased risk of flooding or other weather events. \n\nAdaptation plans are not valid, unless there is a risk register or equivalent within the adaptation plan. ",
+    "section": 4,
+    "clarifications": "Environmental risks of climate change in the local area include flooding, extreme heat, air pollution or other extreme weather events. ",
+    "topic": "Climate Change Risk Register",
+    "how_marked": "volunteer",
+    "question_type": "yes_no",
+    "questiongroup": [
+      1,
+      2,
+      3,
+      4
+    ]
+  }
+},
+{
+  "model": "crowdsourcer.question",
+  "pk": 325,
+  "fields": {
+    "number": 1,
+    "number_part": "",
+    "description": "Does the council use peat free compost or soil in all landscaping and horticulture?",
+    "criteria": "Criteria met if the council has stopped using peat in soils in all landscaping and horticulture such as parks and council properties. A commitment that the council has stopped using peat compost or soil on their website or biodiversity strategy will be sufficient to meet the criteria.",
+    "section": 5,
+    "clarifications": "nan",
+    "topic": "Peat Free",
+    "how_marked": "volunteer",
+    "question_type": "yes_no",
+    "questiongroup": []
+  }
+},
+{
+  "model": "crowdsourcer.question",
+  "pk": 334,
+  "fields": {
+    "number": 1,
+    "number_part": "",
+    "description": "Do the council's climate pages include information about behaviour changes that residents can take, and are they easy to find?",
+    "criteria": "Criteria met if the council website has climate pages that are easy for residents to find and include information about what residents can do to reduce their carbon emissions.\n\nInformation about what residents can do must include links to council initiatives for further support. For example, a suggestion to reduce food waste could include a link to order a food waste caddy.",
+    "section": 6,
+    "clarifications": "\"Easy to find\" will be defined as meeting any of the following criteria:\n- Within 3 clicks of the homepage\n- Searchable on the site search bar using any of the phrases 'climate change', 'climate emergency', 'climate action' or 'environment'\n- There is an environment and/or climate section in the drop down menu\n\nLinks for further support can include links to collaborative initiatives with other councils.",
+    "topic": "Council website - information for residents",
+    "how_marked": "volunteer",
+    "question_type": "yes_no",
+    "questiongroup": [
+      1,
+      2,
+      3,
+      4
+    ]
+  }
+},
+{
+  "model": "crowdsourcer.question",
+  "pk": 335,
+  "fields": {
+    "number": 2,
+    "number_part": "a",
+    "description": "Has the council published a climate action plan with SMART targets?",
+    "criteria": "Criteria met if the council has published a climate action plan that covers the area and includes references to SMART targets since September 2015.",
+    "section": 6,
+    "clarifications": "This question will be marked using the criteria for Q3.12.1 of the Climate Action Plan Scorecards.",
+    "topic": "Climate Action Plan",
+    "how_marked": "volunteer",
+    "question_type": "yes_no",
+    "questiongroup": [
+      1,
+      2,
+      3,
+      4
+    ]
+  }
+},
+{
+  "model": "crowdsourcer.question",
+  "pk": 336,
+  "fields": {
+    "number": 2,
+    "number_part": "b",
+    "description": "Has the council published an up to date and easy-to-read annual report on their Climate Action Plan?",
+    "criteria": "Points awarded for each of the following criteria:\n- The council has published an annual report since 1st January 2022\n- The annual report is easy-to-read\n- The annual report includes reporting on progress towards the council's climate action plan SMART targets.",
+    "section": 6,
+    "clarifications": "We have chosen the date 1st of January 2022 to ensure that the report is being issued on a yearly basis, while allowing for some delays. \n\n\"Easy to read\" will be defined as clearly meant for public reading, and may include features such as a contents page, an executive summary, definitions for acronyms or complex language, simple English wherever possible, and graphics or tables to aid comprehension and navigation. \n\nScottish councils are obliged to publish statutory annual reports which will meet the criteria for an annual report, but they must release a more easy-to-read version with reference to SMART targets for further points.",
+    "topic": "Published Annual report",
+    "how_marked": "volunteer",
+    "question_type": "multiple_choice",
+    "questiongroup": [
+      1,
+      2,
+      3,
+      4
+    ]
+  }
+},
+{
+  "model": "crowdsourcer.question",
+  "pk": 347,
+  "fields": {
+    "number": 1,
+    "number_part": "",
+    "description": "Has the council banned or reduced single use plastic in its buildings and events?",
+    "criteria": "Criteria met if the council has successfully stopped using some single use plastic in the council office buildings and events. This excludes schools, leisure centres and other council buildings. \n\nPoints will be awarded if the council has done 2 or more of the following:\n- installing water drinking fountains on the council estate/public spaces\n- banning plastic cups for water\n- reducing plastic packaging\n- reducing the use of two or more of the following: plastic cutlery (forks, knives, spoons, chopsticks), plates, straws, beverage stirrers, balloon sticks or food and cup containers made of expanded polystyrene; including their covers and lids at their external events. ",
+    "section": 7,
+    "clarifications": "Single use plastic or disposable plastics are used only once before they are thrown away or recycled. They are made from fossil fuels like petroleum and can be very hard to recycle. ",
+    "topic": "Single Use Plastic",
+    "how_marked": "volunteer",
+    "question_type": "yes_no",
+    "questiongroup": [
+      1,
+      2,
+      3,
+      4
+    ]
+  }
+},
+{
+  "model": "crowdsourcer.question",
+  "pk": 348,
+  "fields": {
+    "number": 1,
+    "number_part": "b",
+    "description": "Has the council reduced single use plastic at external events on council land, property or public spaces such as roads and parks?",
+    "criteria": "Two tier criteria\nPoint awarded if the council requires event organisers to provide additional information about their environmental commitments that make reference to single use plastic or items that will be used that will be recyclable, compostable or reusable (such as a cup refill scheme).\n\nFurther points awarded if the council has banned the use of all of the following at these external events: plastic cutlery (forks, knives, spoons, chopsticks), plates, straws, beverage stirrers, balloon sticks or food and cup containers made of expanded polystyrene; including their covers and lids. ",
+    "section": 7,
+    "clarifications": "nan",
+    "topic": "Single Use Plastic",
+    "how_marked": "volunteer",
+    "question_type": "tiered",
+    "questiongroup": [
+      1,
+      2,
+      3,
+      4
+    ]
+  }
+},
+{
+  "model": "crowdsourcer.question",
+  "pk": 349,
+  "fields": {
+    "number": 2,
+    "number_part": null,
+    "description": "Has the council taken steps to support a circular economy locally?",
+    "criteria": "Criteria met if the council has done 2 or more of the following: \n- Provided funding or space provided for a repair cafe or similar \n- Provided funding or space for exchange shops or similar\n- Signed up as part of circular economy project ",
+    "section": 7,
+    "clarifications": "A circular economy is a model of production and consumption, which involves sharing, leasing, reusing, repairing, refurbishing and recycling existing materials and products as long as possible.",
+    "topic": "Circular Economy",
+    "how_marked": "volunteer",
+    "question_type": "select_one",
+    "questiongroup": [
+      1,
+      2,
+      3,
+      4
+    ]
+  }
+}
+]

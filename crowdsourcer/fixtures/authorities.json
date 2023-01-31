@@ -1,0 +1,32 @@
+[
+{
+  "model": "crowdsourcer.publicauthority",
+  "pk": 1,
+  "fields": {
+    "unique_id": "S12000033",
+    "name": "Aberdeen City Council",
+    "website": "https://www.aberdeencity.gov.uk",
+    "questiongroup": 1
+  }
+},
+{
+  "model": "crowdsourcer.publicauthority",
+  "pk": 2,
+  "fields": {
+    "unique_id": "S12000034",
+    "name": "Aberdeenshire Council",
+    "website": "https://www.aberdeenshire.gov.uk",
+    "questiongroup": 1
+  }
+},
+{
+  "model": "crowdsourcer.publicauthority",
+  "pk": 3,
+  "fields": {
+    "unique_id": "E07000223",
+    "name": "Adur District Council",
+    "website": "https://www.adur-worthing.gov.uk/",
+    "questiongroup": 2
+  }
+}
+]

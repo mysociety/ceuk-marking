@@ -1,0 +1,103 @@
+[
+{
+  "model": "crowdsourcer.section",
+  "pk": 1,
+  "fields": {
+    "title": "Buildings & Heating"
+  }
+},
+{
+  "model": "crowdsourcer.section",
+  "pk": 2,
+  "fields": {
+    "title": "Transport"
+  }
+},
+{
+  "model": "crowdsourcer.section",
+  "pk": 3,
+  "fields": {
+    "title": "Planning & Land Use"
+  }
+},
+{
+  "model": "crowdsourcer.section",
+  "pk": 4,
+  "fields": {
+    "title": "Governance & Finance"
+  }
+},
+{
+  "model": "crowdsourcer.section",
+  "pk": 5,
+  "fields": {
+    "title": "Biodiversity"
+  }
+},
+{
+  "model": "crowdsourcer.section",
+  "pk": 6,
+  "fields": {
+    "title": "Collaboration & Engagement"
+  }
+},
+{
+  "model": "crowdsourcer.section",
+  "pk": 7,
+  "fields": {
+    "title": "Waste Reduction & Food"
+  }
+},
+{
+  "model": "crowdsourcer.questiongroup",
+  "pk": 1,
+  "fields": {
+    "description": "Single Tier"
+  }
+},
+{
+  "model": "crowdsourcer.questiongroup",
+  "pk": 2,
+  "fields": {
+    "description": "District"
+  }
+},
+{
+  "model": "crowdsourcer.questiongroup",
+  "pk": 3,
+  "fields": {
+    "description": "County"
+  }
+},
+{
+  "model": "crowdsourcer.questiongroup",
+  "pk": 4,
+  "fields": {
+    "description": "Northern Ireland"
+  }
+},
+{
+  "model": "crowdsourcer.responsetype",
+  "pk": 1,
+  "fields": {
+    "type": "First Mark",
+    "priority": 1
+  }
+},
+{
+  "model": "crowdsourcer.responsetype",
+  "pk": 2,
+  "fields": {
+    "type": "Right of Reply",
+    "priority": 1
+  }
+},
+{
+  "model": "crowdsourcer.responsetype",
+  "pk": 3,
+  "fields": {
+    "type": "Audit",
+    "priority": 1
+  }
+}
+]
