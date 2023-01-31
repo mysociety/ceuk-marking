@@ -86,31 +86,17 @@ class PublicAuthority(models.Model):
             ),
         )
 
-        if user.is_superuser:
-            authorities = authorities.annotate(
-                num_responses=Subquery(
-                    Response.objects.filter(
-                        authority=OuterRef("pk"),
-                        question__in=questions,
-                    )
-                    .values("authority")
-                    .annotate(response_count=Count("pk"))
-                    .values("response_count")
+        authorities = authorities.annotate(
+            num_responses=Subquery(
+                Response.objects.filter(
+                    authority=OuterRef("pk"),
+                    question__in=questions,
                 )
+                .values("authority")
+                .annotate(response_count=Count("pk"))
+                .values("response_count")
             )
-        else:
-            authorities = authorities.annotate(
-                num_responses=Subquery(
-                    Response.objects.filter(
-                        user=user,
-                        authority=OuterRef("pk"),
-                        question__in=questions,
-                    )
-                    .values("authority")
-                    .annotate(response_count=Count("pk"))
-                    .values("response_count")
-                )
-            )
+        )
 
         if assigned is not None:
             authorities = authorities.filter(id__in=assigned)
