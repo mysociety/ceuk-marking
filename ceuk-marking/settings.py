@@ -22,6 +22,7 @@ env = environ.Env(
     DEBUG=(bool, False),
     ALLOWED_HOSTS=(list, []),
     HIDE_DEBUG_TOOLBAR=(bool, False),
+    LOG_LEVEL=(str, "WARNING"),
 )
 environ.Env.read_env(BASE_DIR / ".env")
 
@@ -32,6 +33,7 @@ CACHE_FILE = env("CACHE_FILE")
 HIDE_DEBUG_TOOLBAR = env("HIDE_DEBUG_TOOLBAR")
 MAPIT_URL = env("MAPIT_URL")
 MAPIT_API_KEY = env("MAPIT_API_KEY")
+LOG_LEVEL = env("LOG_LEVEL")
 
 # make sure CSRF checking still works behind load balancers
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
@@ -164,6 +166,33 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 EMAIL_HOST = env.str("EMAIL_HOST", "localhost")
 EMAIL_PORT = env.str("EMAIL_PORT", 1025)
 DEFAULT_FROM_EMAIL = env.str("DEFAULT_FROM_EMAIL", "webmaster@localhost")
+
+LOG_FILE = BASE_DIR / "applogs" / "logfile.log"
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "verbose": {
+            "format": "{levelname} {asctime} {message}",
+            "style": "{",
+        },
+    },
+    "handlers": {
+        "file": {
+            "class": "logging.FileHandler",
+            "filename": LOG_FILE,
+            "formatter": "verbose",
+        },
+    },
+    "loggers": {
+        "crowdsourcer": {
+            "handlers": ["file"],
+            "propagate": True,
+            "level": LOG_LEVEL,
+        },
+    },
+}
 
 if DEBUG and HIDE_DEBUG_TOOLBAR is False:  # pragma: no cover
     hostname, _, ips = socket.gethostbyname_ex(socket.gethostname())
