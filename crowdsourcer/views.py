@@ -1,3 +1,5 @@
+import logging
+
 from django.contrib.auth.mixins import UserPassesTestMixin
 from django.contrib.auth.models import User
 from django.core.exceptions import PermissionDenied
@@ -18,6 +20,8 @@ from crowdsourcer.models import (
     ResponseType,
     Section,
 )
+
+logger = logging.getLogger(__name__)
 
 
 class StatusPage(TemplateView):
@@ -591,9 +595,17 @@ class AuthoritySectionQuestions(TemplateView):
 
     def post(self, *args, **kwargs):
         self.check_permissions()
+        section_title = self.kwargs.get("section_title", "")
+        authority = self.kwargs.get("name", "")
+        logger.debug(
+            f"form post from {self.request.user.email} for {authority}/{section_title}"
+        )
+        logger.debug(f"post data is {self.request.POST}")
+
         formset = self.get_form()
         rt = ResponseType.objects.get(type="First Mark")
         if formset.is_valid():
+            logger.debug("form IS VALID")
             for form in formset:
                 cleaned_data = form.cleaned_data
                 if (
@@ -603,7 +615,14 @@ class AuthoritySectionQuestions(TemplateView):
                     form.instance.response_type = rt
                     form.instance.user = self.request.user
                     form.save()
+                    logger.debug(f"saved form {form.prefix}")
+                else:
+                    logger.debug(f"did not save form {form.prefix}")
+                    logger.debug(
+                        f"option is {cleaned_data.get('option', None)}, multi is {cleaned_data.get('multi_option', None)}"
+                    )
         else:
+            logger.debug(f"form NOT VALID, errors are {formset.errors}")
             return self.render_to_response(self.get_context_data(form=formset))
 
         context = self.get_context_data()
