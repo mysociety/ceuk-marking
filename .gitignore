@@ -4,6 +4,7 @@
 .coverage
 .media
 data
+applogs
 
 conf/env
 conf/env.deployed

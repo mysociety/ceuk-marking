@@ -16,6 +16,7 @@ ENV PATH="/root/.local/bin:$PATH"
 WORKDIR $PYSETUP_PATH
 COPY poetry.lock pyproject.toml ./
 RUN poetry install --no-root
+RUN mkdir -p /app/applogs
 # Not needed (mapping handled by docker-compose)
 # WORKDIR /app
 # COPY . .
