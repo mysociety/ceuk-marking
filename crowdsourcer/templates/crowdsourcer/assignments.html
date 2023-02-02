@@ -20,7 +20,7 @@
           {% for assignment in progress %}
             <tr>
               {% if show_users %}
-                <td>{{ assignment.assignment.user.username }}</td>
+              <td><a href="{% url "volunteer_progress" assignment.assignment.user.id %}">{{ assignment.assignment.user.username }}</a></td>
               {% endif %}
                 <td>
                     <a href="{% url 'section_authorities' assignment.assignment.section.title %}">{{ assignment.assignment.section.title }}</a>

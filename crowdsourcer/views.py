@@ -1,4 +1,5 @@
 from django.contrib.auth.mixins import UserPassesTestMixin
+from django.contrib.auth.models import User
 from django.core.exceptions import PermissionDenied
 from django.db.models import Count, F, FloatField, OuterRef, Subquery
 from django.db.models.functions import Cast
@@ -314,6 +315,99 @@ class AuthorityProgressView(UserPassesTestMixin, ListView):
         context["sections"] = progress
         context["authority_name"] = name
         context["page_title"] = f"{name} Progress"
+
+        return context
+
+
+class VolunteerProgressView(UserPassesTestMixin, ListView):
+    template_name = "crowdsourcer/volunteer_progress.html"
+    model = Section
+    context_object_name = "sections"
+
+    def test_func(self):
+        return self.request.user.is_superuser
+
+    def get_queryset(self):
+        user = User.objects.get(id=self.kwargs["id"])
+
+        sections = Section.objects.filter(
+            id__in=Assigned.objects.filter(user=user).values_list("section", flat=True)
+        )
+
+        return sections
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        sections = context["sections"]
+
+        user = User.objects.get(id=self.kwargs["id"])
+        progress = []
+
+        for section in sections:
+            assigned = Assigned.objects.filter(user=user, section=section).values_list(
+                "authority", flat=True
+            )
+
+            authorities = (
+                PublicAuthority.objects.filter(id__in=assigned)
+                .annotate(
+                    num_questions=Subquery(
+                        Question.objects.filter(
+                            section=section,
+                            questiongroup=OuterRef("questiongroup"),
+                            how_marked__in=Question.VOLUNTEER_TYPES,
+                        )
+                        .values("questiongroup")
+                        .annotate(num_questions=Count("pk"))
+                        .values("num_questions")
+                    ),
+                )
+                .annotate(
+                    num_responses=Subquery(
+                        Response.objects.filter(
+                            question__section=section,
+                            authority=OuterRef("pk"),
+                        )
+                        .values("authority")
+                        .annotate(response_count=Count("pk"))
+                        .values("response_count")
+                    )
+                )
+                .annotate(
+                    qs_left=Cast(F("num_responses"), FloatField())
+                    / Cast(F("num_questions"), FloatField())
+                )
+            )
+
+            sort_order = self.request.GET.get("sort", None)
+            if sort_order is None or sort_order != "asc":
+                authorities = authorities.order_by(
+                    F("qs_left").desc(nulls_last=True), "name"
+                )
+
+            else:
+                authorities = authorities.order_by(
+                    F("qs_left").asc(nulls_first=True), "name"
+                )
+
+            council_totals = {"total": 0, "complete": 0}
+
+            for a in authorities:
+                council_totals["total"] = council_totals["total"] + 1
+                if a.num_questions == a.num_responses:
+                    council_totals["complete"] = council_totals["complete"] + 1
+
+            progress.append(
+                {
+                    "section": section,
+                    "authorities": authorities,
+                    "totals": council_totals,
+                }
+            )
+
+        context["user"] = user
+        context["sections"] = progress
+        context["page_title"] = "Volunteer Progress"
 
         return context
 

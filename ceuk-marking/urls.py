@@ -46,6 +46,11 @@ urlpatterns = [
         name="section_progress",
     ),
     path(
+        "volunteer_progress/<id>/",
+        views.VolunteerProgressView.as_view(),
+        name="volunteer_progress",
+    ),
+    path(
         "authority_assignments/",
         views.AuthorityAssignmentView.as_view(),
         name="authority_assignments",
