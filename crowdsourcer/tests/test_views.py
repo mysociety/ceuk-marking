@@ -420,3 +420,39 @@ class TestSaveView(BaseTestCase):
         ).order_by("question__number")
 
         self.assertEquals(answers.count(), 2)
+
+
+class TestAllAuthorityProgressView(BaseTestCase):
+    def test_non_admin_denied(self):
+        response = self.client.get(reverse("all_authority_progress"))
+        self.assertEquals(response.status_code, 403)
+
+    def test_view(self):
+        u = User.objects.get(username="admin")
+        self.client.force_login(u)
+
+        response = self.client.get(reverse("all_authority_progress"))
+        self.assertEquals(response.status_code, 200)
+        context = response.context
+
+        self.assertEquals(context["councils"]["complete"], 0)
+        self.assertEquals(context["councils"]["total"], 3)
+
+
+class TestSectionProgressView(BaseTestCase):
+    def test_non_admin_denied(self):
+        response = self.client.get(reverse("all_section_progress"))
+        self.assertEquals(response.status_code, 403)
+
+    def test_view(self):
+        u = User.objects.get(username="admin")
+        self.client.force_login(u)
+
+        response = self.client.get(reverse("all_section_progress"))
+        self.assertEquals(response.status_code, 200)
+        context = response.context["progress"]
+
+        self.assertEquals(context["Transport"]["complete"], 1)
+        self.assertEquals(context["Transport"]["total"], 3)
+        self.assertEquals(context["Buildings & Heating"]["complete"], 0)
+        self.assertEquals(context["Buildings & Heating"]["total"], 3)
