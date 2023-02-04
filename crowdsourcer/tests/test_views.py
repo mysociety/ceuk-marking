@@ -11,7 +11,24 @@ class TestHomePage(TestCase):
         self.assertEqual(response.status_code, 200)
 
 
-class TestAssignmentView(TestCase):
+class BaseTestCase(TestCase):
+    fixtures = [
+        "authorities.json",
+        "basics.json",
+        "users.json",
+        "questions.json",
+        "options.json",
+        "assignments.json",
+        "responses.json",
+    ]
+
+    def setUp(self):
+        u = User.objects.get(username="marker")
+        self.client.force_login(u)
+        self.user = u
+
+
+class TestAssignmentView(BaseTestCase):
     fixtures = [
         "authorities.json",
         "basics.json",
@@ -20,11 +37,6 @@ class TestAssignmentView(TestCase):
         "options.json",
         "assignments.json",
     ]
-
-    def setUp(self):
-        u = User.objects.get(username="marker")
-        self.client.force_login(u)
-        self.user = u
 
     def test_basics(self):
         response = self.client.get("/")
@@ -48,22 +60,7 @@ class TestAssignmentView(TestCase):
         self.assertEqual(second["complete"], 0)
 
 
-class TestAssignmentCompletionStats(TestCase):
-    fixtures = [
-        "authorities.json",
-        "basics.json",
-        "users.json",
-        "questions.json",
-        "options.json",
-        "assignments.json",
-        "responses.json",
-    ]
-
-    def setUp(self):
-        u = User.objects.get(username="marker")
-        self.client.force_login(u)
-        self.user = u
-
+class TestAssignmentCompletionStats(BaseTestCase):
     def test_completion_stats(self):
         response = self.client.get("/")
         context = response.context
@@ -106,7 +103,7 @@ class TestAssignmentCompletionStats(TestCase):
         self.assertEqual(second["complete"], 2)
 
 
-class TestSaveView(TestCase):
+class TestSaveView(BaseTestCase):
     fixtures = [
         "authorities.json",
         "basics.json",
@@ -115,11 +112,6 @@ class TestSaveView(TestCase):
         "options.json",
         "assignments.json",
     ]
-
-    def setUp(self):
-        u = User.objects.get(username="marker")
-        self.client.force_login(u)
-        self.user = u
 
     def test_no_access_unless_assigned(self):
         url = reverse(
