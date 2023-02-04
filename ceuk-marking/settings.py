@@ -10,7 +10,9 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 
+import logging
 import socket
+import sys
 from pathlib import Path
 
 import environ
@@ -49,6 +51,10 @@ if env.str("BUGS_EMAIL", None):  # pragma: no cover
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
 # Application definition
+
+
+if len(sys.argv) > 1 and sys.argv[1] == "test":
+    logging.disable(logging.CRITICAL)
 
 INSTALLED_APPS = [
     "django.contrib.admin",
