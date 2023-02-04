@@ -2,7 +2,7 @@ from django.contrib.auth.models import User
 from django.test import TestCase
 from django.urls import reverse
 
-from crowdsourcer.models import Response
+from crowdsourcer.models import Assigned, PublicAuthority, Response, Section
 
 
 class TestHomePage(TestCase):
@@ -24,6 +24,23 @@ class TestSaveView(TestCase):
     def setUp(self):
         u = User.objects.get(username="marker")
         self.client.force_login(u)
+        self.user = u
+
+    def test_no_access_unless_assigned(self):
+        url = reverse(
+            "authority_question_edit", args=("Aberdeenshire Council", "Biodiversity")
+        )
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 403)
+
+        Assigned.objects.create(
+            user=self.user,
+            section=Section.objects.get(title="Biodiversity"),
+            authority=PublicAuthority.objects.get(name="Aberdeenshire Council"),
+        )
+
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
 
     def test_save(self):
         url = reverse(
