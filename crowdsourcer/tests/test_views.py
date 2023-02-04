@@ -11,6 +11,101 @@ class TestHomePage(TestCase):
         self.assertEqual(response.status_code, 200)
 
 
+class TestAssignmentView(TestCase):
+    fixtures = [
+        "authorities.json",
+        "basics.json",
+        "users.json",
+        "questions.json",
+        "options.json",
+        "assignments.json",
+    ]
+
+    def setUp(self):
+        u = User.objects.get(username="marker")
+        self.client.force_login(u)
+        self.user = u
+
+    def test_basics(self):
+        response = self.client.get("/")
+        self.assertEqual(response.status_code, 200)
+
+        context = response.context
+        self.assertFalse(context["show_users"])
+
+        progress = context["progress"]
+
+        self.assertEqual(len(progress), 2)
+
+        first = progress[0]
+        second = progress[1]
+        self.assertEqual(first["assignment"].section.title, "Buildings & Heating")
+        self.assertEqual(second["assignment"].section.title, "Transport")
+
+        self.assertEqual(first["total"], 1)
+        self.assertEqual(first["complete"], 0)
+        self.assertEqual(second["total"], 2)
+        self.assertEqual(second["complete"], 0)
+
+
+class TestAssignmentCompletionStats(TestCase):
+    fixtures = [
+        "authorities.json",
+        "basics.json",
+        "users.json",
+        "questions.json",
+        "options.json",
+        "assignments.json",
+        "responses.json",
+    ]
+
+    def setUp(self):
+        u = User.objects.get(username="marker")
+        self.client.force_login(u)
+        self.user = u
+
+    def test_completion_stats(self):
+        response = self.client.get("/")
+        context = response.context
+        progress = context["progress"]
+
+        first = progress[0]
+        second = progress[1]
+        self.assertEqual(first["complete"], 0)
+        self.assertEqual(second["complete"], 1)
+
+        Response.objects.create(
+            authority_id=3,
+            question_id=281,
+            user=self.user,
+            option_id=14,
+            response_type_id=1,
+            public_notes="public notrs",
+            page_number="0",
+            evidence="",
+            private_notes="private notes",
+        )
+
+        Response.objects.create(
+            authority_id=3,
+            question_id=282,
+            user=self.user,
+            option_id=161,
+            response_type_id=1,
+            public_notes="public notrs",
+            page_number="0",
+            evidence="",
+            private_notes="private notes",
+        )
+
+        response = self.client.get("/")
+        context = response.context
+        progress = context["progress"]
+
+        second = progress[1]
+        self.assertEqual(second["complete"], 2)
+
+
 class TestSaveView(TestCase):
     fixtures = [
         "authorities.json",
