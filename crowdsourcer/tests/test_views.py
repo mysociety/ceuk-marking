@@ -103,6 +103,20 @@ class TestAssignmentCompletionStats(BaseTestCase):
         self.assertEqual(second["complete"], 2)
 
 
+class TestUserSectionProgressView(BaseTestCase):
+    def test_view(self):
+        url = reverse("section_authorities", args=("Transport",))
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+
+        context = response.context
+        self.assertEqual(len(context["authorities"]), 2)
+        self.assertEqual(context["authorities"][0].num_responses, 2)
+        self.assertEqual(context["authorities"][0].num_questions, 2)
+        self.assertEqual(context["authorities"][1].num_responses, None)
+        self.assertEqual(context["authorities"][1].num_questions, 2)
+
+
 class TestSaveView(BaseTestCase):
     fixtures = [
         "authorities.json",
