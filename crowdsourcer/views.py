@@ -140,6 +140,18 @@ class AllSectionProgressView(UserPassesTestMixin, ListView):
                 "started": started,
             }
 
+        assigned = Section.objects.all().annotate(
+            num_authorities=Subquery(
+                Assigned.objects.filter(section=OuterRef("pk"))
+                .values("section")
+                .annotate(num_authorities=Count("pk"))
+                .values("num_authorities")
+            )
+        )
+
+        for section in assigned:
+            progress[section.title]["assigned"] = section.num_authorities
+
         context["page_title"] = "Section Progress"
         context["progress"] = progress
 
