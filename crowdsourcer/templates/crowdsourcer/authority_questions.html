@@ -11,10 +11,11 @@
         {% endif %}
         {{section_title}}
     </h1>
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <nav class="navbar sticky-top navbar-expand-lg navbar-light bg-light">
       <div class="container-fluid">
         <div class="collapse navbar-collapse" id="navbarNavDropdown">
-          <div class="nav-item dropdown">
+          <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+          <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
               Skip to Q
             </a>
@@ -23,7 +24,11 @@
             <li><a class="dropdown-item" href="#q{{q_form.question_obj.number}}{% if q_form.question_obj.number_part %}{{ q_form.question_obj.number_part}}{% endif %}">Q{{q_form.question_obj.number}}{% if q_form.question_obj.number_part %}{{ q_form.question_obj.number_part}}{% endif %}</a></li>
             {% endfor %}
             </ul>
-          </div>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link active" href="#save">Go to Save</a>
+          </li>
+          </ul>
         </div>
       </div>
     </nav>
@@ -87,7 +92,7 @@
             </div>
         </fieldset>
       {% endfor %}
-        <input type="submit" class="btn btn-primary" value="Save answers">
+        <input id="save" type="submit" class="btn btn-primary" value="Save answers">
     </form>
 
 {% endblock %}
