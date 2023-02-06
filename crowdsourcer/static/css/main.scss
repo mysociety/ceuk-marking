@@ -49,3 +49,15 @@
 @import "navbar";
 @import "tables";
 @import "progress";
+
+dropdown {
+  &:hover,
+  &:focus-within {
+    .dropdown__menu {
+      opacity: 1;
+      transform: rotateX(0) translateX(-50%);
+      display: block;
+      visibility: visible;
+    }
+  }
+}
