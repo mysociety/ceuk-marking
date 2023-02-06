@@ -126,12 +126,19 @@ class AllSectionProgressView(UserPassesTestMixin, ListView):
 
             total = 0
             complete = 0
+            started = 0
             for authority in authorities:
                 total = total + 1
+                if authority.num_responses is not None and authority.num_responses > 0:
+                    started = started + 1
                 if authority.num_responses == authority.num_questions:
                     complete = complete + 1
 
-            progress[section.title] = {"total": total, "complete": complete}
+            progress[section.title] = {
+                "total": total,
+                "complete": complete,
+                "started": started,
+            }
 
         context["page_title"] = "Section Progress"
         context["progress"] = progress
