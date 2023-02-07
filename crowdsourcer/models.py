@@ -51,10 +51,14 @@ class Question(models.Model):
         max_length=30, default="yes_no", choices=QUESTION_TYPES
     )
 
-    def __str__(self):
+    @property
+    def number_and_part(self):
         if self.number_part is not None:
-            return f"{self.number}{self.number_part}. {self.description}"
-        return f"{self.number}. {self.description}"
+            return f"{self.number}{self.number_part}"
+        return f"{self.number}"
+
+    def __str__(self):
+        return f"{self.number_and_part}. {self.description}"
 
     def options(self):
         return Option.objects.filter(question=self).order_by("ordering", "score")

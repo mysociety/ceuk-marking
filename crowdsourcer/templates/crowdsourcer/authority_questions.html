@@ -19,8 +19,8 @@
             </button>
             <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
               {% for q_form in form %}
-                <li><a class="dropdown-item d-flex" style="max-width: 30em; white-space: normal;" href="#q{{q_form.question_obj.number}}{% if q_form.question_obj.number_part %}{{ q_form.question_obj.number_part}}{% endif %}">
-                    <span style="width: 2em; flex: 0 0 auto;">Q{{q_form.question_obj.number}}{% if q_form.question_obj.number_part %}{{ q_form.question_obj.number_part}}{% endif %}</span>
+                <li><a class="dropdown-item d-flex" style="max-width: 30em; white-space: normal;" href="#q{{q_form.question_obj.number_and_part}}">
+                    <span style="width: 2em; flex: 0 0 auto;">Q{{q_form.question_obj.number_and_part}}</span>
                     <span class="text-muted fs-7 ms-3">{{ q_form.question_obj.description }}</span>
                 </a></li>
               {% endfor %}
@@ -48,8 +48,8 @@
         <fieldset class="py-4 py-md-5 border-top">
             <div class="row">
                 <div class="col-md-7">
-                  <legend id="q{{q_form.question_obj.number}}{% if q_form.question_obj.number_part %}{{ q_form.question_obj.number_part}}{% endif %}" class="h4 mb-3 mb-sm-4">
-                      {{q_form.question_obj.number}}{% if q_form.question_obj.number_part %}{{ q_form.question_obj.number_part}}{% endif %}. {{ q_form.question_obj.description }}
+                  <legend id="q{{q_form.question_obj.number_and_part}}" class="h4 mb-3 mb-sm-4">
+                      {{q_form.question_obj.number_and_part}}. {{ q_form.question_obj.description }}
                     </legend>
                 </div>
             </div>
