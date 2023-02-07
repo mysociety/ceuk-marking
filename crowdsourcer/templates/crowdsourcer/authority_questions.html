@@ -3,7 +3,7 @@
 {% load django_bootstrap5 %}
 
 {% block content %}
-    <h1 class="mb-4 mb-md-5">
+    <h1 class="mb-3 mb-md-4">
         {% if authority.website %}
             <a href="{{ authority.website }}">{{ authority_name }}</a>:
         {% else %}
@@ -11,27 +11,22 @@
         {% endif %}
         {{section_title}}
     </h1>
-    <nav class="navbar sticky-top navbar-expand-lg navbar-light bg-light">
-      <div class="container-fluid">
-        <div class="collapse navbar-collapse" id="navbarNavDropdown">
-          <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-          <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-              Skip to Q
-            </a>
+
+    <div class="sticky-top py-3 bg-white border-bottom" style="margin-bottom: -1px;">
+        <div class="dropdown">
+            <button class="btn btn-outline-secondary dropdown-toggle" id="navbarDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                Skip to question
+            </button>
             <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-            {% for q_form in form %}
-            <li><a class="dropdown-item" href="#q{{q_form.question_obj.number}}{% if q_form.question_obj.number_part %}{{ q_form.question_obj.number_part}}{% endif %}">Q{{q_form.question_obj.number}}{% if q_form.question_obj.number_part %}{{ q_form.question_obj.number_part}}{% endif %}</a></li>
-            {% endfor %}
+              {% for q_form in form %}
+                <li><a class="dropdown-item d-flex" style="max-width: 30em; white-space: normal;" href="#q{{q_form.question_obj.number}}{% if q_form.question_obj.number_part %}{{ q_form.question_obj.number_part}}{% endif %}">
+                    <span style="width: 2em; flex: 0 0 auto;">Q{{q_form.question_obj.number}}{% if q_form.question_obj.number_part %}{{ q_form.question_obj.number_part}}{% endif %}</span>
+                    <span class="text-muted fs-7 ms-3">{{ q_form.question_obj.description }}</span>
+                </a></li>
+              {% endfor %}
             </ul>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link active" href="#save">Go to Save</a>
-          </li>
-          </ul>
         </div>
-      </div>
-    </nav>
+    </div>
 
     {% if message %}
       <h3 class="mb-4 mb-md-5 text-success">
@@ -92,7 +87,10 @@
             </div>
         </fieldset>
       {% endfor %}
-        <input id="save" type="submit" class="btn btn-primary" value="Save answers">
+
+      <div class="sticky-bottom py-3 bg-white border-top" style="margin-top: -1px;">
+          <input type="submit" class="btn btn-primary" value="Save answers">
+      </div>
     </form>
 
 {% endblock %}
