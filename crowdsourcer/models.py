@@ -198,6 +198,7 @@ class Assigned(models.Model):
     question = models.ForeignKey(
         Question, on_delete=models.CASCADE, null=True, blank=True
     )
+    history = HistoricalRecords()
 
     @classmethod
     def is_user_assigned(cls, user, **kwargs):
