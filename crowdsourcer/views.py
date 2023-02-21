@@ -460,6 +460,11 @@ class AuthorityAssignmentView(UserPassesTestMixin, ListView):
 
         authorities = context["authorities"]
         sort_order = self.request.GET.get("sort", None)
+        do_not_mark_only = self.request.GET.get("do_not_mark_only", None)
+
+        if do_not_mark_only is not None:
+            authorities = authorities.filter(do_not_mark=True)
+
         if sort_order is None or sort_order != "asc":
             authorities = authorities.order_by(
                 F("num_sections").desc(nulls_last=True), "name"
@@ -471,6 +476,7 @@ class AuthorityAssignmentView(UserPassesTestMixin, ListView):
             )
 
         context["authorities"] = authorities
+        context["do_not_mark_only"] = do_not_mark_only
 
         return context
 
