@@ -17,7 +17,7 @@
           {% for authority in authorities %}
             <tr>
                 <td>
-                    <a href="/admin/crowdsourcer/assigned/?q={{ authority.name }}">{{ authority.name }}</a>
+                    <a href="/admin/crowdsourcer/assigned/?q={{ authority.name }}">{{ authority.name }}{% if authority.do_not_mark %} (DO NOT MARK){% endif %}</a>
                 </td>
                 <td>
                     <div class="progress progress-thin mb-2">

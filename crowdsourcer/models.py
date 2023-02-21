@@ -72,7 +72,11 @@ class PublicAuthority(models.Model):
     do_not_mark = models.BooleanField(default=False)
 
     def __str__(self):
-        return self.name
+        name = self.name
+        if self.do_not_mark:
+            name = f"{name} (DO NOT MARK)"
+
+        return name
 
     @classmethod
     def response_counts(cls, questions, section, user, assigned=None):

@@ -29,7 +29,7 @@
           {% for authority in authorities %}
             <tr>
                 <td>
-                    <a href="{% url 'authority_progress' authority.name %}">{{ authority.name }}</a>
+                    <a href="{% url 'authority_progress' authority.name %}">{{ authority.name }}{% if authority.do_not_mark %} (DO NOT MARK){% endif %}</a>
                 </td>
                 <td>
                     <div class="progress progress-thin mb-2">
