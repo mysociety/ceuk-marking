@@ -69,6 +69,7 @@ class PublicAuthority(models.Model):
     name = models.TextField(max_length=300)
     website = models.URLField(null=True)
     questiongroup = models.ForeignKey(QuestionGroup, on_delete=models.CASCADE)
+    do_not_mark = models.BooleanField(default=False)
 
     def __str__(self):
         return self.name
