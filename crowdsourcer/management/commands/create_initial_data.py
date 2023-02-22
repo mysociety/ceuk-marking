@@ -87,5 +87,6 @@ class Command(BaseCommand):
                     "name": self.name_map.get(area["name"], area["name"]),
                     "questiongroup": self.get_group(area),
                     "do_not_mark": do_not_mark,
+                    "type": area["type"],
                 },
             )

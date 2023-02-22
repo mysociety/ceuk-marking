@@ -38,5 +38,6 @@ class Command(BaseCommand):
                 defaults={
                     "name": row["official-name"],
                     "questiongroup": group,
+                    "type": "COMB",
                 },
             )
