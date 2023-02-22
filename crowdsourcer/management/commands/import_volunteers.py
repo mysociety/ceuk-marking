@@ -161,6 +161,7 @@ class Command(BaseCommand):
             councils_to_assign = PublicAuthority.objects.exclude(
                 id__in=assigned_councils,
                 type="COMB",
+                do_not_mark=True,
             )[:num_councils]
 
             if councils_to_assign.count() == 0:
@@ -173,7 +174,7 @@ class Command(BaseCommand):
                     user=u, section=s, authority=council
                 )
 
-        council_count = PublicAuthority.objects.all().count()
+        council_count = PublicAuthority.objects.filter(do_not_mark=False).count()
         for section in Section.objects.all():
             assigned = Assigned.objects.filter(section=section).count()
             if assigned != council_count:
