@@ -79,6 +79,14 @@ class Command(BaseCommand):
             "-q", "--quiet", action="store_true", help="Silence progress bars."
         )
 
+        parser.add_argument(
+            "--add_users", action="store_true", help="add users to database"
+        )
+
+        parser.add_argument(
+            "--make_assignments", action="store_true", help="assign councils to users"
+        )
+
     def handle(self, quiet: bool = False, *args, **options):
         df = pd.read_excel(
             self.volunteer_file,
@@ -99,15 +107,24 @@ class Command(BaseCommand):
                 self.stdout.write(f"{YELLOW}No user type for {row['email']}{NOBOLD}")
                 continue
 
-            u, created = User.objects.update_or_create(
-                username=row["email"],
-                defaults={
-                    "email": row["email"],
-                    "first_name": row["first_name"],
-                    "last_name": row["last_name"],
-                },
-            )
-            u.save()
+            if options["add_users"] is True:
+                u, created = User.objects.update_or_create(
+                    username=row["email"],
+                    defaults={
+                        "email": row["email"],
+                        "first_name": row["first_name"],
+                        "last_name": row["last_name"],
+                    },
+                )
+                u.save()
+            else:
+                try:
+                    u = User.objects.get(username=row["email"])
+                except User.DoesNotExist:
+                    self.stdout.write(
+                        f"{YELLOW}No user found for {row['email']}, not attempting assignment{NOBOLD}"
+                    )
+                    continue
 
             if not pd.isna(row["assigned_section"]):
                 try:
@@ -169,9 +186,14 @@ class Command(BaseCommand):
                     f"{YELLOW}No councils left in {s.title} for {u.email}{NOBOLD}"
                 )
 
-            for council in councils_to_assign:
-                a, created = Assigned.objects.update_or_create(
-                    user=u, section=s, authority=council
+            if options["make_assignments"] is True:
+                for council in councils_to_assign:
+                    a, created = Assigned.objects.update_or_create(
+                        user=u, section=s, authority=council
+                    )
+            else:
+                self.stdout.write(
+                    f"{YELLOW}call with --make_assignments to update database{NOBOLD}"
                 )
 
         council_count = PublicAuthority.objects.filter(do_not_mark=False).count()
@@ -192,3 +214,11 @@ class Command(BaseCommand):
         )
 
         self.stdout.write(f"{assigned_count}/{volunteer_count} users assigned marking")
+        if not options["add_users"]:
+            self.stdout.write(
+                f"{YELLOW}Dry run, no users added, call with --add_users to add users{NOBOLD}"
+            )
+        if not options["make_assignments"]:
+            self.stdout.write(
+                f"{YELLOW}Dry run, no assignments made, call with --make_assignments to make them{NOBOLD}"
+            )
