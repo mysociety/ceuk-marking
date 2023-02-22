@@ -159,7 +159,8 @@ class Command(BaseCommand):
             num_councils = self.num_council_map[user_type]
 
             councils_to_assign = PublicAuthority.objects.exclude(
-                id__in=assigned_councils
+                id__in=assigned_councils,
+                type="COMB",
             )[:num_councils]
 
             if councils_to_assign.count() == 0:
