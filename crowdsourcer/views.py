@@ -580,6 +580,7 @@ class AuthoritySectionQuestions(TemplateView):
     model = Response
 
     def get_initial_obj(self):
+        rt = ResponseType.objects.get(type="First Mark")
         authority = PublicAuthority.objects.get(name=self.kwargs["name"])
         questions = Question.objects.filter(
             section__title=self.kwargs["section_title"],
@@ -587,7 +588,7 @@ class AuthoritySectionQuestions(TemplateView):
             how_marked__in=["volunteer", "national_volunteer"],
         ).order_by("number", "number_part")
         responses = Response.objects.filter(
-            authority=authority, question__in=questions
+            authority=authority, question__in=questions, response_type=rt
         ).select_related("question")
 
         initial = {}
