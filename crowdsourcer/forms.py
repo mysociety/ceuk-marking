@@ -139,3 +139,72 @@ class ResponseForm(ModelForm):
 
 
 ResponseFormset = formset_factory(formset=ResponseFormSet, form=ResponseForm, extra=0)
+
+
+class RORResponseForm(ModelForm):
+    mandatory_if_response = ["evidence", "private_notes"]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.authority_obj = self.initial.get("authority", None)
+        self.question_obj = self.initial.get("question", None)
+        self.orig = self.initial.get("original_response", None)
+
+    def clean(self):
+        cleaned_data = super().clean()
+
+        response = cleaned_data.get("agree_with_response", None)
+
+        if response is None:
+            values = False
+            for field in self.mandatory_if_response:
+                val = self.cleaned_data.get(field, None)
+                if val is not None and val != "":
+                    values = True
+
+            if values:
+                self.add_error("agree_with_response", "This field is required")
+
+        else:
+            if response is not True:
+                for field in self.mandatory_if_response:
+                    value = cleaned_data.get(field, None)
+                    if value is None or value == "":
+                        self.add_error(field, "This field is required")
+
+        return cleaned_data
+
+    class Meta:
+        model = Response
+        fields = [
+            "authority",
+            "evidence",
+            "id",
+            "evidence",
+            "private_notes",
+            "question",
+            "agree_with_response",
+        ]
+        widgets = {
+            "authority": HiddenInput(),
+            "evidence": Textarea(
+                attrs={
+                    # "placeholder": False,
+                    "rows": 3,
+                }
+            ),
+            "id": HiddenInput(),
+            "private_notes": Textarea(
+                attrs={
+                    # "placeholder": False,
+                    "rows": 3,
+                }
+            ),
+            "question": HiddenInput(),
+        }
+
+
+RORResponseFormset = formset_factory(
+    formset=ResponseFormSet, form=RORResponseForm, extra=0
+)

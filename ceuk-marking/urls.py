@@ -82,6 +82,11 @@ urlpatterns = [
         name="authority_question_edit",
     ),
     path(
+        "authorities/<name>/ror/section/<section_title>/questions/",
+        views.AuthorityRORSectionQuestions.as_view(),
+        name="authority_ror",
+    ),
+    path(
         "authorities/<name>/section/<section_title>/question/<number>/answer/",
         views.AuthorityQuestionAnswer.as_view(),
         name="authority_question_answer",
