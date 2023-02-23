@@ -172,6 +172,7 @@ class Response(models.Model):
         verbose_name="Additional Notes",
         help_text="Please feel free to add any notes/comments you may have. These will not be made public but will be sent to the Council in the Right of Reply.",
     )
+    agree_with_response = models.BooleanField(null=True, blank=True)
     revision_type = models.CharField(max_length=200, blank=True, null=True)
     revision_notes = models.TextField(blank=True, null=True)
     history = HistoricalRecords()
