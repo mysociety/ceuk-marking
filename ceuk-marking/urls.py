@@ -25,6 +25,7 @@ urlpatterns = [
     path("accounts/", include("django.contrib.auth.urls")),
     path("status/", views.StatusPage.as_view()),
     path("", views.OverviewView.as_view(), name="home"),
+    path("inactive/", views.InactiveOverview.as_view(), name="inactive"),
     path(
         "authority_progress/",
         views.AllAuthorityProgressView.as_view(),

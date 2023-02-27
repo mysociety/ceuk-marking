@@ -103,6 +103,21 @@ class OverviewView(ListView):
         return context
 
 
+class InactiveOverview(OverviewView):
+    def get_queryset(self):
+        user = self.request.user
+        if user.is_superuser is False:
+            return None
+
+        qs = Assigned.objects.all()
+        if user.is_superuser is False:
+            qs = qs.filter(user=user)
+        else:
+            qs = qs.filter(user__is_active=False)
+
+        return qs
+
+
 class AllSectionProgressView(UserPassesTestMixin, ListView):
     template_name = "crowdsourcer/all_section_progress.html"
     model = Section
