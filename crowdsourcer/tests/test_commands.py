@@ -60,4 +60,4 @@ class UnassignInactiveTestCase(TestCase):
             "unassign_incomplete_sections_from_inactive", confirm_changes=True
         )
 
-        self.assertEquals(Assigned.objects.count(), 2)
+        self.assertEquals(Assigned.objects.count(), 1)

@@ -1,6 +1,6 @@
 from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand
-from django.db.models import F
+from django.db.models import F, Q
 
 from crowdsourcer.models import Assigned, PublicAuthority, Question, Section
 
@@ -31,7 +31,9 @@ class Command(BaseCommand):
 
             responses = PublicAuthority.response_counts(
                 questions, section.title, None
-            ).filter(num_questions__gt=F("num_responses"))
+            ).filter(
+                Q(num_questions__gt=F("num_responses")) | Q(num_responses__isnull=True)
+            )
 
             to_unassign = Assigned.objects.filter(
                 section=section, user__in=users, authority__in=responses
