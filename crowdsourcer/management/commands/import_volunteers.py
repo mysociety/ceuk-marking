@@ -165,10 +165,6 @@ class Command(BaseCommand):
                     a, created = Assigned.objects.update_or_create(
                         user=u, section=s, authority=council
                     )
-            else:
-                self.stdout.write(
-                    f"{YELLOW}call with --make_assignments to update database{NOBOLD}"
-                )
 
         council_count = PublicAuthority.objects.filter(do_not_mark=False).count()
         for section in Section.objects.all():
