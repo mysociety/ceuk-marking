@@ -28,8 +28,8 @@ class Command(BaseCommand):
     }
 
     num_council_map = {
-        "scorecards_volunteering": 10,
-        "local_climate_policy_programme": 20,
+        "scorecards_volunteering": 6,
+        "local_climate_policy_programme": 15,
     }
 
     column_names = [
