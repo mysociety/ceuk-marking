@@ -3,6 +3,7 @@ import re
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand
+from django.db.models import Q
 
 import pandas as pd
 
@@ -150,9 +151,7 @@ class Command(BaseCommand):
             num_councils = self.num_council_map[user_type]
 
             councils_to_assign = PublicAuthority.objects.exclude(
-                id__in=assigned_councils,
-                type="COMB",
-                do_not_mark=True,
+                Q(id__in=assigned_councils) | Q(type="COMB") | Q(do_not_mark=True)
             )[:num_councils]
 
             if councils_to_assign.count() == 0:
