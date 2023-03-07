@@ -1,6 +1,7 @@
 import logging
 
 from django.core.exceptions import PermissionDenied
+from django.shortcuts import redirect
 from django.urls import reverse
 from django.views.generic import DetailView, ListView, TemplateView
 from django.views.generic.base import RedirectView
@@ -28,6 +29,21 @@ class OverviewView(ListView):
     template_name = "crowdsourcer/assignments.html"
     model = Assigned
     context_object_name = "assignments"
+
+    def dispatch(self, request, *args, **kwargs):
+        user = self.request.user
+        if hasattr(user, "marker"):
+            marker = user.marker
+            if (
+                marker.response_type.type == "Right of Reply"
+                and marker.authority is not None
+            ):
+                url = reverse(
+                    "authority_ror_sections", kwargs={"name": marker.authority.name}
+                )
+                return redirect(url)
+
+        return super().dispatch(request, *args, **kwargs)
 
     def get_queryset(self):
         user = self.request.user
