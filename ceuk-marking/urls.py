@@ -18,7 +18,7 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
 
-from crowdsourcer.views import marking, progress
+from crowdsourcer.views import marking, progress, rightofreply
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -83,7 +83,7 @@ urlpatterns = [
     ),
     path(
         "authorities/<name>/ror/section/<section_title>/questions/",
-        marking.AuthorityRORSectionQuestions.as_view(),
+        rightofreply.AuthorityRORSectionQuestions.as_view(),
         name="authority_ror",
     ),
     path(
