@@ -18,42 +18,42 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
 
-from crowdsourcer.views import marking
+from crowdsourcer.views import marking, progress
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("accounts/", include("django.contrib.auth.urls")),
     path("status/", marking.StatusPage.as_view()),
     path("", marking.OverviewView.as_view(), name="home"),
-    path("inactive/", marking.InactiveOverview.as_view(), name="inactive"),
+    path("inactive/", progress.InactiveOverview.as_view(), name="inactive"),
     path(
         "authority_progress/",
-        marking.AllAuthorityProgressView.as_view(),
+        progress.AllAuthorityProgressView.as_view(),
         name="all_authority_progress",
     ),
     path(
         "authority_progress/<name>/",
-        marking.AuthorityProgressView.as_view(),
+        progress.AuthorityProgressView.as_view(),
         name="authority_progress",
     ),
     path(
         "section_progress/",
-        marking.AllSectionProgressView.as_view(),
+        progress.AllSectionProgressView.as_view(),
         name="all_section_progress",
     ),
     path(
         "section_progress/<section_title>/",
-        marking.SectionProgressView.as_view(),
+        progress.SectionProgressView.as_view(),
         name="section_progress",
     ),
     path(
         "volunteer_progress/<id>/",
-        marking.VolunteerProgressView.as_view(),
+        progress.VolunteerProgressView.as_view(),
         name="volunteer_progress",
     ),
     path(
         "authority_assignments/",
-        marking.AuthorityAssignmentView.as_view(),
+        progress.AuthorityAssignmentView.as_view(),
         name="authority_assignments",
     ),
     path(
