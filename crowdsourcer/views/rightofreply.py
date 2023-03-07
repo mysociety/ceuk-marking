@@ -1,12 +1,85 @@
 import logging
 
 from django.core.exceptions import PermissionDenied
-from django.views.generic import TemplateView
+from django.views.generic import ListView, TemplateView
 
 from crowdsourcer.forms import RORResponseFormset
-from crowdsourcer.models import PublicAuthority, Question, Response, ResponseType
+from crowdsourcer.models import (
+    PublicAuthority,
+    Question,
+    Response,
+    ResponseType,
+    Section,
+)
 
 logger = logging.getLogger(__name__)
+
+
+class AuthorityRORSectionList(ListView):
+    template_name = "crowdsourcer/authority_section_list.html"
+    model = Section
+    context_object_name = "sections"
+
+    def get_queryset(self):
+        user = self.request.user
+
+        if user.is_anonymous:
+            raise PermissionDenied
+
+        authority = PublicAuthority.objects.get(name=self.kwargs["name"])
+        if user.is_superuser is False:
+            if hasattr(user, "marker"):
+                marker = user.marker
+                if (
+                    marker.authority != authority
+                    or marker.response_type.type != "Right of Reply"
+                ):
+                    raise PermissionDenied
+
+            else:
+                raise PermissionDenied
+
+        if authority.type == "COMB":
+            sections = Section.objects.filter(title__contains="(CA)")
+        else:
+            sections = Section.objects.exclude(title__contains="(CA)")
+
+        return sections
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["authority_name"] = self.kwargs["name"]
+
+        sections = context["sections"]
+
+        response_type = ResponseType.objects.get(type="Right of Reply")
+        for section in sections:
+            questions = Question.objects.filter(
+                section=section, how_marked__in=Question.VOLUNTEER_TYPES
+            )
+            question_list = list(questions.values_list("id", flat=True))
+
+            authority = PublicAuthority.objects.get(name=context["authority_name"])
+            args = [
+                question_list,
+                section.title,
+                self.request.user,
+                [authority.id],
+            ]
+
+            response_counts = PublicAuthority.response_counts(
+                *args, response_type=response_type
+            ).distinct()
+
+            section.complete = 0
+            section.total = 0
+            if response_counts.exists():
+                section.complete = response_counts.first().num_responses
+                section.total = response_counts.first().num_questions
+                if section.complete is None:
+                    section.complete = 0
+
+        return context
 
 
 class AuthorityRORSectionQuestions(TemplateView):

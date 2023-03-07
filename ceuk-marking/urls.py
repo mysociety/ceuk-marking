@@ -21,10 +21,13 @@ from django.urls import include, path
 from crowdsourcer.views import marking, progress, rightofreply
 
 urlpatterns = [
+    # admin/utility screens
     path("admin/", admin.site.urls),
     path("accounts/", include("django.contrib.auth.urls")),
     path("status/", marking.StatusPage.as_view()),
+    # home page
     path("", marking.OverviewView.as_view(), name="home"),
+    # progess screens
     path("inactive/", progress.InactiveOverview.as_view(), name="inactive"),
     path(
         "authority_progress/",
@@ -56,6 +59,7 @@ urlpatterns = [
         progress.AuthorityAssignmentView.as_view(),
         name="authority_assignments",
     ),
+    # marking screens
     path(
         "section/<section_title>/questions/",
         marking.SectionQuestionList.as_view(),
@@ -82,11 +86,6 @@ urlpatterns = [
         name="authority_question_edit",
     ),
     path(
-        "authorities/<name>/ror/section/<section_title>/questions/",
-        rightofreply.AuthorityRORSectionQuestions.as_view(),
-        name="authority_ror",
-    ),
-    path(
         "authorities/<name>/section/<section_title>/question/<number>/answer/",
         marking.AuthorityQuestionAnswer.as_view(),
         name="authority_question_answer",
@@ -100,6 +99,17 @@ urlpatterns = [
         "authorities/<name>/section/<section_title>/question/<number>/view/",
         marking.AuthorityQuestionView.as_view(),
         name="authority_question_view",
+    ),
+    # right of reply screens
+    path(
+        "authorities/<name>/ror/sections/",
+        rightofreply.AuthorityRORSectionList.as_view(),
+        name="authority_ror_sections",
+    ),
+    path(
+        "authorities/<name>/ror/section/<section_title>/questions/",
+        rightofreply.AuthorityRORSectionQuestions.as_view(),
+        name="authority_ror",
     ),
 ]
 

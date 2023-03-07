@@ -80,7 +80,12 @@ class PublicAuthority(models.Model):
         return name
 
     @classmethod
-    def response_counts(cls, questions, section, user, assigned=None):
+    def response_counts(
+        cls, questions, section, user, assigned=None, response_type=None
+    ):
+        if response_type is None:
+            response_type = ResponseType.objects.get(type="First Mark")
+
         authorities = cls.objects.filter(
             questiongroup__question__in=questions
         ).annotate(
@@ -101,6 +106,7 @@ class PublicAuthority(models.Model):
                 Response.objects.filter(
                     authority=OuterRef("pk"),
                     question__in=questions,
+                    response_type=response_type,
                 )
                 .values("authority")
                 .annotate(response_count=Count("pk"))
