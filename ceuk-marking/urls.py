@@ -18,87 +18,87 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
 
-from crowdsourcer import views
+from crowdsourcer.views import marking
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("accounts/", include("django.contrib.auth.urls")),
-    path("status/", views.StatusPage.as_view()),
-    path("", views.OverviewView.as_view(), name="home"),
-    path("inactive/", views.InactiveOverview.as_view(), name="inactive"),
+    path("status/", marking.StatusPage.as_view()),
+    path("", marking.OverviewView.as_view(), name="home"),
+    path("inactive/", marking.InactiveOverview.as_view(), name="inactive"),
     path(
         "authority_progress/",
-        views.AllAuthorityProgressView.as_view(),
+        marking.AllAuthorityProgressView.as_view(),
         name="all_authority_progress",
     ),
     path(
         "authority_progress/<name>/",
-        views.AuthorityProgressView.as_view(),
+        marking.AuthorityProgressView.as_view(),
         name="authority_progress",
     ),
     path(
         "section_progress/",
-        views.AllSectionProgressView.as_view(),
+        marking.AllSectionProgressView.as_view(),
         name="all_section_progress",
     ),
     path(
         "section_progress/<section_title>/",
-        views.SectionProgressView.as_view(),
+        marking.SectionProgressView.as_view(),
         name="section_progress",
     ),
     path(
         "volunteer_progress/<id>/",
-        views.VolunteerProgressView.as_view(),
+        marking.VolunteerProgressView.as_view(),
         name="volunteer_progress",
     ),
     path(
         "authority_assignments/",
-        views.AuthorityAssignmentView.as_view(),
+        marking.AuthorityAssignmentView.as_view(),
         name="authority_assignments",
     ),
     path(
         "section/<section_title>/questions/",
-        views.SectionQuestionList.as_view(),
+        marking.SectionQuestionList.as_view(),
         name="section_questions",
     ),
     path(
         "section/<section_title>/authorities/",
-        views.SectionAuthorityList.as_view(),
+        marking.SectionAuthorityList.as_view(),
         name="section_authorities",
     ),
     path(
         "section/<section_title>/question/<slug:number>/",
-        views.SectionQuestionAuthorityList.as_view(),
+        marking.SectionQuestionAuthorityList.as_view(),
         name="section_question_authorities",
     ),
     path(
         "authorities/<name>/section/<section_title>/question/<number>/",
-        views.AuthorityQuestion.as_view(),
+        marking.AuthorityQuestion.as_view(),
         name="authority_question",
     ),
     path(
         "authorities/<name>/section/<section_title>/questions/",
-        views.AuthoritySectionQuestions.as_view(),
+        marking.AuthoritySectionQuestions.as_view(),
         name="authority_question_edit",
     ),
     path(
         "authorities/<name>/ror/section/<section_title>/questions/",
-        views.AuthorityRORSectionQuestions.as_view(),
+        marking.AuthorityRORSectionQuestions.as_view(),
         name="authority_ror",
     ),
     path(
         "authorities/<name>/section/<section_title>/question/<number>/answer/",
-        views.AuthorityQuestionAnswer.as_view(),
+        marking.AuthorityQuestionAnswer.as_view(),
         name="authority_question_answer",
     ),
     path(
         "authorities/<name>/section/<section_title>/question/<number>/edit/",
-        views.AuthorityQuestionEdit.as_view(),
+        marking.AuthorityQuestionEdit.as_view(),
         name="authority_question_edit",
     ),
     path(
         "authorities/<name>/section/<section_title>/question/<number>/view/",
-        views.AuthorityQuestionView.as_view(),
+        marking.AuthorityQuestionView.as_view(),
         name="authority_question_view",
     ),
 ]
