@@ -223,3 +223,17 @@ class Assigned(models.Model):
         verbose_name = "assignment"
         verbose_name_plural = "assignments"
         unique_together = [["section", "authority"]]
+
+
+class Marker(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    response_type = models.ForeignKey(
+        ResponseType,
+        blank=True,
+        null=True,
+        on_delete=models.SET_NULL,
+        verbose_name="Response Type",
+    )
+    authority = models.ForeignKey(
+        PublicAuthority, blank=True, null=True, on_delete=models.SET_NULL
+    )
