@@ -742,12 +742,16 @@ class AuthorityRORSectionQuestions(TemplateView):
         if self.request.user.is_anonymous:
             raise PermissionDenied
 
-        if not Assigned.is_user_assigned(
-            self.request.user,
-            authority=self.kwargs["name"],
-            section=self.kwargs["section_title"],
-        ):
-            raise PermissionDenied
+        if self.request.user.is_superuser is False:
+            if self.request.user.marker is not None:
+                marker = self.request.user.marker
+                if (
+                    marker.authority.name != self.kwargs["name"]
+                    or marker.response_type.type != "Right of Reply"
+                ):
+                    raise PermissionDenied
+            else:
+                raise PermissionDenied
 
     def get(self, *args, **kwargs):
         self.check_permissions()
