@@ -2,6 +2,7 @@ from django.contrib import admin
 
 from crowdsourcer.models import (
     Assigned,
+    Marker,
     Option,
     PublicAuthority,
     Question,
@@ -59,6 +60,11 @@ class QuestionAdmin(admin.ModelAdmin):
 @admin.register(QuestionGroup)
 class QuestionGroupAdmin(admin.ModelAdmin):
     pass
+
+
+@admin.register(Marker)
+class MarkerAdmin(admin.ModelAdmin):
+    list_display = ("user", "response_type", "authority")
 
 
 @admin.register(Response)
