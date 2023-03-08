@@ -65,19 +65,40 @@
                     </details>
                 </div>
                 <div class="col-md-7 order-md-1">
-                    <label class="form-label">Answer</label>
-                    {% if q_form.question_obj.question_type == "multiple_choice" %}
-                      {% for option in q_form.orig.multi_option.values %}
-                         {{ option.description }},
-                       {% endfor %}
-                    {% else %}
-                      {{ q_form.orig.option }}
-                    {% endif %}
-                    <br>
-                    page number: {{ q_form.orig.page_number }}<br>
-                    evidence: {{ q_form.orig.evidence }}<br>
-                    notes: {{ q_form.orig.public_notes }}<br>
-                    private: {{ q_form.orig.private_notes }}</br>
+                    <h2 class="form-label fs-6">Marker’s answer</h2>
+                    <div class="read-only-answer mb-3 mb-md-4">
+                      {% if q_form.question_obj.question_type == "multiple_choice" %}
+                        <p>
+                          {% for option in q_form.orig.multi_option.values %}
+                            {{ option.description }},
+                          {% empty %}
+                            (none)
+                          {% endfor %}
+                        </p>
+                      {% else %}
+                        {{ q_form.orig.option|default:"(none)"|linebreaks }}
+                      {% endif %}
+                    </div>
+
+                    <h2 class="form-label fs-6">Marker’s evidence of criteria met</h2>
+                    <div class="read-only-answer mb-3 mb-md-4">
+                        {{ q_form.orig.evidence|default:"(none)"|linebreaks }}
+                    </div>
+
+                    <h2 class="form-label fs-6">Links to evidence</h2>
+                    <div class="read-only-answer mb-3 mb-md-4">
+                        {{ q_form.orig.public_notes|default:"(none)"|urlize|linebreaks }}
+                    </div>
+
+                    <h2 class="form-label fs-6">Page number</h2>
+                    <div class="read-only-answer mb-3 mb-md-4">
+                        {{ q_form.orig.page_number|default:"(none)" }}<br>
+                    </div>
+
+                    <h2 class="form-label fs-6">Marker’s additional notes</h2>
+                    <div class="read-only-answer mb-3 mb-md-4">
+                        {{ q_form.orig.private_notes|default:"(none)"|linebreaks }}
+                    </div>
 
                     {% bootstrap_field q_form.agree_with_response %}
 

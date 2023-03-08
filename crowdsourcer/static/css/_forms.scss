@@ -1,0 +1,9 @@
+.read-only-answer {
+    background-color: $gray-100;
+    padding: $spacer;
+    border-radius: $border-radius-sm;
+
+    & > :last-child {
+        margin-bottom: 0;
+    }
+}
