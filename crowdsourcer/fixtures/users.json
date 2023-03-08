@@ -34,5 +34,32 @@
     "groups": [],
     "user_permissions": []
   }
+},
+{
+  "model": "auth.user",
+  "pk": 3,
+  "fields": {
+    "password": "",
+    "last_login": null,
+    "is_superuser": false,
+    "username": "council",
+    "first_name": "The",
+    "last_name": "Council",
+    "email": "council@example.org",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2022-12-19T13:40:36.075Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "crowdsourcer.marker",
+  "pk": 1,
+  "fields": {
+    "user_id": 3,
+    "response_type_id": 2,
+    "authority_id": 2
+  }
 }
 ]

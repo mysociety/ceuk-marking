@@ -1,0 +1,40 @@
+[
+{
+  "model": "crowdsourcer.response",
+  "pk": 6,
+  "fields": {
+    "authority": 2,
+    "question": 273,
+    "user": 3,
+    "option": null,
+    "response_type": 2,
+    "public_notes": "",
+    "page_number": "0",
+    "evidence": "",
+    "private_notes": "",
+    "agree_with_response": true,
+    "revision_type": null,
+    "revision_notes": null,
+    "multi_option": []
+  }
+},
+{
+  "model": "crowdsourcer.response",
+  "pk": 7,
+  "fields": {
+    "authority": 2,
+    "question": 273,
+    "user": 3,
+    "option": null,
+    "response_type": 2,
+    "public_notes": "",
+    "page_number": "0",
+    "evidence": "",
+    "private_notes": "a council objection",
+    "agree_with_response": false,
+    "revision_type": null,
+    "revision_notes": null,
+    "multi_option": []
+  }
+}
+]
