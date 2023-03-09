@@ -190,6 +190,8 @@ class Response(models.Model):
     agree_with_response = models.BooleanField(null=True, blank=True)
     revision_type = models.CharField(max_length=200, blank=True, null=True)
     revision_notes = models.TextField(blank=True, null=True)
+    created = models.DateTimeField(auto_now_add=True)
+    last_update = models.DateTimeField(auto_now=True)
     history = HistoricalRecords()
 
     def get_absolute_url(self):
