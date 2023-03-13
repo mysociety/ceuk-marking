@@ -143,22 +143,26 @@ class SectionProgressView(UserPassesTestMixin, ListView):
         return context
 
 
-class AllAuthorityProgressView(UserPassesTestMixin, ListView):
+class BaseAllAuthorityProgressView(UserPassesTestMixin, ListView):
     template_name = "crowdsourcer/all_authority_progress.html"
     model = PublicAuthority
     context_object_name = "authorities"
+    types = ["volunteer", "national_volunteer", "foi"]
+    stage = "Right of Reply"
+    page_title = "Authorities Progress"
 
     def test_func(self):
         return self.request.user.is_superuser
 
     def get_queryset(self):
+        response_type = ResponseType.objects.get(type=self.stage)
         qs = (
             PublicAuthority.objects.all()
             .annotate(
                 num_questions=Subquery(
                     Question.objects.filter(
                         questiongroup=OuterRef("questiongroup"),
-                        how_marked__in=Question.VOLUNTEER_TYPES,
+                        how_marked__in=self.types,
                     )
                     .values("questiongroup")
                     .annotate(num_questions=Count("pk"))
@@ -169,6 +173,7 @@ class AllAuthorityProgressView(UserPassesTestMixin, ListView):
                 num_responses=Subquery(
                     Response.objects.filter(
                         authority=OuterRef("pk"),
+                        response_type=response_type,
                     )
                     .values("authority")
                     .annotate(response_count=Count("pk"))
@@ -207,9 +212,13 @@ class AllAuthorityProgressView(UserPassesTestMixin, ListView):
 
         context["councils"] = council_totals
         context["authorities"] = authorities
-        context["page_title"] = "Authorities Progress"
+        context["page_title"] = self.page_title
 
         return context
+
+
+class AllAuthorityProgressView(BaseAllAuthorityProgressView):
+    pass
 
 
 class BaseAuthorityProgressView(UserPassesTestMixin, ListView):
@@ -432,3 +441,10 @@ class AuthorityRoRProgressView(BaseAuthorityProgressView):
         name = self.kwargs["name"]
         context["page_title"] = f"{name} Right of Reply Progress"
         return context
+
+
+class AllAuthorityRoRProgressView(BaseAllAuthorityProgressView):
+    template_name = "crowdsourcer/all_authority_ror_progress.html"
+    types = ["volunteer", "national_volunteer", "foi"]
+    stage = "Right of Reply"
+    page_title = "Authorities Right of Reply Progress"

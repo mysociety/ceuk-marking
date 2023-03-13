@@ -117,6 +117,11 @@ urlpatterns = [
         progress.AuthorityRoRProgressView.as_view(),
         name="authority_ror_progress",
     ),
+    path(
+        "authority_ror_progress/",
+        progress.AllAuthorityRoRProgressView.as_view(),
+        name="all_authority_ror_progress",
+    ),
 ]
 
 if settings.DEBUG:  # pragma: no cover

@@ -1,0 +1,5 @@
+{% extends 'crowdsourcer/base_all_authority_progress.html' %}
+
+{% block authority_link %}
+<a href="{% url 'authority_ror_progress' authority.name %}">{{ authority.name }}{% if authority.do_not_mark %} (DO NOT MARK){% endif %}</a>
+{% endblock %}
