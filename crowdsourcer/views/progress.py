@@ -6,7 +6,14 @@ from django.db.models import Count, F, FloatField, OuterRef, Subquery
 from django.db.models.functions import Cast
 from django.views.generic import ListView
 
-from crowdsourcer.models import Assigned, PublicAuthority, Question, Response, Section
+from crowdsourcer.models import (
+    Assigned,
+    PublicAuthority,
+    Question,
+    Response,
+    ResponseType,
+    Section,
+)
 from crowdsourcer.views.marking import OverviewView
 
 logger = logging.getLogger(__name__)
@@ -205,10 +212,12 @@ class AllAuthorityProgressView(UserPassesTestMixin, ListView):
         return context
 
 
-class AuthorityProgressView(UserPassesTestMixin, ListView):
+class BaseAuthorityProgressView(UserPassesTestMixin, ListView):
     template_name = "crowdsourcer/authority_progress.html"
     model = Section
     context_object_name = "sections"
+    types = ["volunteer", "national_volunteer"]
+    stage = "First Mark"
 
     def test_func(self):
         return self.request.user.is_superuser
@@ -219,10 +228,12 @@ class AuthorityProgressView(UserPassesTestMixin, ListView):
         name = self.kwargs["name"]
         progress = {}
 
-        types = ["volunteer", "national_volunteer"]
+        stage = ResponseType.objects.get(type=self.stage)
         sections = context["sections"]
         for section in sections:
-            questions = Question.objects.filter(section=section, how_marked__in=types)
+            questions = Question.objects.filter(
+                section=section, how_marked__in=self.types
+            )
             question_list = list(questions.values_list("id", flat=True))
             qs = (
                 PublicAuthority.objects.filter(name=name)
@@ -230,7 +241,7 @@ class AuthorityProgressView(UserPassesTestMixin, ListView):
                     num_questions=Subquery(
                         Question.objects.filter(
                             questiongroup=OuterRef("questiongroup"),
-                            how_marked__in=Question.VOLUNTEER_TYPES,
+                            how_marked__in=self.types,
                             pk__in=question_list,
                         )
                         .values("questiongroup")
@@ -243,6 +254,7 @@ class AuthorityProgressView(UserPassesTestMixin, ListView):
                         Response.objects.filter(
                             authority=OuterRef("pk"),
                             question__in=question_list,
+                            response_type=stage,
                         )
                         .values("authority")
                         .annotate(response_count=Count("pk"))
@@ -264,6 +276,10 @@ class AuthorityProgressView(UserPassesTestMixin, ListView):
         context["page_title"] = f"{name} Progress"
 
         return context
+
+
+class AuthorityProgressView(BaseAuthorityProgressView):
+    pass
 
 
 class VolunteerProgressView(UserPassesTestMixin, ListView):
@@ -402,4 +418,17 @@ class AuthorityAssignmentView(UserPassesTestMixin, ListView):
         context["authorities"] = authorities
         context["do_not_mark_only"] = do_not_mark_only
 
+        return context
+
+
+# Right of reply progress
+class AuthorityRoRProgressView(BaseAuthorityProgressView):
+    template_name = "crowdsourcer/authority_ror_progress.html"
+    types = ["volunteer", "national_volunteer", "foi"]
+    stage = "Right of Reply"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        name = self.kwargs["name"]
+        context["page_title"] = f"{name} Right of Reply Progress"
         return context

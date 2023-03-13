@@ -111,6 +111,12 @@ urlpatterns = [
         rightofreply.AuthorityRORSectionQuestions.as_view(),
         name="authority_ror",
     ),
+    # right of reply progress
+    path(
+        "authority_ror_progress/<name>/",
+        progress.AuthorityRoRProgressView.as_view(),
+        name="authority_ror_progress",
+    ),
 ]
 
 if settings.DEBUG:  # pragma: no cover
