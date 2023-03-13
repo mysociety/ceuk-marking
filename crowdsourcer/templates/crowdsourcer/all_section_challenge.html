@@ -1,0 +1,34 @@
+{% extends 'crowdsourcer/base.html' %}
+
+{% block content %}
+{% if show_login %}
+    <h1 class="mb-4">Sign in</h1>
+    <a href="{% url 'login' %}">Sign in</a>
+{% else %}
+    <h1 class="mb-4">Section Right of Reply Progress and Challenges</h1>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Section</th>
+                <th>Progress</th>
+            </tr>
+        </thead>
+        <tbody>
+          {% for section, counts in progress.items %}
+            <tr>
+                <td>
+                    {{ section }}
+                </td>
+                <td>
+                    <div class="progress progress-thin mb-2">
+                        {% widthratio counts.complete counts.total 100 as width %}
+                        <div class="progress-bar bg-success" role="progressbar" aria-labelled-by="label-{{ forloop.counter }}" aria-valuenow="{{ width|default:"0" }}" aria-valuemin="0" aria-valuemax="100" style="width: {{ width|default:"0" }}%"></div>
+                    </div>
+                    <span id="label-{{ forloop.counter }}">{{ counts.complete }} of {{ counts.total }} councils completed. ({{ counts.started }} started, {{ counts.challenges }} challenges)</span>
+                </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+    </table>
+{% endif %}
+{% endblock %}

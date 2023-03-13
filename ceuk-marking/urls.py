@@ -123,6 +123,11 @@ urlpatterns = [
         name="all_authority_ror_progress",
     ),
     path(
+        "section_ror_progress/",
+        progress.AllSectionChallengeView.as_view(),
+        name="section_ror_progress",
+    ),
+    path(
         "authority_login_report/",
         progress.AuthorityLoginReport.as_view(),
         name="authority_login_report",

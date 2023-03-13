@@ -473,3 +473,71 @@ class AuthorityLoginReport(UserPassesTestMixin, ListView):
         )
 
         return authorities
+
+
+class AllSectionChallengeView(UserPassesTestMixin, ListView):
+    template_name = "crowdsourcer/all_section_challenge.html"
+    model = Section
+    context_object_name = "sections"
+
+    def test_func(self):
+        return self.request.user.is_superuser
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        types = ["volunteer", "national_volunteer", "foi"]
+        response_types = ResponseType.objects.get(type="Right of Reply")
+
+        progress = {}
+        for section in context["sections"]:
+            questions = Question.objects.filter(section=section, how_marked__in=types)
+            question_list = list(questions.values_list("id", flat=True))
+            authorities = (
+                PublicAuthority.response_counts(
+                    question_list,
+                    section.title,
+                    self.request.user,
+                    response_type=response_types,
+                    question_types=types,
+                )
+                .annotate(
+                    num_challenges=Subquery(
+                        Response.objects.filter(
+                            authority=OuterRef("pk"),
+                            question__in=question_list,
+                            response_type=response_types,
+                            agree_with_response=False,
+                        )
+                        .values("authority")
+                        .annotate(response_count=Count("pk"))
+                        .values("response_count")
+                    )
+                )
+                .distinct()
+            )
+
+            total = 0
+            complete = 0
+            started = 0
+            challenges = 0
+            for authority in authorities:
+                total = total + 1
+                if authority.num_responses is not None and authority.num_responses > 0:
+                    started = started + 1
+                if authority.num_responses == authority.num_questions:
+                    complete = complete + 1
+                if authority.num_challenges is not None:
+                    challenges = challenges + authority.num_challenges
+
+            progress[section.title] = {
+                "total": total,
+                "complete": complete,
+                "started": started,
+                "challenges": challenges,
+            }
+
+        context["page_title"] = "Section Challenges"
+        context["progress"] = progress
+
+        return context
