@@ -23,13 +23,37 @@
                     <ul class="navbar-nav ms-sm-auto pt-2 pt-sm-0">
                       {% if user.is_superuser %}
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'authority_assignments' %}">Authorities assigned</a>
+                          <div class="dropdown">
+                          <button class="btn dropdown-toggle" id="navbarDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            Volunteer progress
+                          </button>
+                          <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                            <li>
+                              <a class="dropdown-item d-flex" href="{% url 'authority_assignments' %}">Authorities assigned</a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item d-flex" href="{% url 'all_authority_progress' %}">Authority Progress</a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item d-flex" href="{% url 'all_section_progress' %}">Section Progress</a>
+                            </li>
+                          </ul>
+                          </div>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'all_authority_progress' %}">Authority Progress</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'all_section_progress' %}">Section Progress</a>
+                          <div class="dropdown">
+                          <button class="btn dropdown-toggle" id="navbarDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            Right of Reply progress
+                          </button>
+                          <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                            <li>
+                                <a class="dropdown-item d-flex" href="{% url 'all_authority_ror_progress' %}">Authority Progress</a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item d-flex" href="{% url 'authority_login_report' %}">Authority Login Report</a>
+                            </li>
+                          </ul>
+                          </div>
                         </li>
                       {% endif %}
                       {% if user.is_authenticated %}
