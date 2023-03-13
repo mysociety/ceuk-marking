@@ -8,6 +8,7 @@ from django.views.generic import ListView
 
 from crowdsourcer.models import (
     Assigned,
+    Marker,
     PublicAuthority,
     Question,
     Response,
@@ -448,3 +449,27 @@ class AllAuthorityRoRProgressView(BaseAllAuthorityProgressView):
     types = ["volunteer", "national_volunteer", "foi"]
     stage = "Right of Reply"
     page_title = "Authorities Right of Reply Progress"
+
+
+class AuthorityLoginReport(UserPassesTestMixin, ListView):
+    template_name = "crowdsourcer/authority_login_report.html"
+    model = PublicAuthority
+    context_object_name = "authorities"
+
+    def test_func(self):
+        return self.request.user.is_superuser
+
+    def get_queryset(self):
+        authorities = (
+            PublicAuthority.objects.all()
+            .annotate(
+                has_logged_in=Subquery(
+                    Marker.objects.filter(authority=OuterRef("pk")).values(
+                        "user__last_login"
+                    )
+                ),
+            )
+            .order_by("has_logged_in", "name")
+        )
+
+        return authorities

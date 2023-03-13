@@ -1,0 +1,30 @@
+{% extends 'crowdsourcer/base.html' %}
+
+{% block content %}
+{% if show_login %}
+    <h1 class="mb-4">Sign in</h1>
+    <a href="{% url 'login' %}">Sign in</a>
+{% else %}
+<h1 class="mb-4">{{ page_title }}</h1>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Authority</th>
+                <th>Has Logged In</th>
+            </tr>
+        </thead>
+        <tbody>
+          {% for authority in authorities %}
+            <tr>
+                <td>
+                    <a href="{% url 'authority_ror_progress' authority.name %}">{{ authority.name }}{% if authority.do_not_mark %} (DO NOT MARK){% endif %}</a>
+                </td>
+                <td>
+                    {% if authority.has_logged_in %}Yes{% else %}No{% endif %}
+                </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+    </table>
+{% endif %}
+{% endblock %}
