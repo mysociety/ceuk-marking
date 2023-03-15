@@ -89,11 +89,13 @@ class AuthorityRORSectionList(ListView):
         context["authority_name"] = self.kwargs["name"]
 
         sections = context["sections"]
+        question_types = ["volunteer", "national_volunteer", "foi"]
 
         response_type = ResponseType.objects.get(type="Right of Reply")
         for section in sections:
             questions = Question.objects.filter(
-                section=section, how_marked__in=Question.VOLUNTEER_TYPES
+                section=section,
+                how_marked__in=question_types,
             )
             question_list = list(questions.values_list("id", flat=True))
 
@@ -106,7 +108,7 @@ class AuthorityRORSectionList(ListView):
             ]
 
             response_counts = PublicAuthority.response_counts(
-                *args, response_type=response_type
+                *args, response_type=response_type, question_types=question_types
             ).distinct()
 
             section.complete = 0

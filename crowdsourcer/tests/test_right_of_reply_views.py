@@ -45,7 +45,7 @@ class TestAssignmentView(BaseTestCase):
         self.assertEqual(first.title, "Buildings & Heating")
         self.assertEqual(second.title, "Transport")
 
-        self.assertEqual(first.total, 7)
+        self.assertEqual(first.total, 11)
         self.assertEqual(first.complete, 2)
         self.assertEqual(second.total, 2)
         self.assertEqual(second.complete, 0)
