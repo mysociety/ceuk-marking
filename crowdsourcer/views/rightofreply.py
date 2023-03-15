@@ -130,7 +130,7 @@ class AuthorityRORSectionQuestions(TemplateView):
         questions = Question.objects.filter(
             section__title=self.kwargs["section_title"],
             questiongroup=authority.questiongroup,
-            how_marked__in=["volunteer", "national_volunteer"],
+            how_marked__in=["volunteer", "national_volunteer", "foi"],
         ).order_by("number", "number_part")
         responses = Response.objects.filter(
             authority=authority, question__in=questions, response_type=rt

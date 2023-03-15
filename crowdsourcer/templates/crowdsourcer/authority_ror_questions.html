@@ -80,11 +80,19 @@
                       {% endif %}
                     </div>
 
+                    {% if q_form.question_obj.how_marked == 'foi' %}
+                    <h2 class="form-label fs-6">FOI request</h2>
+                    <div class="read-only-answer mb-3 mb-md-4">
+                        {{ q_form.orig.evidence|urlize }}
+                    </div>
+                    {% else %}
                     <h2 class="form-label fs-6">Marker’s evidence of criteria met</h2>
                     <div class="read-only-answer mb-3 mb-md-4">
                         {{ q_form.orig.evidence|default:"(none)"|linebreaks }}
                     </div>
+                    {% endif %}
 
+                    {% if q_form.question_obj.how_marked != 'foi' %}
                     <h2 class="form-label fs-6">Links to evidence</h2>
                     <div class="read-only-answer mb-3 mb-md-4">
                         {{ q_form.orig.public_notes|default:"(none)"|urlize|linebreaks }}
@@ -94,6 +102,7 @@
                     <div class="read-only-answer mb-3 mb-md-4">
                         {{ q_form.orig.page_number|default:"(none)" }}<br>
                     </div>
+                    {% endif %}
 
                     <h2 class="form-label fs-6">Marker’s additional notes</h2>
                     <div class="read-only-answer mb-3 mb-md-4">
