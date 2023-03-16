@@ -35,13 +35,19 @@ class Command(BaseCommand):
             "-q", "--quiet", action="store_true", help="Silence progress bars."
         )
 
-    def handle(self, quiet: bool = False, *args, **options):
+        parser.add_argument(
+            "--text_only",
+            action="store_true",
+            help="Only update question text, criteria and clarifications",
+        )
+
+    def handle(self, quiet: bool = False, *args, **kwargs):
         q_groups = {}
         for q in QuestionGroup.objects.all():
             key = q.description.lower().replace(" ", "_")
             q_groups[key] = q
 
-        for section in Section.objects.all():
+        for section in Section.objects.exclude(title__contains="(CA)"):
             df = pd.read_excel(
                 self.question_file,
                 sheet_name=section.title,
@@ -87,19 +93,32 @@ class Command(BaseCommand):
                     elif row["question_type"] == "Multiple choice":
                         question_type = "select_one"
 
+                defaults = {
+                    "description": row["question"],
+                    "criteria": row["criteria"],
+                    "question_type": question_type,
+                    "how_marked": how_marked,
+                    "clarifications": row["clarifications"],
+                    "topic": row["topic"],
+                }
+
+                if kwargs["text_only"]:
+                    for default in [
+                        "question_type",
+                        "how_marked",
+                        "topic",
+                    ]:
+                        del defaults[default]
+
                 q, c = Question.objects.update_or_create(
                     number=q_no,
                     number_part=q_part,
                     section=section,
-                    defaults={
-                        "description": row["question"],
-                        "criteria": row["criteria"],
-                        "question_type": question_type,
-                        "how_marked": how_marked,
-                        "clarifications": row["clarifications"],
-                        "topic": row["topic"],
-                    },
+                    defaults=defaults,
                 )
+
+                if kwargs["text_only"]:
+                    continue
 
                 if q.question_type in ["select_one", "tiered", "multiple_choice"]:
                     o, c = Option.objects.update_or_create(
