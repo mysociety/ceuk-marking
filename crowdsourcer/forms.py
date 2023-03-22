@@ -192,7 +192,7 @@ class RORResponseForm(ModelForm):
                 attrs={
                     # "placeholder": False,
                     "rows": 3,
-                }
+                },
             ),
             "id": HiddenInput(),
             "private_notes": Textarea(
@@ -202,6 +202,13 @@ class RORResponseForm(ModelForm):
                 }
             ),
             "question": HiddenInput(),
+        }
+        labels = {
+            "evidence": "Links to evidence",
+        }
+        help_texts = {
+            "private_notes": "Please feel free to add any notes/comments you may have.",
+            "evidence": "Please provide links to evidence you have met the criteria.",
         }
 
 
