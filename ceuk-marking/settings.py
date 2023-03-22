@@ -17,6 +17,11 @@ from pathlib import Path
 
 import environ
 
+TEST_MODE = False
+# turn off logging during tests as otherwise we get file not found errors
+if len(sys.argv) > 1 and sys.argv[1] == "test":
+    TEST_MODE = True
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -173,32 +178,33 @@ EMAIL_HOST = env.str("EMAIL_HOST", "localhost")
 EMAIL_PORT = env.str("EMAIL_PORT", 1025)
 DEFAULT_FROM_EMAIL = env.str("DEFAULT_FROM_EMAIL", "webmaster@localhost")
 
-LOG_FILE = BASE_DIR / "applogs" / "logfile.log"
+if not TEST_MODE:
+    LOG_FILE = BASE_DIR / "applogs" / "logfile.log"
 
-LOGGING = {
-    "version": 1,
-    "disable_existing_loggers": False,
-    "formatters": {
-        "verbose": {
-            "format": "{levelname} {asctime} {message}",
-            "style": "{",
+    LOGGING = {
+        "version": 1,
+        "disable_existing_loggers": False,
+        "formatters": {
+            "verbose": {
+                "format": "{levelname} {asctime} {message}",
+                "style": "{",
+            },
         },
-    },
-    "handlers": {
-        "file": {
-            "class": "logging.FileHandler",
-            "filename": LOG_FILE,
-            "formatter": "verbose",
+        "handlers": {
+            "file": {
+                "class": "logging.FileHandler",
+                "filename": LOG_FILE,
+                "formatter": "verbose",
+            },
         },
-    },
-    "loggers": {
-        "crowdsourcer": {
-            "handlers": ["file"],
-            "propagate": True,
-            "level": LOG_LEVEL,
+        "loggers": {
+            "crowdsourcer": {
+                "handlers": ["file"],
+                "propagate": True,
+                "level": LOG_LEVEL,
+            },
         },
-    },
-}
+    }
 
 if DEBUG and HIDE_DEBUG_TOOLBAR is False:  # pragma: no cover
     hostname, _, ips = socket.gethostbyname_ex(socket.gethostname())
