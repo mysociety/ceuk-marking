@@ -149,7 +149,7 @@ class BaseAllAuthorityProgressView(UserPassesTestMixin, ListView):
     model = PublicAuthority
     context_object_name = "authorities"
     types = ["volunteer", "national_volunteer", "foi"]
-    stage = "Right of Reply"
+    stage = "First Mark"
     page_title = "Authorities Progress"
 
     def test_func(self):
