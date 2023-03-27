@@ -148,7 +148,7 @@ class BaseAllAuthorityProgressView(UserPassesTestMixin, ListView):
     template_name = "crowdsourcer/all_authority_progress.html"
     model = PublicAuthority
     context_object_name = "authorities"
-    types = ["volunteer", "national_volunteer", "foi"]
+    types = ["volunteer", "national_volunteer"]
     stage = "First Mark"
     page_title = "Authorities Progress"
 
