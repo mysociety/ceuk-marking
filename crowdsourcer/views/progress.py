@@ -1,9 +1,11 @@
+import csv
 import logging
 
 from django.contrib.auth.mixins import UserPassesTestMixin
 from django.contrib.auth.models import User
 from django.db.models import Count, F, FloatField, OuterRef, Subquery
 from django.db.models.functions import Cast
+from django.http import HttpResponse
 from django.views.generic import ListView
 
 from crowdsourcer.models import (
@@ -383,6 +385,28 @@ class VolunteerProgressView(UserPassesTestMixin, ListView):
         context["page_title"] = "Volunteer Progress"
 
         return context
+
+
+class VolunteerProgressCSVView(UserPassesTestMixin, OverviewView):
+    def test_func(self):
+        return self.request.user.is_superuser
+
+    def render_to_response(self, context, **response_kwargs):
+        response = HttpResponse(content_type="text/csv")
+        writer = csv.writer(response)
+        headers = ["username", "section", "councils_assigned", "councils_completed"]
+        writer.writerow(headers)
+        for stats in context["progress"]:
+            a = stats["assignment"]
+            print(a)
+            row = [
+                a.user.username,
+                a.section.title,
+                stats["total"],
+                stats["complete"],
+            ]
+            writer.writerow(row)
+        return response
 
 
 class AuthorityAssignmentView(UserPassesTestMixin, ListView):

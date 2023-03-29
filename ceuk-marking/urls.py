@@ -50,6 +50,11 @@ urlpatterns = [
         name="section_progress",
     ),
     path(
+        "volunteer_progress.csv",
+        progress.VolunteerProgressCSVView.as_view(),
+        name="volunteer_csv_progress",
+    ),
+    path(
         "volunteer_progress/<id>/",
         progress.VolunteerProgressView.as_view(),
         name="volunteer_progress",
