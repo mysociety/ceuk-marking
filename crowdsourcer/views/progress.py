@@ -391,6 +391,9 @@ class VolunteerProgressCSVView(UserPassesTestMixin, OverviewView):
     def test_func(self):
         return self.request.user.is_superuser
 
+    def get_queryset(self):
+        return Assigned.objects.all()
+
     def render_to_response(self, context, **response_kwargs):
         response = HttpResponse(content_type="text/csv")
         writer = csv.writer(response)
