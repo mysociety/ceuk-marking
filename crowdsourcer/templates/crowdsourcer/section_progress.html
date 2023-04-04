@@ -29,7 +29,7 @@
           {% for authority in authorities %}
             <tr>
                 <td>
-                  {{ authority.name }}
+                    {{ authority.name }} {% if authority.do_not_mark %}DO NOT MARK{% endif %}
                 </td>
                 <td>
                     <div class="progress progress-thin mb-2">
