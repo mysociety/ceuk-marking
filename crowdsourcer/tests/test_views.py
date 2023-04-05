@@ -436,7 +436,7 @@ class TestAllAuthorityProgressView(BaseTestCase):
         context = response.context
 
         self.assertEquals(context["councils"]["complete"], 0)
-        self.assertEquals(context["councils"]["total"], 3)
+        self.assertEquals(context["councils"]["total"], 4)
 
 
 class TestSectionProgressView(BaseTestCase):
@@ -455,8 +455,8 @@ class TestSectionProgressView(BaseTestCase):
         self.assertEquals(context["Transport"]["complete"], 1)
         self.assertEquals(context["Transport"]["started"], 1)
         self.assertEquals(context["Transport"]["assigned"], 2)
-        self.assertEquals(context["Transport"]["total"], 3)
+        self.assertEquals(context["Transport"]["total"], 4)
         self.assertEquals(context["Buildings & Heating"]["started"], 1)
         self.assertEquals(context["Buildings & Heating"]["complete"], 0)
         self.assertEquals(context["Buildings & Heating"]["assigned"], 1)
-        self.assertEquals(context["Buildings & Heating"]["total"], 3)
+        self.assertEquals(context["Buildings & Heating"]["total"], 4)

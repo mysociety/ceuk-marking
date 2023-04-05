@@ -2,7 +2,7 @@ from django.contrib.auth.models import User
 from django.test import TestCase
 from django.urls import reverse
 
-from crowdsourcer.models import Response
+from crowdsourcer.models import Assigned, PublicAuthority, Response
 
 
 class BaseTestCase(TestCase):
@@ -27,6 +27,9 @@ class TestAssignmentView(BaseTestCase):
     def test_homepage_redirect(self):
         response = self.client.get("/")
         self.assertEqual(response.status_code, 302)
+        self.assertEqual(
+            response.url, "/authorities/Aberdeenshire%20Council/ror/sections/"
+        )
 
     def test_council_homepage(self):
         url = reverse("authority_ror_sections", args=("Aberdeenshire Council",))
@@ -46,6 +49,51 @@ class TestAssignmentView(BaseTestCase):
         self.assertEqual(first.complete, 2)
         self.assertEqual(second.total, 2)
         self.assertEqual(second.complete, 0)
+
+
+class TestTwoCouncilsAssignmentView(BaseTestCase):
+    def setUp(self):
+        u = User.objects.get(username="council")
+        self.client.force_login(u)
+        self.user = u
+
+        auth1 = u.marker.authority
+
+        u.marker.authority = None
+        u.marker.save()
+
+        auth2 = PublicAuthority.objects.get(name="Aberdeen City Council")
+
+        Assigned.objects.create(user=u, authority=auth1)
+        Assigned.objects.create(user=u, authority=auth2)
+
+    def test_homepage_redirect(self):
+        response = self.client.get("/")
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, "/authority_ror_authorities/")
+
+    def test_council_homepage(self):
+        url = reverse("authority_ror_authorities")
+        response = self.client.get(url)
+
+        context = response.context
+        assignments = context["assignments"]
+
+        self.assertEqual(len(assignments), 2)
+
+        first = assignments[0]
+        second = assignments[1]
+        self.assertEqual(first.authority.name, "Aberdeen City Council")
+        self.assertEqual(second.authority.name, "Aberdeenshire Council")
+
+    def test_council_marking_page(self):
+        url = reverse("authority_ror_sections", args=("Aberdeenshire Council",))
+        response = self.client.get(url)
+
+        context = response.context
+        sections = context["sections"]
+
+        self.assertEqual(len(sections), 7)
 
 
 class TestSaveView(BaseTestCase):

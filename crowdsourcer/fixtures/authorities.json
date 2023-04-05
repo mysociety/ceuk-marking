@@ -28,5 +28,16 @@
     "website": "https://www.adur-worthing.gov.uk/",
     "questiongroup": 2
   }
+},
+{
+  "model": "crowdsourcer.publicauthority",
+  "pk": 4,
+  "fields": {
+    "unique_id": "N09000002",
+    "name": "Armagh City, Banbridge and Craigavon Borough Council",
+    "website": "https://www.armagh.gov.uk/",
+    "questiongroup": 2,
+    "do_not_mark": true
+  }
 }
 ]
