@@ -1,0 +1,25 @@
+{% extends 'crowdsourcer/base.html' %}
+
+{% block content %}
+{% if show_login %}
+    <h1 class="mb-4">Sign in</h1>
+    <a href="{% url 'login' %}">Sign in</a>
+{% else %}
+    <h1 class="mb-4">Your councils</h1>
+    <table class="table">
+        <tbody>
+          {% for assignment in assignments %}
+            <tr>
+                <td>
+                    <a href="{% url 'authority_ror_sections' assignment.authority.name %}">{{ assignment.authority.name }}</a>
+                </td>
+            </tr>
+          {% empty %}
+            <tr>
+                <td colspan="2">You have no councils</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+    </table>
+{% endif %}
+{% endblock %}

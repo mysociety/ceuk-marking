@@ -1,10 +1,13 @@
 import logging
 
 from django.core.exceptions import PermissionDenied
+from django.shortcuts import redirect
+from django.urls import reverse
 from django.views.generic import ListView, TemplateView
 
 from crowdsourcer.forms import RORResponseFormset
 from crowdsourcer.models import (
+    Assigned,
     PublicAuthority,
     Question,
     Response,
@@ -13,6 +16,36 @@ from crowdsourcer.models import (
 )
 
 logger = logging.getLogger(__name__)
+
+
+class AuthorityRORList(ListView):
+    template_name = "crowdsourcer/authority_assigned_list.html"
+    model = Assigned
+    context_object_name = "assignments"
+
+    def dispatch(self, request, *args, **kwargs):
+        user = self.request.user
+        if hasattr(user, "marker"):
+            marker = user.marker
+            if (
+                marker.response_type.type == "Right of Reply"
+                and marker.authority is not None
+            ):
+                url = reverse(
+                    "authority_ror_sections", kwargs={"name": marker.authority.name}
+                )
+                return redirect(url)
+
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.is_anonymous:
+            return None
+
+        qs = Assigned.objects.filter(user=user)
+
+        return qs
 
 
 class AuthorityRORSectionList(ListView):
@@ -30,10 +63,15 @@ class AuthorityRORSectionList(ListView):
         if user.is_superuser is False:
             if hasattr(user, "marker"):
                 marker = user.marker
-                if (
-                    marker.authority != authority
-                    or marker.response_type.type != "Right of Reply"
-                ):
+                if marker.response_type.type == "Right of Reply":
+                    if (
+                        marker.authority != authority
+                        and not Assigned.objects.filter(
+                            user=user, authority=authority, section__isnull=True
+                        ).exists()
+                    ):
+                        raise PermissionDenied
+                else:
                     raise PermissionDenied
 
             else:

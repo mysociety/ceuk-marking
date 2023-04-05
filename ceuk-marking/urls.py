@@ -116,6 +116,11 @@ urlpatterns = [
         rightofreply.AuthorityRORSectionQuestions.as_view(),
         name="authority_ror",
     ),
+    path(
+        "authority_ror_authorities/",
+        rightofreply.AuthorityRORList.as_view(),
+        name="authority_ror_authorities",
+    ),
     # right of reply progress
     path(
         "authority_ror_progress/<name>/",

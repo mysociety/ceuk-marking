@@ -42,6 +42,10 @@ class OverviewView(ListView):
                     "authority_ror_sections", kwargs={"name": marker.authority.name}
                 )
                 return redirect(url)
+            elif marker.response_type.type == "Right of Reply":
+                if Assigned.objects.filter(user=user).exists():
+                    url = reverse("authority_ror_authorities")
+                    return redirect(url)
 
         return super().dispatch(request, *args, **kwargs)
 
@@ -50,7 +54,7 @@ class OverviewView(ListView):
         if user.is_anonymous:
             return None
 
-        qs = Assigned.objects.all()
+        qs = Assigned.objects.filter(section__isnull=False)
         if user.is_superuser is False:
             qs = qs.filter(user=user)
         else:
