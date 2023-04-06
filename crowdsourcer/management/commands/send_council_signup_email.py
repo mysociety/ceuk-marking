@@ -24,7 +24,7 @@ class Command(BaseCommand):
             )
 
         council_users = Marker.objects.filter(
-            user__password="", authority__isnull=False
+            user__password="", response_type__type="Right of Reply"
         )
         user_count = council_users.count()
         self.stdout.write(f"Sending emails for {user_count} councils")
