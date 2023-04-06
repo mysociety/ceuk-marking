@@ -50,6 +50,7 @@
                 <div class="col-md-7">
                   <legend id="q{{q_form.question_obj.number_and_part}}" class="h4 mb-3 mb-sm-4">
                       {{q_form.question_obj.number_and_part}}. {{ q_form.question_obj.description }}
+                      {% if q_form.question_obj.how_marked == "foi" %}(FOI){% endif %}
                     </legend>
                 </div>
             </div>
