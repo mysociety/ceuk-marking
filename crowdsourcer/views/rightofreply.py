@@ -179,14 +179,22 @@ class AuthorityRORSectionQuestions(TemplateView):
         if self.request.user.is_anonymous:
             raise PermissionDenied
 
-        if self.request.user.is_superuser is False:
-            if hasattr(self.request.user, "marker"):
-                marker = self.request.user.marker
-                if (
-                    marker.authority.name != self.kwargs["name"]
-                    or marker.response_type.type != "Right of Reply"
-                ):
+        authority = PublicAuthority.objects.get(name=self.kwargs["name"])
+        user = self.request.user
+        if user.is_superuser is False:
+            if hasattr(user, "marker"):
+                marker = user.marker
+                if marker.response_type.type == "Right of Reply":
+                    if (
+                        marker.authority != authority
+                        and not Assigned.objects.filter(
+                            user=user, authority=authority, section__isnull=True
+                        ).exists()
+                    ):
+                        raise PermissionDenied
+                else:
                     raise PermissionDenied
+
             else:
                 raise PermissionDenied
 

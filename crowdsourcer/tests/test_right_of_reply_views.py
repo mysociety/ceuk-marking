@@ -86,7 +86,7 @@ class TestTwoCouncilsAssignmentView(BaseTestCase):
         self.assertEqual(first.authority.name, "Aberdeen City Council")
         self.assertEqual(second.authority.name, "Aberdeenshire Council")
 
-    def test_council_marking_page(self):
+    def test_council_section_list(self):
         url = reverse("authority_ror_sections", args=("Aberdeenshire Council",))
         response = self.client.get(url)
 
@@ -94,6 +94,15 @@ class TestTwoCouncilsAssignmentView(BaseTestCase):
         sections = context["sections"]
 
         self.assertEqual(len(sections), 7)
+
+    def test_council_marking_page(self):
+        url = reverse("authority_ror", args=("Aberdeenshire Council", "Transport"))
+        response = self.client.get(url)
+
+        context = response.context
+        authority = context["authority"]
+
+        self.assertEqual(authority.name, "Aberdeenshire Council")
 
 
 class TestSaveView(BaseTestCase):
