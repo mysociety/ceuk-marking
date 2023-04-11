@@ -23,10 +23,14 @@ class Command(BaseCommand):
 
     foi_file = settings.BASE_DIR / "data" / "foi_data.xlsx"
     foi_dir = settings.BASE_DIR / "data" / "foi_csvs"
+    url_map_file = (
+        settings.BASE_DIR / "data" / "ceuk-requests-with-private-link-url.csv"
+    )
 
     combined_foi_file = settings.BASE_DIR / "data" / "combined_foi_data.xlsx"
 
     warnings = []
+    url_map = {}
 
     # get round limits on length of sheet names
     non_combined_sheet_map = {
@@ -193,12 +197,23 @@ class Command(BaseCommand):
         "King's Lynn and West Norfolk Borough Council": "Kings Lynn and West Norfolk Borough Council",
         "Common Council of the City of London": "City of London",
         "London Borough of Barking and Dagenham Council": "Barking and Dagenham Borough Council",
+        "Newcastle Upon Tyne, North Tyneside and Northumberland Combined Authority": "North of Tyne Combined Authority",
+        "Liverpool City Region Combined Authority": "Liverpool City Region",
     }
 
     def add_arguments(self, parser):
         parser.add_argument(
             "--use_csvs", action="store_true", help="get data from directory of CSVs"
         )
+
+    def populate_url_map(self):
+        df = pd.read_csv(
+            self.url_map_file,
+        )
+
+        for _, row in df.iterrows():
+            self.url_map[row["public_url"]] = row["share_with_pirvate_link_url"]
+            self.url_map[row["pro_dashboard_url"]] = row["share_with_pirvate_link_url"]
 
     def get_council_lookup(self):
         url = get_dataset_url(
@@ -324,8 +339,13 @@ class Command(BaseCommand):
         if not pd.isna(row["Notes"]):
             notes = row["Notes"]
 
+        url = self.url_map.get(row["request_url"], None)
+        if url is None:
+            print(f"no matching private url for {row['request_url']} - {name}")
+            url = row["request_url"]
+
         defaults = {
-            "evidence": row["request_url"],
+            "evidence": url,
             "private_notes": notes,
             "council": row["public_body_name"],
         }
@@ -524,6 +544,7 @@ class Command(BaseCommand):
             username="FOI_importer",
         )
 
+        self.populate_url_map()
         council_lookup = self.get_council_lookup()
 
         self.process_sheet(self.non_combined_sheet_map, council_lookup, rt, u)
