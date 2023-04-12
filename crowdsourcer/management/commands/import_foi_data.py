@@ -352,12 +352,15 @@ class Command(BaseCommand):
 
         q_details = self.sheet_map[name]
         if pd.isna(row.iloc[MINIMUM_CRITERIA_MET]):
-            return None
-        try:
-            value = int(row.iloc[MINIMUM_CRITERIA_MET])
-        except ValueError:
-            self.warnings.append(f"bad data in row: {row.iloc[MINIMUM_CRITERIA_MET]}")
-            return None
+            value = 0
+        else:
+            try:
+                value = int(row.iloc[MINIMUM_CRITERIA_MET])
+            except ValueError:
+                self.warnings.append(
+                    f"bad data in row: {row.iloc[MINIMUM_CRITERIA_MET]}"
+                )
+                return None
 
         if q_details["type"] == "yes_no":
             if value == 1:
@@ -481,6 +484,7 @@ class Command(BaseCommand):
             for _, row in df.iterrows():
                 defaults = self.get_defaults_for_q(name, q, row)
                 if defaults is None:
+                    print(f"No defaults for {name} - {row['public_body_name']}")
                     continue
 
                 orig_authority = authority = defaults["council"]
