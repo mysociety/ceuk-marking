@@ -48,6 +48,8 @@ SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 LOGIN_REDIRECT_URL = "home"
 LOGOUT_REDIRECT_URL = "home"
 
+PASSWORD_RESET_TIMEOUT = 8 * 24 * 60 * 60
+
 if env.str("BUGS_EMAIL", None):  # pragma: no cover
     SERVER_EMAIL = env("BUGS_EMAIL")
     ADMINS = (("mySociety bugs", env("BUGS_EMAIL")),)
