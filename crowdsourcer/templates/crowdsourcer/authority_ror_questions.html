@@ -68,7 +68,7 @@
                 <div class="col-md-7 order-md-1">
                     <h2 class="form-label fs-6">Marker’s answer</h2>
                     <div class="read-only-answer mb-3 mb-md-4">
-                      {% if q_form.question_obj.question_type == "multiple_choice" %}
+                      {% if q_form.question_obj.question_type == "tiered" or q_form.question_obj.question_type == "multiple_choice" %}
                         <p>
                           {% for option in q_form.orig.multi_option.values %}
                             {{ option.description }},

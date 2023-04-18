@@ -268,9 +268,9 @@ class Command(BaseCommand):
     def get_bh_8_answer(self, q, row, value):
         NUMBER_NOTICES = 8
 
-        if value == 0:
+        if value == 0 or pd.isna(value):
             description = "Criteria not met"
-        elif value == 1:
+        else:
             try:
                 num_notices = row.iloc[NUMBER_NOTICES]
             except ValueError:
@@ -371,13 +371,13 @@ class Command(BaseCommand):
             if name == "B&H Q2" or name == "Buildings & Heating & Skills 1":
                 defaults["multi_option"] = self.get_bh_2_answer(q, row, value)
             elif name == "B&H Q3":
-                defaults["option"] = self.get_bh_3_answer(q, row, value)
+                defaults["multi_option"] = self.get_bh_3_answer(q, row, value)
             elif name == "B&H Q8":
-                defaults["option"] = self.get_bh_8_answer(q, row, value)
+                defaults["multi_option"] = self.get_bh_8_answer(q, row, value)
             elif name == "Buildings & Heating & Skills 9a":
-                defaults["option"] = self.get_bh_9a_answer(q, row, value)
+                defaults["multi_option"] = self.get_bh_9a_answer(q, row, value)
             elif name == "Buildings & Heating & Skills 9b":
-                defaults["option"] = self.get_bh_9b_answer(q, row, value)
+                defaults["multi_option"] = self.get_bh_9b_answer(q, row, value)
         else:
             return None
 
@@ -520,6 +520,9 @@ class Command(BaseCommand):
                 multi_option = None
                 if "multi_option" in defaults:
                     multi_option = defaults["multi_option"]
+                    if type(multi_option) == Option:
+                        multi_option = (multi_option,)
+                    defaults["option"] = None
                     del defaults["multi_option"]
 
                 r, _ = Response.objects.update_or_create(
