@@ -65,8 +65,8 @@ class Command(BaseCommand):
             "twfy-project": 17,
         },
         "C&E Q3": {
-            "section": "Buildings & Heating",
-            "question": 8,
+            "section": "Collaboration & Engagement",
+            "question": 3,
             "type": "yes_no",
             "twfy-project": 16,
         },
