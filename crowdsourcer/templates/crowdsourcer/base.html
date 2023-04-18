@@ -63,6 +63,11 @@
                         </li>
                       {% endif %}
                       {% if user.is_authenticated %}
+                        {% if ror_user %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="https://docs.google.com/document/d/1kPzvASwPI157n7i2GBuv0S8YwiYGpZwmEm0pDUmpR_A/edit?usp=sharing">Right of Reply Guide</a>
+                        </li>
+                        {% endif %}
                         <li class="nav-item">
                             <a class="nav-link" href="{% url 'home' %}">My assignments</a>
                         </li>

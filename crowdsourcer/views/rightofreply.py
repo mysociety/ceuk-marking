@@ -119,6 +119,7 @@ class AuthorityRORSectionList(ListView):
                 if section.complete is None:
                     section.complete = 0
 
+        context["ror_user"] = True
         return context
 
 
@@ -246,5 +247,7 @@ class AuthorityRORSectionQuestions(TemplateView):
         context[
             "page_title"
         ] = f"Right of Reply - {context['authority_name']}: {context['section_title']}"
+
+        context["ror_user"] = True
 
         return context
