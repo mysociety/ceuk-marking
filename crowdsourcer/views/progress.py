@@ -568,3 +568,62 @@ class AllSectionChallengeView(UserPassesTestMixin, ListView):
         context["progress"] = progress
 
         return context
+
+
+class AuthorityContactCSVView(UserPassesTestMixin, ListView):
+    context_object_name = "markers"
+
+    def test_func(self):
+        return self.request.user.is_superuser
+
+    def get_queryset(self):
+        return Marker.objects.filter(
+            response_type__type="Right of Reply"
+        ).select_related("user")
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        markers = context["markers"]
+        contacts = []
+        for marker in markers:
+            if marker.authority:
+                contacts.append(
+                    {
+                        "council": marker.authority.name,
+                        "email": marker.user.username,
+                        "name": f"{marker.user.first_name} {marker.user.last_name}",
+                    }
+                )
+            assigned = Assigned.objects.filter(user=marker.user).all()
+            if assigned:
+                for assignment in assigned:
+                    contacts.append(
+                        {
+                            "council": assignment.authority.name,
+                            "email": marker.user.username,
+                            "name": f"{marker.user.first_name} {marker.user.last_name}",
+                        }
+                    )
+
+        context["contacts"] = contacts
+        return context
+
+    def render_to_response(self, context, **response_kwargs):
+        response = HttpResponse(
+            content_type="text/csv",
+            headers={
+                "Content-Disposition": 'attachment; filename="grace_authority_contacts.csv"'
+            },
+        )
+        writer = csv.writer(response)
+        headers = ["council", "email", "name"]
+        writer.writerow(headers)
+        for contact in context["contacts"]:
+            row = [
+                contact["council"],
+                contact["email"],
+                contact["name"],
+            ]
+            writer.writerow(row)
+        return response

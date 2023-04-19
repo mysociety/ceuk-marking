@@ -142,6 +142,11 @@ urlpatterns = [
         progress.AuthorityLoginReport.as_view(),
         name="authority_login_report",
     ),
+    path(
+        "authority_contacts/",
+        progress.AuthorityContactCSVView.as_view(),
+        name="authority_contacts_report",
+    ),
 ]
 
 if settings.DEBUG:  # pragma: no cover
