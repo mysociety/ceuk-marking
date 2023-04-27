@@ -495,6 +495,14 @@ class AuthorityLoginReport(UserPassesTestMixin, ListView):
                     .order_by("-user__last_login")
                     .values("user__last_login")[:1]
                 ),
+                multi_has_logged_in=Subquery(
+                    Assigned.objects.filter(
+                        authority=OuterRef("pk"),
+                        user__marker__response_type__type="Right of Reply",
+                    )
+                    .order_by("-user__last_login")
+                    .values("user__last_login")[:1]
+                ),
             )
             .order_by("has_logged_in", "name")
         )

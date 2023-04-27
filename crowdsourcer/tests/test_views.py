@@ -460,3 +460,71 @@ class TestSectionProgressView(BaseTestCase):
         self.assertEquals(context["Buildings & Heating"]["complete"], 0)
         self.assertEquals(context["Buildings & Heating"]["assigned"], 1)
         self.assertEquals(context["Buildings & Heating"]["total"], 4)
+
+
+class TestAuthorityLoginView(BaseTestCase):
+    def test_view(self):
+        u = User.objects.get(username="admin")
+        self.client.force_login(u)
+
+        response = self.client.get(reverse("authority_login_report"))
+        self.assertEquals(response.status_code, 200)
+        context = response.context["authorities"]
+
+        self.assertEquals(len(context), 4)
+        for auth in context:
+            self.assertEquals(auth.has_logged_in, None)
+            self.assertEquals(auth.multi_has_logged_in, None)
+
+    def test_has_logged_in(self):
+        u = User.objects.get(username="council")
+        self.client.force_login(u)
+        last_login = u.last_login
+
+        u = User.objects.get(username="admin")
+        self.client.force_login(u)
+
+        response = self.client.get(reverse("authority_login_report"))
+        self.assertEquals(response.status_code, 200)
+        context = response.context["authorities"]
+
+        for auth in context:
+            if auth.name == "Aberdeenshire Council":
+                self.assertEquals(auth.has_logged_in, last_login)
+                self.assertEquals(auth.multi_has_logged_in, None)
+            else:
+                self.assertEquals(auth.has_logged_in, None)
+                self.assertEquals(auth.multi_has_logged_in, None)
+
+    def test_multi_auth_right_of_reply(self):
+        u = User.objects.get(username="council")
+        marker = u.marker
+        a1 = marker.authority
+        marker.authority = None
+        marker.save()
+
+        Assigned.objects.create(user=u, authority=a1)
+
+        a2 = PublicAuthority.objects.get(name="Aberdeen City Council")
+        Assigned.objects.create(user=u, authority=a2)
+
+        self.client.force_login(u)
+        last_login = u.last_login
+
+        u = User.objects.get(username="admin")
+        self.client.force_login(u)
+
+        response = self.client.get(reverse("authority_login_report"))
+        self.assertEquals(response.status_code, 200)
+        context = response.context["authorities"]
+
+        for auth in context:
+            if (
+                auth.name == "Aberdeenshire Council"
+                or auth.name == "Aberdeen City Council"
+            ):
+                self.assertEquals(auth.has_logged_in, None)
+                self.assertEquals(auth.multi_has_logged_in, last_login)
+            else:
+                self.assertEquals(auth.has_logged_in, None)
+                self.assertEquals(auth.multi_has_logged_in, None)

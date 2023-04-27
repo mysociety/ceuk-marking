@@ -20,7 +20,7 @@
                     <a href="{% url 'authority_ror_progress' authority.name %}">{{ authority.name }}{% if authority.do_not_mark %} (DO NOT MARK){% endif %}</a>
                 </td>
                 <td>
-                    {% if authority.has_logged_in %}Yes{% else %}No{% endif %}
+                    {% if authority.has_logged_in or authority.multi_has_logged_in %}Yes{% else %}No{% endif %}
                 </td>
             </tr>
           {% endfor %}
