@@ -181,7 +181,6 @@ class RORResponseForm(ModelForm):
             "authority",
             "evidence",
             "id",
-            "evidence",
             "private_notes",
             "question",
             "agree_with_response",

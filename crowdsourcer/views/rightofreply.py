@@ -223,6 +223,9 @@ class AuthorityRORSectionQuestions(TemplateView):
                     form.instance.user = self.request.user
                     form.save()
                     logger.debug(f"saved form {form.prefix}")
+                elif form.initial.get("id", None) is not None:
+                    form.save()
+                    logger.debug(f"saved blank form {form.prefix}")
                 else:
                     logger.debug(f"did not save form {form.prefix}")
                     logger.debug(
