@@ -126,6 +126,86 @@ class TestSaveView(BaseTestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
 
+    def test_display_option(self):
+        response = Response.objects.get(
+            authority_id=2,
+            question_id=281,
+            response_type_id=1,
+        )
+        option = response.option
+        option.description = "Option Response"
+        option.save()
+
+        url = reverse("authority_ror", args=("Aberdeenshire Council", "Transport"))
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+
+        form = response.context["form"]
+        initial = form.forms[0].initial
+
+        self.assertEquals(
+            initial["original_response"].option.description, "Option Response"
+        )
+        self.assertEquals(
+            list(initial["original_response"].multi_option.values("id")), []
+        )
+
+        content = response.content
+        self.assertRegex(content, br"<p>\s*Option Response\s*</p>")
+
+    def test_display_multi_option(self):
+        response = Response.objects.get(
+            authority_id=2,
+            question_id=281,
+            response_type_id=1,
+        )
+        option = response.option
+        option.description = "Multi Response"
+        option.save()
+        response.option = None
+        response.multi_option.add(option)
+        response.save()
+
+        url = reverse("authority_ror", args=("Aberdeenshire Council", "Transport"))
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+
+        form = response.context["form"]
+
+        initial = form.forms[0].initial
+
+        self.assertEquals(initial["original_response"].option, None)
+        self.assertEquals(
+            list(
+                initial["original_response"].multi_option.values_list("id", flat=True)
+            ),
+            [option.id],
+        )
+
+        content = response.content
+        self.assertRegex(content, br"<p>[\n\s]*Multi Response,[\n\s]*</p>")
+
+    def test_display_no_answer(self):
+        response = Response.objects.get(
+            authority_id=2,
+            question_id=281,
+            response_type_id=1,
+        )
+        response.delete()
+
+        url = reverse("authority_ror", args=("Aberdeenshire Council", "Transport"))
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+
+        form = response.context["form"]
+
+        initial = form.forms[0].initial
+
+        self.assertIsNone(initial.get("original_response", None))
+
+        content = response.content
+        self.assertRegex(content, br"<div[^>]*>[\s\n]*<p>\(none\)</p>[\s\n]*</div>")
+
     def test_save(self):
         url = reverse("authority_ror", args=("Aberdeenshire Council", "Transport"))
         response = self.client.get(url)
