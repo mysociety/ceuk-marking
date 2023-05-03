@@ -7,7 +7,7 @@ from django.views.generic import DetailView, ListView, TemplateView
 from django.views.generic.base import RedirectView
 from django.views.generic.edit import CreateView, UpdateView
 
-from crowdsourcer.forms import ResponseForm, ResponseFormset
+from crowdsourcer.forms import ResponseForm
 from crowdsourcer.models import (
     Assigned,
     Option,
@@ -17,6 +17,7 @@ from crowdsourcer.models import (
     ResponseType,
     Section,
 )
+from crowdsourcer.views.base import BaseQuestionView
 
 logger = logging.getLogger(__name__)
 
@@ -198,49 +199,8 @@ class SectionQuestionAuthorityList(ListView):
         return context
 
 
-class AuthoritySectionQuestions(TemplateView):
+class AuthoritySectionQuestions(BaseQuestionView):
     template_name = "crowdsourcer/authority_questions.html"
-    model = Response
-
-    def get_initial_obj(self):
-        rt = ResponseType.objects.get(type="First Mark")
-        authority = PublicAuthority.objects.get(name=self.kwargs["name"])
-        questions = Question.objects.filter(
-            section__title=self.kwargs["section_title"],
-            questiongroup=authority.questiongroup,
-            how_marked__in=["volunteer", "national_volunteer"],
-        ).order_by("number", "number_part")
-        responses = Response.objects.filter(
-            authority=authority, question__in=questions, response_type=rt
-        ).select_related("question")
-
-        initial = {}
-        for q in questions.all():
-            data = {
-                "authority": authority,
-                "question": q,
-            }
-            initial[q.id] = data
-
-        for r in responses:
-            data = initial[r.question.id]
-            data["id"] = r.id
-            data["option"] = r.option
-            data["public_notes"] = r.public_notes
-            data["private_notes"] = r.private_notes
-
-            initial[r.question.id] = data
-
-        return initial
-
-    def get_form(self):
-        if self.request.POST:
-            formset = ResponseFormset(
-                self.request.POST, initial=list(self.get_initial_obj().values())
-            )
-        else:
-            formset = ResponseFormset(initial=list(self.get_initial_obj().values()))
-        return formset
 
     def check_permissions(self):
         if self.request.user.is_anonymous:
@@ -253,59 +213,22 @@ class AuthoritySectionQuestions(TemplateView):
         ):
             raise PermissionDenied
 
-    def get(self, *args, **kwargs):
-        self.check_permissions()
-        return super().get(*args, **kwargs)
-
-    def post(self, *args, **kwargs):
-        self.check_permissions()
-        section_title = self.kwargs.get("section_title", "")
-        authority = self.kwargs.get("name", "")
-        logger.debug(
-            f"form post from {self.request.user.email} for {authority}/{section_title}"
-        )
-        logger.debug(f"post data is {self.request.POST}")
-
-        formset = self.get_form()
+    def process_form(self, form):
         rt = ResponseType.objects.get(type="First Mark")
-        if formset.is_valid():
-            logger.debug("form IS VALID")
-            for form in formset:
-                cleaned_data = form.cleaned_data
-                if (
-                    cleaned_data.get("option", None) is not None
-                    or len(list(cleaned_data.get("multi_option", None))) > 0
-                ):
-                    form.instance.response_type = rt
-                    form.instance.user = self.request.user
-                    form.save()
-                    logger.debug(f"saved form {form.prefix}")
-                else:
-                    logger.debug(f"did not save form {form.prefix}")
-                    logger.debug(
-                        f"option is {cleaned_data.get('option', None)}, multi is {cleaned_data.get('multi_option', None)}"
-                    )
+        cleaned_data = form.cleaned_data
+        if (
+            cleaned_data.get("option", None) is not None
+            or len(list(cleaned_data.get("multi_option", None))) > 0
+        ):
+            form.instance.response_type = rt
+            form.instance.user = self.request.user
+            form.save()
+            logger.debug(f"saved form {form.prefix}")
         else:
-            logger.debug(f"form NOT VALID, errors are {formset.errors}")
-            return self.render_to_response(self.get_context_data(form=formset))
-
-        context = self.get_context_data()
-        context["message"] = "Your answers have been saved."
-        return self.render_to_response(context)
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["form"] = self.get_form()
-        context["section_title"] = self.kwargs.get("section_title", "")
-        context["authority"] = PublicAuthority.objects.get(
-            name=self.kwargs.get("name", "")
-        )
-        context["authority_name"] = self.kwargs.get("name", "")
-        context[
-            "page_title"
-        ] = f"{context['authority_name']}: {context['section_title']}"
-
-        return context
+            logger.debug(f"did not save form {form.prefix}")
+            logger.debug(
+                f"option is {cleaned_data.get('option', None)}, multi is {cleaned_data.get('multi_option', None)}"
+            )
 
 
 class AuthorityQuestion(RedirectView):
