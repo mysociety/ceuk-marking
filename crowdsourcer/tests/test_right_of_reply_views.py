@@ -151,7 +151,7 @@ class TestSaveView(BaseTestCase):
         )
 
         content = response.content
-        self.assertRegex(content, br"<p>\s*Option Response\s*</p>")
+        self.assertRegex(content, rb"<p>\s*Option Response\s*</p>")
 
     def test_display_multi_option(self):
         response = Response.objects.get(
@@ -183,7 +183,7 @@ class TestSaveView(BaseTestCase):
         )
 
         content = response.content
-        self.assertRegex(content, br"<p>[\n\s]*Multi Response,[\n\s]*</p>")
+        self.assertRegex(content, rb"<p>[\n\s]*Multi Response,[\n\s]*</p>")
 
     def test_display_no_answer(self):
         response = Response.objects.get(
@@ -204,7 +204,7 @@ class TestSaveView(BaseTestCase):
         self.assertIsNone(initial.get("original_response", None))
 
         content = response.content
-        self.assertRegex(content, br"<div[^>]*>[\s\n]*<p>\(none\)</p>[\s\n]*</div>")
+        self.assertRegex(content, rb"<div[^>]*>[\s\n]*<p>\(none\)</p>[\s\n]*</div>")
 
     def test_save(self):
         url = reverse("authority_ror", args=("Aberdeenshire Council", "Transport"))
