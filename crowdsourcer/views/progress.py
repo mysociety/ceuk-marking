@@ -491,7 +491,9 @@ class AuthorityLoginReport(UserPassesTestMixin, ListView):
             PublicAuthority.objects.all()
             .annotate(
                 has_logged_in=Subquery(
-                    Marker.objects.filter(authority=OuterRef("pk"))
+                    Marker.objects.filter(
+                        authority=OuterRef("pk"), response_type__type="Right of Reply"
+                    )
                     .order_by("-user__last_login")
                     .values("user__last_login")[:1]
                 ),

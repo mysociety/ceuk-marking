@@ -1,0 +1,160 @@
+{% extends 'crowdsourcer/base.html' %}
+
+{% load django_bootstrap5 %}
+
+{% block content %}
+    <h1 class="mb-3 mb-md-4">
+        {% if authority.website %}
+            <a href="{{ authority.website }}">{{ authority_name }}</a>:
+        {% else %}
+            {{ authority_name }}:
+        {% endif %}
+        {{section_title}}
+    </h1>
+
+    <div class="sticky-top py-3 bg-white border-bottom" style="margin-bottom: -1px;">
+        <div class="dropdown">
+            <button class="btn btn-outline-secondary dropdown-toggle" id="navbarDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                Skip to question
+            </button>
+            <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+              {% for q_form in form %}
+                <li><a class="dropdown-item d-flex" style="max-width: 30em; white-space: normal;" href="#q{{q_form.question_obj.number_and_part}}">
+                    <span style="width: 2em; flex: 0 0 auto;">Q{{q_form.question_obj.number_and_part}}</span>
+                    <span class="text-muted fs-7 ms-3">{{ q_form.question_obj.description }}</span>
+                </a></li>
+              {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+    {% if message %}
+      <h3 class="mb-4 mb-md-5 text-success">
+        {{ message }}
+      </h3>
+    {% endif %}
+
+    <form method="POST">
+        {% csrf_token %}
+        {% if form.total_error_count > 0 %}
+          <div class="mb-4">
+              <div class="col-md-7 text-danger">
+                There were some errors which are highlighted in red below.
+              </div>
+          </div>
+        {% endif %}
+        {{ form.management_form }}
+      {% for q_form in form %}
+        <fieldset class="py-4 py-md-5 border-top">
+            <div class="row">
+                <div class="col-md-7">
+                  <legend id="q{{q_form.question_obj.number_and_part}}" class="h4 mb-3 mb-sm-4">
+                      {{q_form.question_obj.number_and_part}}. {{ q_form.question_obj.description }}
+                      {% if q_form.question_obj.how_marked == "foi" %}(FOI){% endif %}
+                    </legend>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-4 offset-md-1 order-md-2 mb-3 mb-sm-4">
+                    <details class="text-muted">
+                        <summary class="fw-bold mb-2">Criteria</summary>
+                        {{q_form.question_obj.criteria|linebreaks }}
+                    </details>
+                    <details class="text-muted">
+                        <summary class="fw-bold mb-2">Clarifications</summary>
+                        {{q_form.question_obj.clarifications|linebreaks }}
+                    </details>
+                </div>
+                <div class="col-md-7 order-md-1">
+                    <h2 class="form-label fs-6">Marker’s answer</h2>
+                    <div class="read-only-answer mb-3 mb-md-4">
+                      {% if q_form.orig.multi_option.values %}
+                        <p>
+                          {% for option in q_form.orig.multi_option.values %}
+                            {{ option.description }},
+                          {% empty %}
+                            (none)
+                          {% endfor %}
+                        </p>
+                      {% else %}
+                        {{ q_form.orig.option|default:"(none)"|linebreaks }}
+                      {% endif %}
+                    </div>
+
+                    {% if q_form.question_obj.how_marked == 'foi' %}
+                    <h2 class="form-label fs-6">FOI request</h2>
+                    <div class="read-only-answer mb-3 mb-md-4">
+                        {{ q_form.orig.evidence|urlize }}
+                    </div>
+                    {% else %}
+                    <h2 class="form-label fs-6">Marker’s evidence of criteria met</h2>
+                    <div class="read-only-answer mb-3 mb-md-4">
+                        {{ q_form.orig.evidence|default:"(none)"|linebreaks }}
+                    </div>
+                    {% endif %}
+
+                    {% if q_form.question_obj.how_marked != 'foi' %}
+                    <h2 class="form-label fs-6">Links to evidence</h2>
+                    <div class="read-only-answer mb-3 mb-md-4">
+                        {{ q_form.orig.public_notes|default:"(none)"|urlize|linebreaks }}
+                    </div>
+
+                    <h2 class="form-label fs-6">Page number</h2>
+                    <div class="read-only-answer mb-3 mb-md-4">
+                        {{ q_form.orig.page_number|default:"(none)" }}<br>
+                    </div>
+                    {% endif %}
+
+                    <h2 class="form-label fs-6">Marker’s additional notes</h2>
+                    <div class="read-only-answer mb-3 mb-md-4">
+                        {{ q_form.orig.private_notes|default:"(none)"|linebreaks }}
+                    </div>
+
+                    <h2 class="form-label fs-6">Council agrees</h2>
+                    <div class="read-only-answer mb-3 mb-md-4">
+                        {% if q_form.ror.agree_with_response is not None %}
+                            {{ q_form.ror.agree_with_response|default:"False"|linebreaks }}
+                        {% else %}
+                            <p>(none)</p>
+                        {% endif %}
+                    </div>
+
+                    <h2 class="form-label fs-6">Council evidence</h2>
+                    <div class="read-only-answer mb-3 mb-md-4">
+                        {{ q_form.ror.evidence|default:"(none)"|linebreaks }}
+                    </div>
+
+                    <h2 class="form-label fs-6">Council notes</h2>
+                    <div class="read-only-answer mb-3 mb-md-4">
+                        {{ q_form.ror.private_notes|default:"(none)"|linebreaks }}
+                    </div>
+
+                    <label class="form-label" for="{{ q_form.option.if_for_label }}">Answer</label>
+                  {% if q_form.question_obj.question_type == "multiple_choice" %}
+                    {% bootstrap_field q_form.multi_option show_label="skip" %}
+                  {% else %}
+                    {% bootstrap_field q_form.option show_label="skip" %}
+                  {% endif %}
+
+                    {% bootstrap_field q_form.page_number %}
+
+                    {% bootstrap_field q_form.evidence %}
+
+                    {% bootstrap_field q_form.public_notes %}
+
+                    {% bootstrap_field q_form.private_notes %}
+
+                    {{ q_form.authority }}
+                    {{ q_form.question }}
+                    {{ q_form.id }}
+                </div>
+            </div>
+        </fieldset>
+      {% endfor %}
+
+      <div class="sticky-bottom py-3 bg-white border-top" style="margin-top: -1px;">
+          <input type="submit" class="btn btn-primary" value="Save answers">
+      </div>
+    </form>
+
+{% endblock %}

@@ -54,11 +54,38 @@
   }
 },
 {
+  "model": "auth.user",
+  "pk": 4,
+  "fields": {
+    "password": "",
+    "last_login": null,
+    "is_superuser": false,
+    "username": "auditor",
+    "first_name": "An",
+    "last_name": "Auditor",
+    "email": "auditor@example.org",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2022-12-19T13:40:36.075Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
   "model": "crowdsourcer.marker",
   "pk": 1,
   "fields": {
     "user_id": 3,
     "response_type_id": 2,
+    "authority_id": 2
+  }
+},
+{
+  "model": "crowdsourcer.marker",
+  "pk": 2,
+  "fields": {
+    "user_id": 4,
+    "response_type_id": 3,
     "authority_id": 2
   }
 }

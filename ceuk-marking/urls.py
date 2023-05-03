@@ -18,7 +18,7 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
 
-from crowdsourcer.views import marking, progress, rightofreply, stats
+from crowdsourcer.views import audit, marking, progress, rightofreply, stats
 
 urlpatterns = [
     # admin/utility screens
@@ -182,6 +182,12 @@ urlpatterns = [
         "stats/question/<stage>/<section>/<question>/",
         stats.QuestionDataCSVView.as_view(),
         name="question_data_csv",
+    ),
+    # audit screens
+    path(
+        "authorities/<name>/audit/section/<section_title>/questions/",
+        audit.AuthorityAuditSectionQuestions.as_view(),
+        name="authority_audit",
     ),
 ]
 
