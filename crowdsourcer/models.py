@@ -148,6 +148,7 @@ class Option(models.Model):
 class ResponseType(models.Model):
     type = models.TextField(max_length=200)
     priority = models.IntegerField()
+    active = models.BooleanField(default=False)
 
     def __str__(self):
         return self.type
