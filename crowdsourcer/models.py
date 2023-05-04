@@ -208,6 +208,7 @@ class Response(models.Model):
 
 class Assigned(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
+    active = models.BooleanField(default=True)
     section = models.ForeignKey(
         Section, on_delete=models.CASCADE, null=True, blank=True
     )
