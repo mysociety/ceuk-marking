@@ -244,7 +244,7 @@ class Assigned(models.Model):
     class Meta:
         verbose_name = "assignment"
         verbose_name_plural = "assignments"
-        unique_together = [["section", "authority"]]
+        unique_together = [["section", "authority", "response_type"]]
 
 
 class Marker(models.Model):
