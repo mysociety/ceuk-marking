@@ -217,6 +217,9 @@ class Assigned(models.Model):
     question = models.ForeignKey(
         Question, on_delete=models.CASCADE, null=True, blank=True
     )
+    response_type = models.ForeignKey(
+        ResponseType, on_delete=models.CASCADE, null=True, blank=True
+    )
     history = HistoricalRecords()
 
     @classmethod
