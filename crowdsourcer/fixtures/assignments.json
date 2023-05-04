@@ -6,6 +6,7 @@
     "user": 2,
     "section": 1,
     "authority": 1,
+    "response_type": 1,
     "question": null
   }
 },
@@ -16,6 +17,7 @@
     "user": 2,
     "section": 2,
     "authority": 2,
+    "response_type": 1,
     "question": null
   }
 },
@@ -26,6 +28,7 @@
     "user": 2,
     "section": 2,
     "authority": 3,
+    "response_type": 1,
     "question": null
   }
 }

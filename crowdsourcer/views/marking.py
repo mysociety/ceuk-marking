@@ -8,6 +8,7 @@ from django.views.generic.base import RedirectView
 from django.views.generic.edit import CreateView, UpdateView
 
 from crowdsourcer.forms import ResponseForm
+from crowdsourcer.mixins import CurrentStageMixin
 from crowdsourcer.models import (
     Assigned,
     Option,
@@ -17,7 +18,7 @@ from crowdsourcer.models import (
     ResponseType,
     Section,
 )
-from crowdsourcer.views.base import BaseQuestionView
+from crowdsourcer.views.base import BaseQuestionView, BaseSectionAuthorityList
 
 logger = logging.getLogger(__name__)
 
@@ -26,7 +27,7 @@ class StatusPage(TemplateView):
     template_name = "crowdsourcer/status.html"
 
 
-class OverviewView(ListView):
+class OverviewView(CurrentStageMixin, ListView):
     template_name = "crowdsourcer/assignments.html"
     model = Assigned
     context_object_name = "assignments"
@@ -55,7 +56,9 @@ class OverviewView(ListView):
         if user.is_anonymous:
             return None
 
-        qs = Assigned.objects.filter(section__isnull=False)
+        qs = Assigned.objects.filter(
+            section__isnull=False, response_type=self.current_stage
+        )
         if user.is_superuser is False:
             qs = qs.filter(user=user)
         else:
@@ -115,50 +118,19 @@ class OverviewView(ListView):
 
             context["progress"] = progress
 
+            if self.current_stage.type == "First Mark":
+                section_link = "section_authorities"
+            elif self.current_stage.type == "Audit":
+                section_link = "audit_section_authorities"
+
             context["page_title"] = "Assignments"
+            context["section_link"] = section_link
 
         return context
 
 
-class SectionAuthorityList(ListView):
-    template_name = "crowdsourcer/section_authority_list.html"
-    model = Section
-    context_object_name = "authorities"
-
-    def get_queryset(self):
-        if self.request.user.is_anonymous:
-            return None
-
-        if not Assigned.is_user_assigned(
-            self.request.user,
-            section=self.kwargs["section_title"],
-        ):
-            return None
-
-        types = ["volunteer", "national_volunteer"]
-        section = Section.objects.get(title=self.kwargs["section_title"])
-        questions = Question.objects.filter(section=section, how_marked__in=types)
-
-        question_list = list(questions.values_list("id", flat=True))
-
-        assigned = None
-        if not self.request.user.is_superuser:
-            assigned = Assigned.objects.filter(
-                user=self.request.user, section=section, authority__isnull=False
-            ).values_list("authority__id", flat=True)
-
-        authorities = PublicAuthority.response_counts(
-            question_list, self.kwargs["section_title"], self.request.user, assigned
-        )
-
-        return authorities.order_by("name").distinct()
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["section_title"] = self.kwargs["section_title"]
-        context["page_title"] = context["section_title"]
-
-        return context
+class SectionAuthorityList(BaseSectionAuthorityList):
+    pass
 
 
 class SectionQuestionList(ListView):

@@ -238,6 +238,8 @@ class Assigned(models.Model):
             q_section = q.filter(section__title=kwargs["section"], authority=None)
         if kwargs.get("authority", None) is not None:
             q = q.filter(authority__name=kwargs["authority"])
+        if kwargs.get("current_stage", None) is not None:
+            q = q.filter(response_type=kwargs["current_stage"])
 
         return q.exists() or q_section.exists()
 

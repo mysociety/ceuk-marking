@@ -2,7 +2,7 @@ from django.contrib.auth.models import User
 from django.test import TestCase
 from django.urls import reverse
 
-from crowdsourcer.models import Response
+from crowdsourcer.models import Response, ResponseType
 
 
 class BaseTestCase(TestCase):
@@ -21,6 +21,46 @@ class BaseTestCase(TestCase):
         u = User.objects.get(username="auditor")
         self.client.force_login(u)
         self.user = u
+
+        rt = ResponseType.objects.get(type="Audit")
+        rt.active = True
+        rt.save()
+
+
+class TestAssignmentView(BaseTestCase):
+    fixtures = [
+        "authorities.json",
+        "basics.json",
+        "users.json",
+        "questions.json",
+        "options.json",
+        "audit_assignments.json",
+    ]
+
+    def test_basics(self):
+        u = User.objects.get(username="marker")
+        self.client.force_login(u)
+        self.user = u
+
+        response = self.client.get("/")
+        self.assertEqual(response.status_code, 200)
+
+        context = response.context
+        self.assertFalse(context["show_users"])
+
+        progress = context["progress"]
+
+        self.assertEqual(len(progress), 2)
+
+        first = progress[0]
+        second = progress[1]
+        self.assertEqual(first["assignment"].section.title, "Planning & Land Use")
+        self.assertEqual(second["assignment"].section.title, "Governance & Finance")
+
+        self.assertEqual(first["total"], 2)
+        self.assertEqual(first["complete"], 0)
+        self.assertEqual(second["total"], 1)
+        self.assertEqual(second["complete"], 0)
 
 
 class TestSaveView(BaseTestCase):

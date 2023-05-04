@@ -4,9 +4,14 @@ from django.core.exceptions import PermissionDenied
 
 from crowdsourcer.forms import AuditResponseFormset
 from crowdsourcer.models import Assigned, PublicAuthority, Response, ResponseType
-from crowdsourcer.views.base import BaseQuestionView
+from crowdsourcer.views.base import BaseQuestionView, BaseSectionAuthorityList
 
 logger = logging.getLogger(__name__)
+
+
+class SectionAuthorityList(BaseSectionAuthorityList):
+    types = ["volunteer", "national_volunteer", "foi"]
+    question_page = "authority_audit"
 
 
 class AuthorityAuditSectionQuestions(BaseQuestionView):

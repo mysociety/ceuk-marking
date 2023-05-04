@@ -1,0 +1,71 @@
+[
+{
+  "model": "crowdsourcer.assigned",
+  "pk": 1,
+  "fields": {
+    "user": 2,
+    "section": 1,
+    "authority": 1,
+    "active": false,
+    "response_type": 1,
+    "question": null
+  }
+},
+{
+  "model": "crowdsourcer.assigned",
+  "pk": 2,
+  "fields": {
+    "user": 2,
+    "section": 2,
+    "authority": 2,
+    "active": false,
+    "response_type": 1,
+    "question": null
+  }
+},
+{
+  "model": "crowdsourcer.assigned",
+  "pk": 3,
+  "fields": {
+    "user": 2,
+    "section": 2,
+    "authority": 3,
+    "active": false,
+    "response_type": 1,
+    "question": null
+  }
+},
+{
+  "model": "crowdsourcer.assigned",
+  "pk": 4,
+  "fields": {
+    "user": 2,
+    "section": 3,
+    "authority": 4,
+    "response_type": 3,
+    "question": null
+  }
+},
+{
+  "model": "crowdsourcer.assigned",
+  "pk": 5,
+  "fields": {
+    "user": 2,
+    "section": 3,
+    "authority": 3,
+    "response_type": 3,
+    "question": null
+  }
+},
+{
+  "model": "crowdsourcer.assigned",
+  "pk": 6,
+  "fields": {
+    "user": 2,
+    "section": 4,
+    "authority": 3,
+    "response_type": 3,
+    "question": null
+  }
+}
+]

@@ -185,6 +185,11 @@ urlpatterns = [
     ),
     # audit screens
     path(
+        "section/audit/<section_title>/authorities/",
+        audit.SectionAuthorityList.as_view(),
+        name="audit_section_authorities",
+    ),
+    path(
         "authorities/<name>/audit/section/<section_title>/questions/",
         audit.AuthorityAuditSectionQuestions.as_view(),
         name="authority_audit",
