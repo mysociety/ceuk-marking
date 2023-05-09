@@ -3,7 +3,7 @@ import logging
 from django.core.exceptions import PermissionDenied
 
 from crowdsourcer.forms import AuditResponseFormset
-from crowdsourcer.models import Assigned, PublicAuthority, Response, ResponseType
+from crowdsourcer.models import Assigned, Response, ResponseType
 from crowdsourcer.views.base import BaseQuestionView, BaseSectionAuthorityList
 
 logger = logging.getLogger(__name__)

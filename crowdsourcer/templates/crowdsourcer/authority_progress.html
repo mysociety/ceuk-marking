@@ -17,7 +17,7 @@
           {% for name, section in sections.items %}
             <tr>
                 <td>
-                    <a href="{% url 'authority_question_edit' authority_name name %}">{{ name }}</a>
+                    <a href="{% url url_pattern authority_name name %}">{{ name }}</a>
                 </td>
                 <td>
                     <div class="progress progress-thin mb-2">

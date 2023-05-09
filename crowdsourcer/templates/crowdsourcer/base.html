@@ -85,6 +85,22 @@
                             <li>
                                 <a class="dropdown-item d-flex" href="{% url 'stats_select_question' %}">Per question data</a>
                             </li>
+                        </li>
+                        <li class="nav-item">
+                          <div class="dropdown">
+                          <button class="btn dropdown-toggle" id="navbarDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            Audit progress
+                          </button>
+                          <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                            <li>
+                              <a class="dropdown-item d-flex" href="{% url 'audit_authority_assignments' %}">Authorities assigned</a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item d-flex" href="{% url 'audit_all_authority_progress' %}">Authority Progress</a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item d-flex" href="{% url 'audit_all_section_progress' %}">Section Progress</a>
+                            </li>
                           </ul>
                           </div>
                         </li>

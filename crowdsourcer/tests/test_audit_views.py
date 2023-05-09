@@ -119,3 +119,67 @@ class TestSaveView(BaseTestCase):
         self.assertEquals(answers[0].option.description, "Yes")
         self.assertEquals(answers[0].response_type.type, "Audit")
         self.assertEquals(answers[1].multi_option.first().description, "Bike share")
+
+
+class TestAllAuthorityProgressView(BaseTestCase):
+    fixtures = [
+        "authorities.json",
+        "basics.json",
+        "users.json",
+        "questions.json",
+        "options.json",
+        "assignments.json",
+        "responses.json",
+        "ror_responses.json",
+        "audit_responses.json",
+    ]
+
+    def test_non_admin_denied(self):
+        response = self.client.get(reverse("audit_all_authority_progress"))
+        self.assertEquals(response.status_code, 403)
+
+    def test_view(self):
+        u = User.objects.get(username="admin")
+        self.client.force_login(u)
+
+        response = self.client.get(reverse("audit_all_authority_progress"))
+        self.assertEquals(response.status_code, 200)
+        context = response.context
+
+        self.assertEquals(context["councils"]["complete"], 0)
+        self.assertEquals(context["councils"]["total"], 4)
+
+
+class TestSectionProgressView(BaseTestCase):
+    fixtures = [
+        "authorities.json",
+        "basics.json",
+        "users.json",
+        "questions.json",
+        "options.json",
+        "assignments.json",
+        "responses.json",
+        "ror_responses.json",
+        "audit_responses.json",
+    ]
+
+    def test_non_admin_denied(self):
+        response = self.client.get(reverse("audit_all_section_progress"))
+        self.assertEquals(response.status_code, 403)
+
+    def test_view(self):
+        u = User.objects.get(username="admin")
+        self.client.force_login(u)
+
+        response = self.client.get(reverse("audit_all_section_progress"))
+        self.assertEquals(response.status_code, 200)
+        context = response.context["progress"]
+
+        self.assertEquals(context["Transport"]["complete"], 1)
+        self.assertEquals(context["Transport"]["started"], 2)
+        self.assertEquals(context["Transport"]["assigned"], 2)
+        self.assertEquals(context["Transport"]["total"], 4)
+        self.assertEquals(context["Buildings & Heating"]["started"], 1)
+        self.assertEquals(context["Buildings & Heating"]["complete"], 0)
+        self.assertEquals(context["Buildings & Heating"]["assigned"], 1)
+        self.assertEquals(context["Buildings & Heating"]["total"], 4)

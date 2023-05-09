@@ -10,7 +10,7 @@
         <thead>
             <tr>
                 <th>Authority</th>
-                <th>Progress <a href="{% url 'all_authority_progress' %}?sort=asc">&#9650;</a>/<a href="{% url 'all_authority_progress' %}?sort=desc">&#9660;</a></th>
+                <th>Progress <a href="?sort=asc">&#9650;</a>/<a href="?sort=desc">&#9660;</a></th>
             </tr>
         </thead>
         <tbody>
@@ -30,7 +30,7 @@
             <tr>
                 <td>
                     {% block authority_link %}
-                    <a href="{% url 'authority_progress' authority.name %}">{{ authority.name }}{% if authority.do_not_mark %} (DO NOT MARK){% endif %}</a>
+                    <a href="{% url url_pattern authority.name %}">{{ authority.name }}{% if authority.do_not_mark %} (DO NOT MARK){% endif %}</a>
                     {% endblock %}
                 </td>
                 <td>

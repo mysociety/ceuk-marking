@@ -1,5 +1,8 @@
 import logging
 
+from django.contrib.auth.mixins import UserPassesTestMixin
+from django.db.models import Count, F, FloatField, OuterRef, Subquery
+from django.db.models.functions import Cast
 from django.views.generic import ListView, TemplateView
 
 from crowdsourcer.forms import ResponseFormset
@@ -148,5 +151,184 @@ class BaseSectionAuthorityList(CurrentStageMixin, ListView):
         context["section_title"] = self.kwargs["section_title"]
         context["page_title"] = context["section_title"]
         context["question_page"] = self.question_page
+
+        return context
+
+
+class BaseAllSectionProgressView(UserPassesTestMixin, ListView):
+    template_name = "crowdsourcer/all_section_progress.html"
+    model = Section
+    context_object_name = "sections"
+    types = ["volunteer", "national_volunteer"]
+    response_type = "First Mark"
+    url_pattern = "section_progress"
+
+    def test_func(self):
+        return self.request.user.is_superuser
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        rt = ResponseType.objects.get(type=self.response_type)
+
+        progress = {}
+        for section in context["sections"]:
+            questions = Question.objects.filter(
+                section=section, how_marked__in=self.types
+            )
+            question_list = list(questions.values_list("id", flat=True))
+            authorities = PublicAuthority.response_counts(
+                question_list,
+                section.title,
+                self.request.user,
+                response_type=rt,
+            ).distinct()
+
+            total = 0
+            complete = 0
+            started = 0
+            for authority in authorities:
+                total = total + 1
+                if authority.num_responses is not None and authority.num_responses > 0:
+                    started = started + 1
+                if (
+                    authority.num_questions is not None
+                    and authority.num_responses == authority.num_questions
+                ):
+                    complete = complete + 1
+
+            progress[section.title] = {
+                "total": total,
+                "complete": complete,
+                "started": started,
+            }
+
+        assigned = Section.objects.all().annotate(
+            num_authorities=Subquery(
+                Assigned.objects.filter(section=OuterRef("pk"))
+                .values("section")
+                .annotate(num_authorities=Count("pk"))
+                .values("num_authorities")
+            )
+        )
+
+        for section in assigned:
+            progress[section.title]["assigned"] = section.num_authorities
+
+        context["page_title"] = "Section Progress"
+        context["progress"] = progress
+        context["url_pattern"] = self.url_pattern
+
+        return context
+
+
+class BaseSectionProgressView(UserPassesTestMixin, ListView):
+    template_name = "crowdsourcer/section_progress.html"
+    model = Section
+    context_object_name = "sections"
+    types = ["volunteer", "national_volunteer"]
+    response_type = "First Mark"
+    url_pattern = "section_progress"
+
+    def test_func(self):
+        return self.request.user.is_superuser
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        section = Section.objects.get(title=self.kwargs["section_title"])
+        questions = Question.objects.filter(section=section, how_marked__in=self.types)
+        rt = ResponseType.objects.get(type=self.response_type)
+
+        question_list = list(questions.values_list("id", flat=True))
+
+        authorities = (
+            PublicAuthority.response_counts(
+                question_list,
+                section.title,
+                self.request.user,
+                response_type=rt,
+            )
+            .distinct()
+            .annotate(
+                qs_left=Cast(F("num_responses"), FloatField())
+                / Cast(F("num_questions"), FloatField())
+            )
+        )
+
+        sort_order = self.request.GET.get("sort", None)
+        if sort_order is None or sort_order != "asc":
+            authorities = authorities.order_by(
+                F("qs_left").desc(nulls_last=True), "name"
+            )
+
+        else:
+            authorities = authorities.order_by(
+                F("qs_left").asc(nulls_first=True), "name"
+            )
+
+        total = 0
+        complete = 0
+        for authority in authorities:
+            total = total + 1
+            if (
+                authorities.num_questions is not None
+                and authority.num_responses == authority.num_questions
+            ):
+                complete = complete + 1
+
+        context["page_title"] = f"{section.title} Section Progress"
+        context["section"] = section
+        context["totals"] = {"total": total, "complete": complete}
+        context["authorities"] = authorities
+        context["url_pattern"] = self.url_pattern
+
+        return context
+
+
+class BaseAuthorityAssignmentView(UserPassesTestMixin, ListView):
+    template_name = "crowdsourcer/authorities_assigned.html"
+    model = PublicAuthority
+    context_object_name = "authorities"
+    stage = "First Mark"
+
+    def test_func(self):
+        return self.request.user.is_superuser
+
+    def get_queryset(self):
+        rt = ResponseType.objects.get(type=self.stage)
+        qs = PublicAuthority.objects.all().annotate(
+            num_sections=Subquery(
+                Assigned.objects.filter(authority=OuterRef("pk"), response_type=rt)
+                .values("authority")
+                .annotate(num_sections=Count("pk"))
+                .values("num_sections")
+            )
+        )
+
+        return qs
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        authorities = context["authorities"]
+        sort_order = self.request.GET.get("sort", None)
+        do_not_mark_only = self.request.GET.get("do_not_mark_only", None)
+
+        if do_not_mark_only is not None:
+            authorities = authorities.filter(do_not_mark=True)
+
+        if sort_order is None or sort_order != "asc":
+            authorities = authorities.order_by(
+                F("num_sections").desc(nulls_last=True), "name"
+            )
+
+        else:
+            authorities = authorities.order_by(
+                F("num_sections").asc(nulls_first=True), "name"
+            )
+
+        context["authorities"] = authorities
+        context["do_not_mark_only"] = do_not_mark_only
 
         return context

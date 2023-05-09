@@ -194,6 +194,32 @@ urlpatterns = [
         audit.AuthorityAuditSectionQuestions.as_view(),
         name="authority_audit",
     ),
+    # audit progress
+    path(
+        "audit_authority_assignments/",
+        progress.AuditAuthorityAssignmentView.as_view(),
+        name="audit_authority_assignments",
+    ),
+    path(
+        "audit_authority_progress/",
+        progress.AuditAllAuthorityProgressView.as_view(),
+        name="audit_all_authority_progress",
+    ),
+    path(
+        "audit_authority_progress/<name>/",
+        progress.AuditAuthorityProgressView.as_view(),
+        name="audit_authority_progress",
+    ),
+    path(
+        "audit_section_progress/",
+        progress.AuditAllSectionProgressView.as_view(),
+        name="audit_all_section_progress",
+    ),
+    path(
+        "audit_section_progress/<section_title>/",
+        progress.AuditSectionProgressView.as_view(),
+        name="audit_section_progress",
+    ),
 ]
 
 if settings.DEBUG:  # pragma: no cover

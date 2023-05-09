@@ -17,7 +17,7 @@
           {% for section, counts in progress.items %}
             <tr>
                 <td>
-                    <a href="{% url 'section_progress' section %}">{{ section }}</a>
+                    <a href="{% url url_pattern section %}">{{ section }}</a>
                 </td>
                 <td>
                     <div class="progress progress-thin mb-2">
