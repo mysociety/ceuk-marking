@@ -46,27 +46,28 @@
         {{ form.management_form }}
       {% for q_form in form %}
         <fieldset class="py-4 py-md-5 border-top">
-            <div class="row">
-                <div class="col-md-7">
-                  <legend id="q{{q_form.question_obj.number_and_part}}" class="h4 mb-3 mb-sm-4">
-                      {{q_form.question_obj.number_and_part}}. {{ q_form.question_obj.description }}
-                      {% if q_form.question_obj.how_marked == "foi" %}(FOI){% endif %}
-                    </legend>
-                </div>
+            <legend id="q{{ q_form.question_obj.number_and_part }}" class="mb-3">
+                <h2 class="h4 mb-0 mw-40em">
+                    {{ q_form.question_obj.number_and_part }}. {{ q_form.question_obj.description }}
+                    {% if q_form.question_obj.how_marked == "foi" %}(FOI){% endif %}
+                </h2>
+            </legend>
+            <div class="d-sm-flex mx-n3 text-muted">
+                <details class="mt-3 mt-sm-0 mx-3 mw-30em">
+                    <summary class="fw-bold mb-2">Criteria</summary>
+                    {{ q_form.question_obj.criteria|linebreaks }}
+                </details>
+                <details class="mt-3 mt-sm-0 mx-3 mw-30em">
+                    <summary class="fw-bold mb-2">Clarifications</summary>
+                    {{ q_form.question_obj.clarifications|linebreaks }}
+                </details>
             </div>
-            <div class="row">
-                <div class="col-md-4 offset-md-1 order-md-2 mb-3 mb-sm-4">
-                    <details class="text-muted">
-                        <summary class="fw-bold mb-2">Criteria</summary>
-                        {{q_form.question_obj.criteria|linebreaks }}
-                    </details>
-                    <details class="text-muted">
-                        <summary class="fw-bold mb-2">Clarifications</summary>
-                        {{q_form.question_obj.clarifications|linebreaks }}
-                    </details>
-                </div>
-                <div class="col-md-7 order-md-1">
-                    <h2 class="form-label fs-6">Marker’s answer</h2>
+            <div class="row gx-lg-5">
+                <div class="col-lg-4 mt-4">
+
+                    <h3 class="h5 text-muted mb-3 mb-lg-4">First Mark</h3>
+
+                    <h4 class="form-label fs-6">Marker’s answer</h4>
                     <div class="read-only-answer mb-3 mb-md-4">
                       {% if q_form.orig.multi_option.values %}
                         <p>
@@ -81,53 +82,97 @@
                       {% endif %}
                     </div>
 
-                    {% if q_form.question_obj.how_marked == 'foi' %}
-                    <h2 class="form-label fs-6">FOI request</h2>
+                  {% if q_form.question_obj.how_marked == 'foi' %}
+                    <h4 class="form-label fs-6">FOI request</h4>
                     <div class="read-only-answer mb-3 mb-md-4">
                         {{ q_form.orig.evidence|urlize }}
                     </div>
-                    {% else %}
-                    <h2 class="form-label fs-6">Marker’s evidence of criteria met</h2>
+                  {% else %}
+                    <h4 class="form-label fs-6">Marker’s evidence of criteria met</h4>
                     <div class="read-only-answer mb-3 mb-md-4">
                         {{ q_form.orig.evidence|default:"(none)"|linebreaks }}
                     </div>
-                    {% endif %}
+                  {% endif %}
 
-                    {% if q_form.question_obj.how_marked != 'foi' %}
-                    <h2 class="form-label fs-6">Links to evidence</h2>
+                  {% if q_form.question_obj.how_marked != 'foi' %}
+                    <h4 class="form-label fs-6">Links to evidence</h4>
                     <div class="read-only-answer mb-3 mb-md-4">
                         {{ q_form.orig.public_notes|default:"(none)"|urlize|linebreaks }}
                     </div>
 
-                    <h2 class="form-label fs-6">Page number</h2>
+                    <h4 class="form-label fs-6">Page number</h4>
                     <div class="read-only-answer mb-3 mb-md-4">
                         {{ q_form.orig.page_number|default:"(none)" }}<br>
                     </div>
-                    {% endif %}
+                  {% endif %}
 
-                    <h2 class="form-label fs-6">Marker’s additional notes</h2>
+                    <h4 class="form-label fs-6">Marker’s additional notes</h4>
                     <div class="read-only-answer mb-3 mb-md-4">
                         {{ q_form.orig.private_notes|default:"(none)"|linebreaks }}
                     </div>
 
-                    <h2 class="form-label fs-6">Council agrees</h2>
-                    <div class="read-only-answer mb-3 mb-md-4">
-                        {% if q_form.ror.agree_with_response is not None %}
-                            {{ q_form.ror.agree_with_response|default:"False"|linebreaks }}
-                        {% else %}
-                            <p>(none)</p>
-                        {% endif %}
-                    </div>
+                </div>
+                <div class="col-lg-4 mt-4">
 
-                    <h2 class="form-label fs-6">Council evidence</h2>
+                    <h3 class="h5 text-muted mb-3 mb-lg-4">Right of Reply</h3>
+
+                    <h4 class="form-label fs-6">Council response</h4>
+                  {% if q_form.ror.agree_with_response is True %}
+                    <div class="read-only-answer mb-3 mb-md-4 bg-green-100 text-green-700">
+                      <p>Council agrees with first mark</p>
+                    </div>
+                  {% elif q_form.ror.agree_with_response is False %}
+                    <div class="read-only-answer mb-3 mb-md-4 bg-red-100 text-red-700">
+                      <p>Council disagrees with first mark</p>
+                    </div>
+                  {% else %}
+                    <div class="read-only-answer mb-3 mb-md-4">
+                      <p>No response from Council</p>
+                    </div>
+                  {% endif %}
+
+                    <h4 class="form-label fs-6">Council evidence</h4>
                     <div class="read-only-answer mb-3 mb-md-4">
                         {{ q_form.ror.evidence|default:"(none)"|linebreaks }}
                     </div>
 
-                    <h2 class="form-label fs-6">Council notes</h2>
+                    <h4 class="form-label fs-6">Council notes</h4>
                     <div class="read-only-answer mb-3 mb-md-4">
                         {{ q_form.ror.private_notes|default:"(none)"|linebreaks }}
                     </div>
+
+                </div>
+                <div class="col-lg-4 mt-4 js-audit-responses">
+
+                    <h3 class="h5 text-muted mb-3 mb-lg-4">Audited response</h3>
+
+                    <div class="mb-3">
+                        <!-- TODO: Make this button work -->
+                        <button class="btn btn-sm {% if q_form.ror.agree_with_response is True %}btn-outline-success{% else %}btn-outline-primary{% endif %} d-flex align-items-center js-copy-audit-response-from-first-mark" type="button">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="me-2" viewBox="0 0 16 16">
+                              <path d="M9.5 2.672a.5.5 0 1 0 1 0V.843a.5.5 0 0 0-1 0v1.829Zm4.5.035A.5.5 0 0 0 13.293 2L12 3.293a.5.5 0 1 0 .707.707L14 2.707ZM7.293 4A.5.5 0 1 0 8 3.293L6.707 2A.5.5 0 0 0 6 2.707L7.293 4Zm-.621 2.5a.5.5 0 1 0 0-1H4.843a.5.5 0 1 0 0 1h1.829Zm8.485 0a.5.5 0 1 0 0-1h-1.829a.5.5 0 0 0 0 1h1.829ZM13.293 10A.5.5 0 1 0 14 9.293L12.707 8a.5.5 0 1 0-.707.707L13.293 10ZM9.5 11.157a.5.5 0 0 0 1 0V9.328a.5.5 0 0 0-1 0v1.829Zm1.854-5.097a.5.5 0 0 0 0-.706l-.708-.708a.5.5 0 0 0-.707 0L8.646 5.94a.5.5 0 0 0 0 .707l.708.708a.5.5 0 0 0 .707 0l1.293-1.293Zm-3 3a.5.5 0 0 0 0-.706l-.708-.708a.5.5 0 0 0-.707 0L.646 13.94a.5.5 0 0 0 0 .707l.708.708a.5.5 0 0 0 .707 0L8.354 9.06Z"/>
+                          </svg>
+                          Copy from First Mark
+                        </button>
+                    </div>
+
+                    <script type="application/json" class="js-first-mark-json">
+                    {
+                      {% if q_form.orig.multi_option.values %}
+                        "multi_option": [
+                          {% for option in q_form.orig.multi_option.values %}
+                            "{{ option.id }}"{% if not forloop.last %},{% endif %}
+                          {% endfor %}
+                        ],
+                      {% else %}
+                        "option": "{{ q_form.orig.option.id }}",
+                      {% endif %}
+                        "evidence": "{{ q_form.orig.evidence|escapejs }}",
+                        "public_notes": "{{ q_form.orig.public_notes|escapejs }}",
+                        "page_number": "{{ q_form.orig.page_number|escapejs }}",
+                        "private_notes": "{{ q_form.orig.private_notes|escapejs }}"
+                    }
+                    </script>
 
                     <label class="form-label" for="{{ q_form.option.if_for_label }}">Answer</label>
                   {% if q_form.question_obj.question_type == "multiple_choice" %}
@@ -147,6 +192,7 @@
                     {{ q_form.authority }}
                     {{ q_form.question }}
                     {{ q_form.id }}
+
                 </div>
             </div>
         </fieldset>
@@ -156,5 +202,27 @@
           <input type="submit" class="btn btn-primary" value="Save answers">
       </div>
     </form>
+
+    <script>
+    document.querySelectorAll('.js-copy-audit-response-from-first-mark').forEach(function(el, i){
+      el.addEventListener('click', function(e){
+        e.preventDefault();
+        var audit_responses = el.closest('.js-audit-responses');
+        var first_mark_responses = JSON.parse(audit_responses.querySelector('.js-first-mark-json').textContent);
+
+        ["page_number", "evidence", "public_notes", "private_notes"].forEach(function(slug, i){
+          audit_responses.querySelector('[name$="' + slug + '"]').value = first_mark_responses[slug];
+        });
+
+        if(first_mark_responses.multi_option){
+          audit_responses.querySelectorAll('[name$="multi_option"]').forEach(function(checkbox){
+            checkbox.checked = ( first_mark_responses.multi_option.indexOf(checkbox.value) > -1 );
+          });
+        } else {
+          audit_responses.querySelector('[name$="option"]').value = first_mark_responses.option;
+        }
+      });
+    });
+    </script>
 
 {% endblock %}
