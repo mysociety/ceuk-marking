@@ -2,7 +2,13 @@ from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand
 from django.db.models import F, Q
 
-from crowdsourcer.models import Assigned, PublicAuthority, Question, Section
+from crowdsourcer.models import (
+    Assigned,
+    PublicAuthority,
+    Question,
+    ResponseType,
+    Section,
+)
 
 
 class Command(BaseCommand):
@@ -16,7 +22,14 @@ class Command(BaseCommand):
             "--confirm_changes", action="store_true", help="make updates to database"
         )
 
+        parser.add_argument(
+            "--stage", required=True, help="which stage of assignments to remove"
+        )
+
     def handle(self, *args, **kwargs):
+        stage = kwargs["stage"]
+        stage = ResponseType.objects.get(type=stage)
+
         users = User.objects.filter(is_active=False)
 
         sections = Section.objects.all()
@@ -36,7 +49,10 @@ class Command(BaseCommand):
             )
 
             to_unassign = Assigned.objects.filter(
-                section=section, user__in=users, authority__in=responses
+                section=section,
+                user__in=users,
+                authority__in=responses,
+                response_type=stage,
             ).order_by("authority__name")
 
             if to_unassign.count() > 0:
