@@ -2,7 +2,7 @@ from django.contrib.auth.models import User
 from django.test import TestCase
 from django.urls import reverse
 
-from crowdsourcer.models import Response, ResponseType
+from crowdsourcer.models import Assigned, Response, ResponseType
 
 
 class BaseTestCase(TestCase):
@@ -72,8 +72,33 @@ class TestSaveView(BaseTestCase):
         "options.json",
         "assignments.json",
         "responses.json",
+        "ror_responses.json",
         "council_responses.json",
+        "audit_extra_council_responses.json",
     ]
+
+    def test_permissions(self):
+        u = User.objects.get(username="marker")
+        self.client.force_login(u)
+
+        url = reverse("authority_audit", args=("Aberdeenshire Council", "Transport"))
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 403)
+
+        u = User.objects.get(username="auditor")
+        self.client.force_login(u)
+
+        url = reverse("authority_audit", args=("Aberdeenshire Council", "Transport"))
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+
+        assignment = Assigned.objects.get(user=u)
+        assignment.authority_id = 3
+        assignment.save()
+
+        url = reverse("authority_audit", args=("Aberdeenshire Council", "Transport"))
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 403)
 
     def test_save(self):
         url = reverse("authority_audit", args=("Aberdeenshire Council", "Transport"))
@@ -177,9 +202,9 @@ class TestSectionProgressView(BaseTestCase):
 
         self.assertEquals(context["Transport"]["complete"], 1)
         self.assertEquals(context["Transport"]["started"], 2)
-        self.assertEquals(context["Transport"]["assigned"], 2)
+        self.assertEquals(context["Transport"]["assigned"], 1)
         self.assertEquals(context["Transport"]["total"], 4)
         self.assertEquals(context["Buildings & Heating"]["started"], 1)
         self.assertEquals(context["Buildings & Heating"]["complete"], 0)
-        self.assertEquals(context["Buildings & Heating"]["assigned"], 1)
+        self.assertEquals(context["Buildings & Heating"]["assigned"], None)
         self.assertEquals(context["Buildings & Heating"]["total"], 4)

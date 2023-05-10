@@ -205,7 +205,7 @@ class BaseAllSectionProgressView(UserPassesTestMixin, ListView):
 
         assigned = Section.objects.all().annotate(
             num_authorities=Subquery(
-                Assigned.objects.filter(section=OuterRef("pk"))
+                Assigned.objects.filter(section=OuterRef("pk"), response_type=rt)
                 .values("section")
                 .annotate(num_authorities=Count("pk"))
                 .values("num_authorities")

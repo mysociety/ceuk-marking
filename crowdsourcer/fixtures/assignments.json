@@ -31,5 +31,16 @@
     "response_type": 1,
     "question": null
   }
+},
+{
+  "model": "crowdsourcer.assigned",
+  "pk": 4,
+  "fields": {
+    "user": 4,
+    "section": 2,
+    "authority": 2,
+    "response_type": 3,
+    "question": null
+  }
 }
 ]

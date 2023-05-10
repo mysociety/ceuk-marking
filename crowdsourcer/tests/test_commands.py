@@ -33,37 +33,43 @@ class UnassignInactiveTestCase(BaseCommandTestCase):
     ]
 
     def test_does_not_unassign_active(self):
-        self.assertEquals(Assigned.objects.count(), 3)
+        self.assertEquals(Assigned.objects.count(), 4)
 
         self.call_command(
-            "unassign_incomplete_sections_from_inactive", confirm_changes=True
+            "unassign_incomplete_sections_from_inactive",
+            confirm_changes=True,
+            stage="First Mark",
         )
 
-        self.assertEquals(Assigned.objects.count(), 3)
+        self.assertEquals(Assigned.objects.count(), 4)
 
     def test_no_unassign_without_counfirm(self):
-        self.assertEquals(Assigned.objects.count(), 3)
-
-        u = User.objects.get(email="marker@example.org")
-        u.is_active = False
-        u.save()
-
-        self.call_command("unassign_incomplete_sections_from_inactive")
-
-        self.assertEquals(Assigned.objects.count(), 3)
-
-    def test_unassign(self):
-        self.assertEquals(Assigned.objects.count(), 3)
+        self.assertEquals(Assigned.objects.count(), 4)
 
         u = User.objects.get(email="marker@example.org")
         u.is_active = False
         u.save()
 
         self.call_command(
-            "unassign_incomplete_sections_from_inactive", confirm_changes=True
+            "unassign_incomplete_sections_from_inactive", stage="First Mark"
         )
 
-        self.assertEquals(Assigned.objects.count(), 1)
+        self.assertEquals(Assigned.objects.count(), 4)
+
+    def test_unassign(self):
+        self.assertEquals(Assigned.objects.count(), 4)
+
+        u = User.objects.get(email="marker@example.org")
+        u.is_active = False
+        u.save()
+
+        self.call_command(
+            "unassign_incomplete_sections_from_inactive",
+            confirm_changes=True,
+            stage="First Mark",
+        )
+
+        self.assertEquals(Assigned.objects.count(), 2)
 
 
 class ImportCouncilsTestCase(BaseCommandTestCase):

@@ -85,8 +85,7 @@
   "pk": 2,
   "fields": {
     "user_id": 4,
-    "response_type_id": 3,
-    "authority_id": 2
+    "response_type_id": 3
   }
 }
 ]

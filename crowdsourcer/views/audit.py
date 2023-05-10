@@ -57,17 +57,17 @@ class AuthorityAuditSectionQuestions(BaseQuestionView):
         if self.request.user.is_anonymous:
             raise PermissionDenied
 
-        authority = PublicAuthority.objects.get(name=self.kwargs["name"])
+        rt = ResponseType.objects.get(type=self.response_type)
         user = self.request.user
         if user.is_superuser is False:
             if hasattr(user, "marker"):
                 marker = user.marker
                 if marker.response_type.type == "Audit":
-                    if (
-                        marker.authority != authority
-                        and not Assigned.objects.filter(
-                            user=user, authority=authority, section__isnull=True
-                        ).exists()
+                    if not Assigned.is_user_assigned(
+                        user=user,
+                        authority=self.kwargs["name"],
+                        section=self.kwargs["section_title"],
+                        current_stage=rt,
                     ):
                         raise PermissionDenied
                 else:
