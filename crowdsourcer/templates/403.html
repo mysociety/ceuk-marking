@@ -1,0 +1,15 @@
+{% extends 'crowdsourcer/base.html' %}
+
+{% block content %}
+<h1>403 Forbidden</h1>
+
+{% if user and user.is_anonymous %}
+<p>You are not logged in. Try <a href="{% url 'login' %}?next={{ request.path|urlencode }}">logging in</a> again to access this page</p>
+{% else %}
+<p>
+  You do not have permission to access this page. If you believe you should please contact Climate Emergency UK.
+</p>
+{% endif %}
+
+
+{% endblock %}
