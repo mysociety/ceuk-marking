@@ -18,7 +18,7 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
 
-from crowdsourcer.views import marking, progress, rightofreply
+from crowdsourcer.views import marking, progress, rightofreply, stats
 
 urlpatterns = [
     # admin/utility screens
@@ -146,6 +146,17 @@ urlpatterns = [
         "authority_contacts/",
         progress.AuthorityContactCSVView.as_view(),
         name="authority_contacts_report",
+    ),
+    # stats
+    path(
+        "stats/all_first_marks_csv/",
+        stats.AllFirstMarksCSVView.as_view(),
+        name="all_first_marks_csv",
+    ),
+    path(
+        "stats/all_audit_marks_csv/",
+        stats.AllAuditMarksCSVView.as_view(),
+        name="all_audit_marks_csv",
     ),
 ]
 
