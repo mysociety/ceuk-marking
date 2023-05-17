@@ -1,13 +1,15 @@
 import csv
 import logging
+import re
 from collections import defaultdict
 
 from django.contrib.auth.mixins import UserPassesTestMixin
 from django.db.models import Count
 from django.http import HttpResponse
+from django.utils.text import slugify
 from django.views.generic import ListView
 
-from crowdsourcer.models import Question, Response
+from crowdsourcer.models import PublicAuthority, Question, Response
 
 logger = logging.getLogger(__name__)
 
@@ -129,3 +131,132 @@ class CouncilDisagreeMarkCSVView(AllMarksBaseCSVView):
 
         context["marks"] = disagree
         return context
+
+
+class SelectQuestionView(UserPassesTestMixin, ListView):
+    template_name = "crowdsourcer/stats_select_question.html"
+    context_object_name = "questions"
+
+    def test_func(self):
+        return self.request.user.is_superuser
+
+    def get_queryset(self):
+        return Question.objects.select_related("section").order_by(
+            "section__title", "number", "number_part"
+        )
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        sections = defaultdict(list)
+
+        for q in context["questions"]:
+            sections[q.section.title].append(q)
+
+        # items does not work on defaultdicts in a template :|
+        context["sections"] = dict(sections)
+
+        return context
+
+
+class QuestionDataCSVView(UserPassesTestMixin, ListView):
+    context_object_name = "responses"
+    response_type = "First Mark"
+
+    def test_func(self):
+        return self.request.user.is_superuser
+
+    def get_queryset(self):
+        stage = self.kwargs["stage"]
+        section = self.kwargs["section"]
+        q = self.kwargs["question"]
+
+        if stage == "audit":
+            self.response_type = "Audit"
+
+        q_number, q_part = re.search(r"(\d+)(\w*)", q).groups()
+        responses = (
+            Response.objects.filter(
+                question__section__title=section,
+                question__number=q_number,
+                response_type__type=self.response_type,
+            )
+            .annotate(multi_count=Count("multi_option__pk"))
+            .select_related("authority", "option")
+            .order_by("authority")
+        )
+
+        if q_part is not None and q_part != "":
+            responses = responses.filter(question__number_part=q_part)
+
+        return responses
+
+    def get_context_data(self, **kwargs):
+        stage = self.kwargs["stage"]
+        context = super().get_context_data(**kwargs)
+
+        answers = {}
+
+        for response in context["responses"]:
+            score = 0
+            answer = ""
+
+            if response.multi_count > 0:
+                descs = []
+                for opt in response.multi_option.all():
+                    descs.append(opt.description)
+                    score += opt.score
+                answer = ",".join(descs)
+            elif response.option is not None:
+                score = response.option.score
+                answer = response.option.description
+            else:
+                score = "-"
+
+            data = [
+                response.authority.name,
+                answer,
+                score,
+                response.public_notes,
+                response.private_notes,
+                response.page_number,
+                response.evidence,
+            ]
+
+            answers[response.authority.name] = data
+
+        authorities = []
+        for authority in PublicAuthority.objects.all().order_by("name"):
+            if answers.get(authority.name, None) is not None:
+                authorities.append(answers[authority.name])
+            else:
+                authorities.append([authority.name, "-", "-", "-", "-", "-", "-"])
+
+        section = self.kwargs["section"]
+        q = self.kwargs["question"]
+
+        context["file_prefix"] = f"{slugify(stage)}_data"
+        context["file_postfix"] = f"{slugify(section)}_{q}"
+        context["answers"] = authorities
+        return context
+
+    def render_to_response(self, context, **response_kwargs):
+        file_name = f"{context['file_prefix']}_{context['file_postfix']}"
+        response = HttpResponse(
+            content_type="text/csv",
+            headers={"Content-Disposition": f'attachment; filename="{file_name}"'},
+        )
+        writer = csv.writer(response)
+        headers = [
+            "authority",
+            "answer",
+            "score",
+            "public_notes",
+            "private_notes",
+            "page_number",
+            "evidence",
+        ]
+        writer.writerow(headers)
+        for answer in context["answers"]:
+            writer.writerow(answer)
+        return response
