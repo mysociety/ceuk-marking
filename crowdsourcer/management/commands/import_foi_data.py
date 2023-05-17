@@ -1,3 +1,5 @@
+from collections import defaultdict
+
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand
@@ -88,13 +90,16 @@ class Command(BaseCommand):
             "type": "yes_no",
             "twfy-project": 21,
         },
-        "Transport 11i": {
+    }
+
+    q11_map = {
+        "roads": {
             "section": "Transport",
             "question": 11,
             "type": "yes_no",
             "twfy-project": 15,
         },
-        "Transport 11ii": {
+        "airports": {
             "section": "Transport",
             "question": 11,
             "type": "yes_no",
@@ -190,6 +195,14 @@ class Command(BaseCommand):
                 {"description": "No response", "score": 0},
             ]
         },
+        "Transport 11": {
+            "options": [
+                {"description": "Approved roads", "score": 1},
+                {"description": "Approved airport", "score": 1},
+                {"description": "No", "score": 0},
+                {"description": "No response", "score": 0},
+            ]
+        },
     }
 
     authority_name_map = {
@@ -204,6 +217,12 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument(
             "--use_csvs", action="store_true", help="get data from directory of CSVs"
+        )
+
+        parser.add_argument(
+            "--transport_q11_only",
+            action="store_true",
+            help="only import transport q11",
         )
 
     def populate_url_map(self):
@@ -332,9 +351,7 @@ class Command(BaseCommand):
 
         return options
 
-    def get_defaults_for_q(self, name, q, row):
-        MINIMUM_CRITERIA_MET = 7
-
+    def get_standard_defaults(self, name, row):
         notes = ""
         if not pd.isna(row["Notes"]):
             notes = row["Notes"]
@@ -349,6 +366,13 @@ class Command(BaseCommand):
             "private_notes": notes,
             "council": row["public_body_name"],
         }
+
+        return defaults
+
+    def get_defaults_for_q(self, name, q, row):
+        MINIMUM_CRITERIA_MET = 7
+
+        defaults = self.get_standard_defaults(name, row)
 
         q_details = self.sheet_map[name]
         if pd.isna(row.iloc[MINIMUM_CRITERIA_MET]):
@@ -383,6 +407,20 @@ class Command(BaseCommand):
 
         return defaults
 
+    def write_options_to_db(self, q, options):
+        for option in options:
+            try:
+                Option.objects.get_or_create(
+                    question=q,
+                    description=option["description"],
+                    defaults={
+                        "score": option["score"],
+                    },
+                )
+            except Option.MultipleObjectsReturned:
+                print(q, option["description"])
+                continue
+
     def create_options(self):
         for sheet, details in self.sheet_map.items():
 
@@ -411,18 +449,7 @@ class Command(BaseCommand):
                     q.question_type = "multiple_choice"
                     q.save()
 
-            for option in options:
-                try:
-                    Option.objects.get_or_create(
-                        question=q,
-                        description=option["description"],
-                        defaults={
-                            "score": option["score"],
-                        },
-                    )
-                except Option.MultipleObjectsReturned:
-                    print(q, option["description"])
-                    continue
+            self.write_options_to_db(q, options)
 
     def get_df(self, name, details, combined=False):
         if combined:
@@ -450,6 +477,36 @@ class Command(BaseCommand):
         df = df.dropna(axis="index", how="all")
 
         return df
+
+    def get_authority(self, authority, council_lookup):
+        orig_authority = authority
+        authority = self.authority_name_map.get(authority, authority)
+
+        gss = None
+        if authority in council_lookup:
+            gss = council_lookup[authority]
+        else:
+            for banned in [
+                "Borough",
+                "City",
+                "Council",
+                "County",
+                "District",
+                "Metropolitan",
+            ]:
+                authority = authority.replace(banned, "")
+            authority = authority.replace("&", "and")
+            authority = authority.strip().replace(" ", "-").lower()
+            if authority in council_lookup:
+                gss = council_lookup[authority]
+
+        try:
+            authority = PublicAuthority.objects.get(unique_id=gss)
+        except PublicAuthority.DoesNotExist:
+            self.warnings.append(f"no such authority: {orig_authority} ({authority})")
+            return None
+
+        return authority
 
     def process_sheet(self, sheet_map, council_lookup, rt, u, combined=False):
         self.sheet_map = sheet_map
@@ -487,34 +544,11 @@ class Command(BaseCommand):
                     print(f"No defaults for {name} - {row['public_body_name']}")
                     continue
 
-                orig_authority = authority = defaults["council"]
-                authority = self.authority_name_map.get(authority, authority)
+                authority = defaults["council"]
                 del defaults["council"]
 
-                gss = None
-                if authority in council_lookup:
-                    gss = council_lookup[authority]
-                else:
-                    for banned in [
-                        "Borough",
-                        "City",
-                        "Council",
-                        "County",
-                        "District",
-                        "Metropolitan",
-                    ]:
-                        authority = authority.replace(banned, "")
-                    authority = authority.replace("&", "and")
-                    authority = authority.strip().replace(" ", "-").lower()
-                    if authority in council_lookup:
-                        gss = council_lookup[authority]
-
-                try:
-                    authority = PublicAuthority.objects.get(unique_id=gss)
-                except PublicAuthority.DoesNotExist:
-                    self.warnings.append(
-                        f"no such authority: {orig_authority} ({authority})"
-                    )
+                authority = self.get_authority(authority, council_lookup)
+                if authority is None:
                     continue
 
                 multi_option = None
@@ -542,6 +576,109 @@ class Command(BaseCommand):
                     print(f" - {warning}")
                     print("---------")
 
+    def process_q11(self, council_lookup, rt, u):
+        self.warnings = []
+        MINIMUM_CRITERIA_MET = 7
+        NOTES = 8
+        answers = defaultdict(dict)
+
+        q = Question.objects.get(section__title="Transport", number=11)
+        q.question_type = "multiple_choice"
+        q.save()
+
+        self.write_options_to_db(q, self.tiered_options["Transport 11"]["options"])
+
+        try:
+            Option.objects.get(question=q, description="Yes").delete()
+        except Option.DoesNotExist:
+            pass  # already deleted
+
+        for foi in ["roads", "airports"]:
+            project = self.q11_map[foi]["twfy-project"]
+            file = self.foi_dir / f"project-{project}-export.csv"
+            df = pd.read_csv(
+                file,
+                header=0,
+            )
+            df = df.dropna(axis="index", how="all")
+            for _, row in df.iterrows():
+                defaults = self.get_standard_defaults(f"Transport 11 {foi}", row)
+                if not pd.isna(row.iloc[NOTES]):
+                    defaults["private_notes"] = row.iloc[NOTES]
+
+                defaults["private_notes"] = f"{foi}\n{defaults['private_notes']}"
+                defaults["evidence"] = f"{foi}: {defaults['evidence']}"
+
+                authority = defaults["council"]
+                del defaults["council"]
+
+                authority = self.get_authority(authority, council_lookup)
+                if authority is None:
+                    continue
+
+                if pd.isna(row.iloc[MINIMUM_CRITERIA_MET]):
+                    value = 0
+                else:
+                    try:
+                        value = int(row.iloc[MINIMUM_CRITERIA_MET])
+                    except ValueError:
+                        self.warnings.append(
+                            f"bad data in row: {row.iloc[MINIMUM_CRITERIA_MET]}"
+                        )
+                        continue
+
+                all_defaults = answers[authority.name]
+                if all_defaults:
+                    all_defaults["private_notes"] = (
+                        all_defaults["private_notes"] + "\n" + defaults["private_notes"]
+                    )
+                    del defaults["private_notes"]
+                    all_defaults["evidence"] = (
+                        all_defaults["evidence"] + "\n" + defaults["evidence"]
+                    )
+                    del defaults["evidence"]
+
+                defaults[foi] = value
+                all_defaults = {**all_defaults, **defaults}
+                all_defaults["authority"] = authority
+                answers[authority.name] = all_defaults
+
+        for authority, defaults in answers.items():
+            multi_option = []
+            defaults["option"] = None
+            if defaults.get("roads", None) is not None:
+                if defaults["roads"] == 1:
+                    multi_option.append(
+                        Option.objects.get(question=q, description="Approved roads")
+                    )
+                del defaults["roads"]
+            if defaults.get("airports", None) is not None:
+                if defaults["airports"] == 1:
+                    multi_option.append(
+                        Option.objects.get(question=q, description="Approved airport")
+                    )
+                del defaults["airports"]
+            if len(multi_option) == 0:
+                multi_option.append(Option.objects.get(question=q, description="No"))
+
+            authority = defaults["authority"]
+            del defaults["authority"]
+            r, _ = Response.objects.update_or_create(
+                question=q,
+                authority=authority,
+                response_type=rt,
+                user=u,
+                defaults=defaults,
+            )
+
+            r.multi_option.set(multi_option)
+
+        if len(self.warnings) > 0:
+            for warning in self.warnings:
+                print("errors for Transport 11")
+                print(f" - {warning}")
+                print("---------")
+
     def handle(self, *args, **options):
         if options["use_csvs"]:
             self.use_csvs = True
@@ -554,7 +691,9 @@ class Command(BaseCommand):
         self.populate_url_map()
         council_lookup = self.get_council_lookup()
 
-        self.process_sheet(self.non_combined_sheet_map, council_lookup, rt, u)
-        self.process_sheet(
-            self.combined_sheet_map, council_lookup, rt, u, combined=True
-        )
+        if not options["transport_q11_only"]:
+            self.process_sheet(self.non_combined_sheet_map, council_lookup, rt, u)
+            self.process_sheet(
+                self.combined_sheet_map, council_lookup, rt, u, combined=True
+            )
+        self.process_q11(council_lookup, rt, u)
