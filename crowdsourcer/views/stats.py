@@ -92,3 +92,40 @@ class AllFirstMarksCSVView(AllMarksBaseCSVView):
 class AllAuditMarksCSVView(AllMarksBaseCSVView):
     response_type = "Audit"
     file_name = "grace_audit_mark_scores.csv"
+
+
+class CouncilDisagreeMarkCSVView(AllMarksBaseCSVView):
+    context_object_name = "responses"
+    response_type = "First Mark"
+    ror_response_type = "Right of Reply"
+    file_name = "grace_council_disagree_scores.csv"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        council_responses = (
+            Response.objects.filter(response_type__type=self.ror_response_type)
+            .select_related("question", "authority", "question__section", "option")
+            .order_by(
+                "authority",
+                "question__section__title",
+                "question__number",
+                "question__number_part",
+            )
+            .annotate(multi_count=Count("multi_option__pk"))
+        )
+
+        disagree = defaultdict(dict)
+        marks = context["marks"]
+
+        for response in council_responses:
+            q = response.question
+            q_desc = f"{q.section.title}: {q.number_and_part}"
+
+            disagree[response.authority.name][q_desc] = ""
+            if not response.agree_with_response:
+                if marks[response.authority.name][q_desc] > 0:
+                    disagree[response.authority.name][q_desc] = "Y"
+
+        context["marks"] = disagree
+        return context

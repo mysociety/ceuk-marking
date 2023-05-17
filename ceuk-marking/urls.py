@@ -158,6 +158,11 @@ urlpatterns = [
         stats.AllAuditMarksCSVView.as_view(),
         name="all_audit_marks_csv",
     ),
+    path(
+        "stats/council_disagree_mark_csv/",
+        stats.CouncilDisagreeMarkCSVView.as_view(),
+        name="council_disagree_mark_csv",
+    ),
 ]
 
 if settings.DEBUG:  # pragma: no cover
