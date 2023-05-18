@@ -154,6 +154,11 @@ urlpatterns = [
         name="all_first_marks_csv",
     ),
     path(
+        "stats/all_ror_marks_csv/",
+        stats.AllRoRMarksCSVView.as_view(),
+        name="all_ror_marks_csv",
+    ),
+    path(
         "stats/all_audit_marks_csv/",
         stats.AllAuditMarksCSVView.as_view(),
         name="all_audit_marks_csv",
@@ -167,6 +172,11 @@ urlpatterns = [
         "stats/question/",
         stats.SelectQuestionView.as_view(),
         name="stats_select_question",
+    ),
+    path(
+        "stats/question/ror/<section>/<question>/",
+        stats.RoRQuestionDataCSVView.as_view(),
+        name="ror_question_data_csv",
     ),
     path(
         "stats/question/<stage>/<section>/<question>/",

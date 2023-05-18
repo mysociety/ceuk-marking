@@ -13,6 +13,7 @@
             <tr>
                 <th>Question</th>
                 <td>First Mark Data</td>
+                <td>Right of Reply Data</td>
                 <td>Audit Data</td>
             </tr>
         </thead>
@@ -24,6 +25,9 @@
                 </td>
                 <td>
                     <a href="{% url 'question_data_csv' 'first_mark' section q.number %}">First</a>
+                </td>
+                <td>
+                    <a href="{% url 'ror_question_data_csv' section q.number %}">RoR</a>
                 </td>
                 <td>
                     <a href="{% url 'question_data_csv' 'audit' section q.number_and_part %}">Audit</a>

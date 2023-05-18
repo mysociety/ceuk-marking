@@ -35,6 +35,19 @@ class AllMarksBaseCSVView(UserPassesTestMixin, ListView):
             .annotate(multi_count=Count("multi_option__pk"))
         )
 
+    def get_response_score(self, response):
+        score = 0
+
+        if response.multi_count > 0:
+            for opt in response.multi_option.all():
+                score += opt.score
+        elif response.option is not None:
+            score = response.option.score
+        else:
+            score = "-"
+
+        return score
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
@@ -51,15 +64,7 @@ class AllMarksBaseCSVView(UserPassesTestMixin, ListView):
             headers[q_desc] = 1
 
         for response in context["responses"]:
-            score = 0
-
-            if response.multi_count > 0:
-                for opt in response.multi_option.all():
-                    score += opt.score
-            elif response.option is not None:
-                score = response.option.score
-            else:
-                score = "-"
+            score = self.get_response_score(response)
 
             q = response.question
             q_desc = f"{q.section.title}: {q.number_and_part}"
@@ -94,6 +99,24 @@ class AllFirstMarksCSVView(AllMarksBaseCSVView):
 class AllAuditMarksCSVView(AllMarksBaseCSVView):
     response_type = "Audit"
     file_name = "grace_audit_mark_scores.csv"
+
+
+class AllRoRMarksCSVView(AllMarksBaseCSVView):
+    response_type = "Right of Reply"
+    file_name = "grace_ror_mark_scores.csv"
+
+    def get_response_score(self, response):
+        score = "-"
+
+        if response.agree_with_response:
+            score = "Yes"
+        elif (
+            response.agree_with_response is not None
+            and not response.agree_with_response
+        ):
+            score = "No"
+
+        return score
 
 
 class CouncilDisagreeMarkCSVView(AllMarksBaseCSVView):
@@ -163,17 +186,29 @@ class SelectQuestionView(UserPassesTestMixin, ListView):
 class QuestionDataCSVView(UserPassesTestMixin, ListView):
     context_object_name = "responses"
     response_type = "First Mark"
+    headers = [
+        "authority",
+        "answer",
+        "score",
+        "public_notes",
+        "private_notes",
+        "page_number",
+        "evidence",
+    ]
 
     def test_func(self):
         return self.request.user.is_superuser
 
-    def get_queryset(self):
+    def set_stage(self):
         stage = self.kwargs["stage"]
-        section = self.kwargs["section"]
-        q = self.kwargs["question"]
-
         if stage == "audit":
             self.response_type = "Audit"
+
+    def get_queryset(self):
+        self.set_stage()
+
+        section = self.kwargs["section"]
+        q = self.kwargs["question"]
 
         q_number, q_part = re.search(r"(\d+)(\w*)", q).groups()
         responses = (
@@ -192,38 +227,44 @@ class QuestionDataCSVView(UserPassesTestMixin, ListView):
 
         return responses
 
+    def blank_row(self, authority):
+        return [authority, "-", "-", "-", "-", "-", "-"]
+
+    def get_response_data(self, response):
+        score = 0
+        answer = ""
+
+        if response.multi_count > 0:
+            descs = []
+            for opt in response.multi_option.all():
+                descs.append(opt.description)
+                score += opt.score
+            answer = ",".join(descs)
+        elif response.option is not None:
+            score = response.option.score
+            answer = response.option.description
+        else:
+            score = "-"
+
+        data = [
+            response.authority.name,
+            answer,
+            score,
+            response.public_notes,
+            response.private_notes,
+            response.page_number,
+            response.evidence,
+        ]
+
+        return data
+
     def get_context_data(self, **kwargs):
-        stage = self.kwargs["stage"]
         context = super().get_context_data(**kwargs)
 
         answers = {}
 
         for response in context["responses"]:
-            score = 0
-            answer = ""
-
-            if response.multi_count > 0:
-                descs = []
-                for opt in response.multi_option.all():
-                    descs.append(opt.description)
-                    score += opt.score
-                answer = ",".join(descs)
-            elif response.option is not None:
-                score = response.option.score
-                answer = response.option.description
-            else:
-                score = "-"
-
-            data = [
-                response.authority.name,
-                answer,
-                score,
-                response.public_notes,
-                response.private_notes,
-                response.page_number,
-                response.evidence,
-            ]
-
+            data = self.get_response_data(response)
             answers[response.authority.name] = data
 
         authorities = []
@@ -231,12 +272,12 @@ class QuestionDataCSVView(UserPassesTestMixin, ListView):
             if answers.get(authority.name, None) is not None:
                 authorities.append(answers[authority.name])
             else:
-                authorities.append([authority.name, "-", "-", "-", "-", "-", "-"])
+                authorities.append(self.blank_row(authority.name))
 
         section = self.kwargs["section"]
         q = self.kwargs["question"]
 
-        context["file_prefix"] = f"{slugify(stage)}_data"
+        context["file_prefix"] = f"{slugify(self.response_type)}_data"
         context["file_postfix"] = f"{slugify(section)}_{q}"
         context["answers"] = authorities
         return context
@@ -248,16 +289,43 @@ class QuestionDataCSVView(UserPassesTestMixin, ListView):
             headers={"Content-Disposition": f'attachment; filename="{file_name}"'},
         )
         writer = csv.writer(response)
-        headers = [
-            "authority",
-            "answer",
-            "score",
-            "public_notes",
-            "private_notes",
-            "page_number",
-            "evidence",
-        ]
-        writer.writerow(headers)
+        writer.writerow(self.headers)
         for answer in context["answers"]:
             writer.writerow(answer)
         return response
+
+
+class RoRQuestionDataCSVView(QuestionDataCSVView):
+    response_type = "Right of Reply"
+    headers = [
+        "authority",
+        "agree",
+        "notes",
+        "evidence",
+    ]
+
+    def set_stage(self):
+        pass
+
+    def blank_row(self, authority):
+        return [authority, "-", "-", "-"]
+
+    def get_response_data(self, response):
+        answer = ""
+
+        if response.agree_with_response:
+            answer = "Yes"
+        elif (
+            response.agree_with_response is not None
+            and not response.agree_with_response
+        ):
+            answer = "No"
+
+        data = [
+            response.authority.name,
+            answer,
+            response.private_notes,
+            response.evidence,
+        ]
+
+        return data
