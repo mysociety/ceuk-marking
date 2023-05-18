@@ -126,7 +126,8 @@ class CouncilDisagreeMarkCSVView(AllMarksBaseCSVView):
 
             disagree[response.authority.name][q_desc] = ""
             if not response.agree_with_response:
-                if marks[response.authority.name][q_desc] > 0:
+                mark = marks[response.authority.name].get(q_desc, None)
+                if mark is not None and mark != "-" and mark > 0:
                     disagree[response.authority.name][q_desc] = "Y"
 
         context["marks"] = disagree
