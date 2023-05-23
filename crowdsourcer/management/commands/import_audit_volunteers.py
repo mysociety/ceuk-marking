@@ -14,6 +14,9 @@ RED = "\033[31m"
 GREEN = "\033[32m"
 NOBOLD = "\033[0m"
 
+FULL_AUDIT_NUM = 40
+HALF_AUDIT_NUM = 20
+
 
 class Command(BaseCommand):
     help = "import volunteers"
@@ -28,18 +31,23 @@ class Command(BaseCommand):
         "Collab & Engagement": "Collaboration & Engagement",
     }
 
-    num_council_map = {
-        "scorecards_volunteering": 6,
-        "local_climate_policy_programme": 15,
+    full_num_council_map = {
+        "Transport": 30,
+        "Waste Reduction & Food": 33,
+    }
+    half_num_council_map = {
+        "Transport": 13,
+        "Waste Reduction & Food": 15,
     }
 
     column_names = [
+        "email",
         "first_name",
         "last_name",
-        "email",
         "council_area",
-        "type_of_volunteering",
         "assigned_section",
+        "second_section",
+        "audit_level",
     ]
 
     def add_arguments(self, parser):
@@ -55,34 +63,106 @@ class Command(BaseCommand):
             "--make_assignments", action="store_true", help="assign councils to users"
         )
 
+    def get_councils_to_assign(self, section, row, user, num_councils):
+        if not pd.isna(section):
+            try:
+                title = self.section_map.get(section, section)
+                s = Section.objects.get(title=title)
+            except Section.DoesNotExist:
+                self.stdout.write(
+                    f"{RED}could not assign section for {row['email']}, no section {title}{NOBOLD}"
+                )
+                return None, None
+
+        else:
+            # self.stdout.write(f"no section assigned for {row['email']}")
+            return None, None
+
+        existing_assignments = Assigned.objects.filter(
+            user=user, response_type=self.audit_rt
+        )
+        if existing_assignments.count() > 0:
+            self.stdout.write(f"{YELLOW}Existing assignments: {row['email']}{NOBOLD}")
+            return None, None
+
+        councils = re.split("[,/]", row["council_area"])
+
+        own_council = PublicAuthority.objects.filter(name__icontains=councils[0])
+        if len(councils) > 1:
+            for council in councils[1:]:
+                own_council = own_council | PublicAuthority.objects.filter(
+                    name__icontains=council
+                )
+
+        if len(councils) > 0 and own_council.count() == 0:
+            self.stdout.write(
+                f"{RED}Bad council: {row['council_area']} (f{row['email']}){NOBOLD}"
+            )
+            return None, None
+
+        first_mark_councils = Assigned.objects.filter(
+            user=user,
+            response_type=self.first_mark_rt,
+            section=s,
+            authority__isnull=False,
+        ).values_list("authority_id", flat=True)
+
+        assigned_councils = list(
+            Assigned.objects.filter(section=s, authority__isnull=False).values_list(
+                "authority_id", flat=True
+            )
+        )
+
+        own_council_list = list(own_council.values_list("id", flat=True))
+        assigned_councils = (
+            assigned_councils + own_council_list + list(first_mark_councils)
+        )
+
+        num_councils = self.full_num_council_map.get(s.title, num_councils)
+        if str(row["audit_level"]).find("20") != -1:
+            num_councils = self.half_num_council_map.get(s.title, HALF_AUDIT_NUM)
+
+        councils_to_assign = PublicAuthority.objects.exclude(
+            Q(id__in=assigned_councils) | Q(type="COMB") | Q(do_not_mark=True)
+        )[:num_councils]
+
+        if councils_to_assign.count() == 0:
+            self.stdout.write(
+                f"{YELLOW}No councils left in {s.title} for {user.email}{NOBOLD}"
+            )
+
+        return councils_to_assign, s
+
     def handle(self, quiet: bool = False, *args, **options):
         df = pd.read_excel(
             self.volunteer_file,
             usecols=[
-                "First name",
-                "Last name",
+                "First Name",
+                "Surname",
                 "Email",
                 "Council Area",
-                "Type of Volunteering",
-                "Assigned Section",
+                "Section",
+                "Second Section?",
+                "How many sections assigned?",
             ],
-            sheet_name="Volunteer Recruitment Cohort 2",
+            sheet_name="Auditors",
         )
         df.columns = self.column_names
 
-        audit_rt = ResponseType.objects.get(type="Audit")
-        first_mark_rt = ResponseType.objects.get(type="First Mark")
+        self.audit_rt = ResponseType.objects.get(type="Audit")
+        self.first_mark_rt = ResponseType.objects.get(type="First Mark")
 
         for index, row in df.iterrows():
             if pd.isna(row["email"]):
                 continue
-
-            user_type = row["type_of_volunteering"]
-            if user_type == "FOI_programme":
-                continue
-
-            if pd.isna(user_type):
-                self.stdout.write(f"{YELLOW}No user type for {row['email']}{NOBOLD}")
+            if row["email"] == "Dropped out":
+                break
+            try:
+                audit_level = int(row["audit_level"])
+            except ValueError:
+                self.stdout.write(
+                    f"{YELLOW}No audit level for for {row['email']}, not attempting assignment{NOBOLD}"
+                )
                 continue
 
             if options["add_users"] is True:
@@ -103,88 +183,46 @@ class Command(BaseCommand):
                         f"{YELLOW}No user found for {row['email']}, not attempting assignment{NOBOLD}"
                     )
                     continue
+            for section in [row["assigned_section"], row["second_section"]]:
+                councils_to_assign, s = self.get_councils_to_assign(
+                    section, row, u, audit_level
+                )
 
-            if not pd.isna(row["assigned_section"]):
-                try:
-                    title = self.section_map.get(
-                        row["assigned_section"], row["assigned_section"]
-                    )
-                    s = Section.objects.get(title=title)
-                except Section.DoesNotExist:
-                    self.stdout.write(
-                        f"{RED}could not assign section for {row['email']}, no section {title}{NOBOLD}"
-                    )
+                if councils_to_assign is None:
                     continue
 
-            else:
-                # self.stdout.write(f"no section assigned for {row['email']}")
-                continue
+                if options["make_assignments"] is True:
+                    for council in councils_to_assign:
+                        a, created = Assigned.objects.update_or_create(
+                            user=u,
+                            section=s,
+                            authority=council,
+                            response_type=self.audit_rt,
+                        )
 
-            existing_assignments = Assigned.objects.filter(
-                user=u, response_type=audit_rt
-            )
-            if existing_assignments.count() > 0:
-                self.stdout.write(
-                    f"{YELLOW}Existing assignments: {row['email']}{NOBOLD}"
-                )
-                continue
-
-            councils = re.split("[,/]", row["council_area"])
-
-            own_council = PublicAuthority.objects.filter(name__icontains=councils[0])
-            if len(councils) > 1:
-                for council in councils[1:]:
-                    own_council = own_council | PublicAuthority.objects.filter(
-                        name__icontains=council
-                    )
-
-            if len(councils) > 0 and own_council.count() == 0:
-                self.stdout.write(
-                    f"{RED}Bad council: {row['council_area']} (f{row['email']}){NOBOLD}"
-                )
-                continue
-
-            first_mark_councils = Assigned.objects.filter(
-                user=u, response_type=first_mark_rt, section=s, authority__isnull=False
-            ).values_list("authority_id", flat=True)
-
-            assigned_councils = list(
-                Assigned.objects.filter(section=s, authority__isnull=False).values_list(
-                    "authority_id", flat=True
-                )
-            )
-
-            own_council_list = list(own_council.values_list("id", flat=True))
-            assigned_councils = (
-                assigned_councils + own_council_list + first_mark_councils
-            )
-
-            num_councils = self.num_council_map[user_type]
-
-            councils_to_assign = PublicAuthority.objects.exclude(
-                Q(id__in=assigned_councils) | Q(type="COMB") | Q(do_not_mark=True)
-            )[:num_councils]
-
-            if councils_to_assign.count() == 0:
-                self.stdout.write(
-                    f"{YELLOW}No councils left in {s.title} for {u.email}{NOBOLD}"
-                )
-
-            if options["make_assignments"] is True:
-                for council in councils_to_assign:
-                    a, created = Assigned.objects.update_or_create(
-                        user=u, section=s, authority=council, response_type=audit_rt
-                    )
-
-        council_count = PublicAuthority.objects.filter(do_not_mark=False).count()
+        council_count = (
+            PublicAuthority.objects.filter(do_not_mark=False)
+            .exclude(type="COMB")
+            .count()
+        )
+        ca_council_count = (
+            PublicAuthority.objects.filter(do_not_mark=False)
+            .filter(type="COMB")
+            .count()
+        )
         for section in Section.objects.all():
+            council_comaparison = council_count
+            if section.title.find("(CA)") >= 0:
+                council_comaparison = ca_council_count
             assigned = Assigned.objects.filter(section=section).count()
-            if assigned != council_count:
+            if assigned != council_comaparison:
                 self.stdout.write(
-                    f"{RED}Not all councils assigned for {section.title} ({assigned}/{council_count}){NOBOLD}"
+                    f"{RED}Not all councils assigned for {section.title} ({assigned}/{council_comaparison}){NOBOLD}"
                 )
             else:
-                self.stdout.write(f"{GREEN}All councils and sections assigned{NOBOLD}")
+                self.stdout.write(
+                    f"{GREEN}All councils assigned for {section.title}{NOBOLD}"
+                )
 
         volunteer_count = User.objects.all().count()
         assigned_count = (
