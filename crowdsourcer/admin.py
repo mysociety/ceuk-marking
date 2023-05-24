@@ -19,10 +19,10 @@ class AssignedAdmin(admin.ModelAdmin):
         "user",
         "section",
         "authority",
-        "question",
+        "response_type",
     )
     search_fields = ["user__username", "authority__name"]
-    list_filter = ["section", "authority__questiongroup"]
+    list_filter = ["section", "authority__questiongroup", "response_type"]
 
 
 @admin.register(Option)
@@ -65,6 +65,8 @@ class QuestionGroupAdmin(admin.ModelAdmin):
 @admin.register(Marker)
 class MarkerAdmin(admin.ModelAdmin):
     list_display = ("user", "response_type", "authority")
+    search_fields = ["user__username"]
+    list_filter = ["response_type"]
 
 
 @admin.register(Response)
@@ -77,7 +79,7 @@ class ResponseAdmin(admin.ModelAdmin):
     )
 
     search_fields = ["question__description", "authority__name"]
-    list_filter = ["question__section"]
+    list_filter = ["question__section", "response_type"]
 
 
 @admin.register(ResponseType)
