@@ -103,7 +103,9 @@ class OverviewView(CurrentStageMixin, ListView):
                 ).values_list("authority_id", flat=True)
                 args.append(authorities)
 
-            response_counts = PublicAuthority.response_counts(*args).distinct()
+            response_counts = PublicAuthority.response_counts(
+                *args, response_type=self.current_stage
+            ).distinct()
 
             total = 0
             complete = 0
