@@ -278,7 +278,7 @@ class BaseSectionProgressView(UserPassesTestMixin, ListView):
         for authority in authorities:
             total = total + 1
             if (
-                authorities.num_questions is not None
+                authority.num_questions is not None
                 and authority.num_responses == authority.num_questions
             ):
                 complete = complete + 1
