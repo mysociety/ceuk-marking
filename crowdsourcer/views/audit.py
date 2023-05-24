@@ -12,6 +12,7 @@ logger = logging.getLogger(__name__)
 class SectionAuthorityList(BaseSectionAuthorityList):
     types = ["volunteer", "national_volunteer", "foi"]
     question_page = "authority_audit"
+    stage = "Audit"
 
 
 class AuthorityAuditSectionQuestions(BaseQuestionView):

@@ -114,6 +114,7 @@ class BaseSectionAuthorityList(CurrentStageMixin, ListView):
     context_object_name = "authorities"
     types = ["volunteer", "national_volunteer"]
     question_page = "authority_question_edit"
+    stage = "First Mark"
 
     def get_queryset(self):
         if self.request.user.is_anonymous:
@@ -126,6 +127,7 @@ class BaseSectionAuthorityList(CurrentStageMixin, ListView):
         ):
             return None
 
+        this_stage = ResponseType.objects.get(type=self.stage)
         section = Section.objects.get(title=self.kwargs["section_title"])
         questions = Question.objects.filter(section=section, how_marked__in=self.types)
 
@@ -141,7 +143,11 @@ class BaseSectionAuthorityList(CurrentStageMixin, ListView):
             ).values_list("authority__id", flat=True)
 
         authorities = PublicAuthority.response_counts(
-            question_list, self.kwargs["section_title"], self.request.user, assigned
+            question_list,
+            self.kwargs["section_title"],
+            self.request.user,
+            assigned=assigned,
+            response_type=this_stage,
         )
 
         return authorities.order_by("name").distinct()
