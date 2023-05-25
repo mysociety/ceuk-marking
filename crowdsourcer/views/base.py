@@ -103,8 +103,6 @@ class BaseQuestionView(TemplateView):
             "page_title"
         ] = f"{self.title_start}{context['authority_name']}: {context['section_title']}"
 
-        context["ror_user"] = True
-
         return context
 
 
