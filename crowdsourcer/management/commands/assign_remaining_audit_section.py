@@ -52,7 +52,7 @@ class Command(BaseCommand):
 
         assigned_councils = list(
             Assigned.objects.filter(section=s, authority__isnull=False).values_list(
-                "authority_id", flat=True
+                "authority_id", flat=True, response_type=self.audit_rt
             )
         )
 
@@ -118,7 +118,9 @@ class Command(BaseCommand):
             council_comaparison = council_count
             if section.title.find("(CA)") >= 0:
                 council_comaparison = ca_council_count
-            assigned = Assigned.objects.filter(section=section).count()
+            assigned = Assigned.objects.filter(
+                section=section, response_type=self.audit_rt
+            ).count()
             if assigned != council_comaparison:
                 self.stdout.write(
                     f"{RED}Not all councils assigned for {section.title} ({assigned}/{council_comaparison}){NOBOLD}"
@@ -130,7 +132,9 @@ class Command(BaseCommand):
 
         volunteer_count = User.objects.all().count()
         assigned_count = (
-            Assigned.objects.filter(user__is_superuser=False)
+            Assigned.objects.filter(
+                user__is_superuser=False, response_type=self.audit_rt
+            )
             .distinct("user_id")
             .count()
         )
