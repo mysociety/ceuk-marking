@@ -540,4 +540,4 @@ class AuditAllSectionProgressView(BaseAllSectionProgressView):
 class AuditSectionProgressView(BaseSectionProgressView):
     types = ["volunteer", "national_volunteer", "foi"]
     response_type = "Audit"
-    url_pattern = "audit_section_progress"
+    url_pattern = "authority_audit"
