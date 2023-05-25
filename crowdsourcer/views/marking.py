@@ -99,7 +99,9 @@ class OverviewView(CurrentStageMixin, ListView):
             ]
             if assignment.authority_id is not None:
                 authorities = Assigned.objects.filter(
-                    user=assignment.user_id, section=assignment.section_id
+                    user=assignment.user_id,
+                    section=assignment.section_id,
+                    response_type=self.current_stage,
                 ).values_list("authority_id", flat=True)
                 args.append(authorities)
 
