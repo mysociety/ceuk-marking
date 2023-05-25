@@ -51,16 +51,16 @@ class Command(BaseCommand):
         ).values_list("authority_id", flat=True)
 
         assigned_councils = list(
-            Assigned.objects.filter(section=s, authority__isnull=False).values_list(
-                "authority_id", flat=True, response_type=self.audit_rt
-            )
+            Assigned.objects.filter(
+                section=s, authority__isnull=False, response_type=self.audit_rt
+            ).values_list("authority_id", flat=True)
         )
 
         assigned_councils = assigned_councils + list(first_mark_councils)
 
         councils_to_assign = PublicAuthority.objects.exclude(
             Q(id__in=assigned_councils) | Q(type="COMB") | Q(do_not_mark=True)
-        )
+        )[:120]
 
         if councils_to_assign.count() == 0:
             self.stdout.write(
