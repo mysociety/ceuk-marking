@@ -8,6 +8,7 @@ from django.db.models.functions import Cast
 from django.http import HttpResponse
 from django.views.generic import ListView
 
+from crowdsourcer.mixins import CurrentStageMixin
 from crowdsourcer.models import (
     Assigned,
     Marker,
@@ -202,7 +203,7 @@ class AuthorityProgressView(BaseAuthorityProgressView):
     pass
 
 
-class VolunteerProgressView(UserPassesTestMixin, ListView):
+class VolunteerProgressView(UserPassesTestMixin, CurrentStageMixin, ListView):
     template_name = "crowdsourcer/volunteer_progress.html"
     model = Section
     context_object_name = "sections"
@@ -214,7 +215,9 @@ class VolunteerProgressView(UserPassesTestMixin, ListView):
         user = User.objects.get(id=self.kwargs["id"])
 
         sections = Section.objects.filter(
-            id__in=Assigned.objects.filter(user=user).values_list("section", flat=True)
+            id__in=Assigned.objects.filter(
+                user=user, response_type=self.current_stage
+            ).values_list("section", flat=True)
         )
 
         return sections
@@ -227,9 +230,9 @@ class VolunteerProgressView(UserPassesTestMixin, ListView):
         progress = []
 
         for section in sections:
-            assigned = Assigned.objects.filter(user=user, section=section).values_list(
-                "authority", flat=True
-            )
+            assigned = Assigned.objects.filter(
+                user=user, section=section, response_type=self.current_stage
+            ).values_list("authority", flat=True)
 
             authorities = (
                 PublicAuthority.objects.filter(id__in=assigned)
@@ -250,6 +253,7 @@ class VolunteerProgressView(UserPassesTestMixin, ListView):
                         Response.objects.filter(
                             question__section=section,
                             authority=OuterRef("pk"),
+                            response_type=self.current_stage,
                         )
                         .values("authority")
                         .annotate(response_count=Count("pk"))
