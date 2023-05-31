@@ -2,6 +2,7 @@
     background-color: $gray-100;
     padding: $spacer;
     border-radius: $border-radius-sm;
+    overflow-wrap: anywhere;
 
     & > :last-child {
         margin-bottom: 0;
