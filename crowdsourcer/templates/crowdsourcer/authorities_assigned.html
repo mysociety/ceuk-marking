@@ -9,8 +9,8 @@
     <table class="table">
         <thead>
             <tr>
-                <th>Authority {% if do_not_mark_only %}<a href="{% url 'authority_assignments' %}">ALL</a>{% else %}<a href="{% url 'authority_assignments' %}?do_not_mark_only=1">DNM</a>{% endif %}</th>
-                <th>Sections Assigned <a href="{% url 'authority_assignments' %}?sort=asc">&#9650;</a>/<a href="{% url 'authority_assignments' %}?sort=desc">&#9660;</a></th>
+                <th>Authority {% if do_not_mark_only %}<a href="./">ALL</a>{% else %}<a href="?do_not_mark_only=1">DNM</a>{% endif %}</th>
+                <th>Sections Assigned <a href="?sort=asc">&#9650;</a>/<a href="?sort=desc">&#9660;</a></th>
             </tr>
         </thead>
         <tbody>
