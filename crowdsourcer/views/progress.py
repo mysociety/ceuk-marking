@@ -536,7 +536,7 @@ class AuditAuthorityProgressView(BaseAuthorityProgressView):
     template_name = "crowdsourcer/authority_progress.html"
     model = Section
     context_object_name = "sections"
-    types = ["volunteer", "national_volunteer"]
+    types = ["volunteer", "national_volunteer", "foi"]
     stage = "Audit"
     url_pattern = "authority_audit"
 
