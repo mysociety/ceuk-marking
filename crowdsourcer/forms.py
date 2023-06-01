@@ -330,7 +330,7 @@ class AuditResponseForm(ModelForm):
             "question": HiddenInput(),
         }
         labels = {
-            "evidence": "Links to evidence",
+            "evidence": "Evidence of criteria met",
         }
 
 
