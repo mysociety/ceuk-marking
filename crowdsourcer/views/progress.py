@@ -292,9 +292,15 @@ class VolunteerProgressView(UserPassesTestMixin, CurrentStageMixin, ListView):
                 }
             )
 
+        if self.current_stage.type == "First Mark":
+            authority_url_name = "authority_question_edit"
+        elif self.current_stage.type == "Audit":
+            authority_url_name = "authority_audit"
+
         context["user"] = user
         context["sections"] = progress
         context["page_title"] = "Volunteer Progress"
+        context["authority_url_name"] = authority_url_name
 
         return context
 

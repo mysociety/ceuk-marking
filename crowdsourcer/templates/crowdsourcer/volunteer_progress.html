@@ -33,7 +33,7 @@
           {% for authority in section.authorities %}
             <tr>
                 <td>
-                    <a href="{% url 'authority_question_edit' authority.name section.section.title %}">{{ authority.name }}</a>
+                    <a href="{% url authority_url_name authority.name section.section.title %}">{{ authority.name }}</a>
                 </td>
                 <td>
                     <div class="progress progress-thin mb-2">
