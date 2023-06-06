@@ -28,9 +28,11 @@ class Command(BaseCommand):
         )
         if kwargs["commit"]:
             rt = ResponseType.objects.get(type="Audit")
-            Marker.objects.filter(user__id__in=users_to_be_made_auditors).update(
-                response_type=rt
-            )
+            for user_id in users_to_be_made_auditors:
+                user = User.objects.get(id=user_id)
+                marker, created = Marker.objects.update_or_create(
+                    user=user, defaults={"response_type": rt}
+                )
 
         users = User.objects.filter(
             marker__response_type__type="Audit", is_active=False
