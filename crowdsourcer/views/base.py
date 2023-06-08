@@ -185,6 +185,7 @@ class BaseAllSectionProgressView(UserPassesTestMixin, ListView):
                 question_list,
                 section.title,
                 self.request.user,
+                question_types=self.types,
                 response_type=rt,
             ).distinct()
 
@@ -251,6 +252,7 @@ class BaseSectionProgressView(UserPassesTestMixin, ListView):
                 question_list,
                 section.title,
                 self.request.user,
+                question_types=self.types,
                 response_type=rt,
             )
             .distinct()
