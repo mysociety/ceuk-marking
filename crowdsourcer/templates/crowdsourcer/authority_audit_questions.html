@@ -1,6 +1,7 @@
 {% extends 'crowdsourcer/base.html' %}
 
 {% load django_bootstrap5 %}
+{% load neighbourhood_filters %}
 
 {% block content %}
     <h1 class="mb-3 mb-md-4">
@@ -85,7 +86,7 @@
                   {% if q_form.question_obj.how_marked == 'foi' %}
                     <h4 class="form-label fs-6">FOI request</h4>
                     <div class="read-only-answer mb-3 mb-md-4">
-                        {{ q_form.orig.evidence|urlize }}
+                        {{ q_form.orig.evidence|urlize_external }}
                     </div>
                   {% else %}
                     <h4 class="form-label fs-6">Marker’s evidence of criteria met</h4>
@@ -97,7 +98,7 @@
                   {% if q_form.question_obj.how_marked != 'foi' %}
                     <h4 class="form-label fs-6">Links to evidence</h4>
                     <div class="read-only-answer mb-3 mb-md-4">
-                        {{ q_form.orig.public_notes|default:"(none)"|urlize|linebreaks }}
+                        {{ q_form.orig.public_notes|default:"(none)"|urlize_external|linebreaks }}
                     </div>
 
                     <h4 class="form-label fs-6">Page number</h4>
