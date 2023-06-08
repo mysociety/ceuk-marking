@@ -145,6 +145,7 @@ class BaseSectionAuthorityList(CurrentStageMixin, ListView):
             self.kwargs["section_title"],
             self.request.user,
             assigned=assigned,
+            question_types=self.types,
             response_type=this_stage,
         )
 
