@@ -190,6 +190,10 @@
 
                     {% bootstrap_field q_form.private_notes %}
 
+                    {% if q_form.question_obj.how_marked == "foi" %}
+                      {% bootstrap_field q_form.foi_answer_in_ror %}
+                    {% endif %}
+
                     {{ q_form.authority }}
                     {{ q_form.question }}
                     {{ q_form.id }}

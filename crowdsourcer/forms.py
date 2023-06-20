@@ -292,6 +292,7 @@ class AuditResponseForm(ModelForm):
             "private_notes",
             "public_notes",
             "question",
+            "foi_answer_in_ror",
         ]
         widgets = {
             "authority": HiddenInput(),
