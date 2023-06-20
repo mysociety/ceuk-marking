@@ -189,6 +189,11 @@ class Response(models.Model):
         help_text="Please feel free to add any notes/comments you may have. These will not be made public but will be sent to the Council in the Right of Reply.",
     )
     agree_with_response = models.BooleanField(null=True, blank=True)
+    foi_answer_in_ror = models.BooleanField(
+        default=False,
+        verbose_name="Responded to in Right of Reply",
+        help_text="The council did not respond to the FOI request, but did provide the information as part of their Right of Reply response",
+    )
     revision_type = models.CharField(max_length=200, blank=True, null=True)
     revision_notes = models.TextField(blank=True, null=True)
     created = models.DateTimeField(auto_now_add=True)
