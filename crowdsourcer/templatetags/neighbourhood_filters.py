@@ -7,7 +7,9 @@ register = template.Library()
 
 
 class UrlizerExternal(Urlizer):
-    url_template = '<a href="{href}" target="_blank" title="Opens in new window"{attrs}>{url}</a>'
+    url_template = (
+        '<a href="{href}" target="_blank" title="Opens in new window"{attrs}>{url}</a>'
+    )
 
 
 urlizer_external = UrlizerExternal()
@@ -17,4 +19,8 @@ urlizer_external = UrlizerExternal()
 @stringfilter
 def urlize_external(text, autoescape=True):
     """Convert URLs in plain text into clickable links with target="_blank" etc"""
-    return mark_safe(urlizer_external(text, trim_url_limit=None, nofollow=True, autoescape=autoescape))
+    return mark_safe(
+        urlizer_external(
+            text, trim_url_limit=None, nofollow=True, autoescape=autoescape
+        )
+    )
