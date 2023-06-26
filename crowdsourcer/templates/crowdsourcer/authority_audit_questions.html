@@ -176,6 +176,11 @@
                     </script>
 
                     <label class="form-label" for="{{ q_form.option.if_for_label }}">Answer</label>
+                    {% if q_form.question_obj.section.title == "Transport" and q_form.question_obj.number == 11 and authority.questiongroup.description == "District" %}
+                    <p class="form-text">
+                      <strong>Note:</strong> District councils are not responsible for transport planning, so you should ignore any road projects in this council’s response.
+                    </p>
+                    {% endif %}
                   {% if q_form.question_obj.question_type == "multiple_choice" %}
                     {% bootstrap_field q_form.multi_option show_label="skip" %}
                   {% else %}
