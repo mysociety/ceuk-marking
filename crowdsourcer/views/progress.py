@@ -229,6 +229,11 @@ class VolunteerProgressView(UserPassesTestMixin, CurrentStageMixin, ListView):
         user = User.objects.get(id=self.kwargs["id"])
         progress = []
 
+        types = Question.VOLUNTEER_TYPES
+
+        if self.current_stage.type == "Audit":
+            types = ["volunteer", "national_volunteer", "foi"]
+
         for section in sections:
             assigned = Assigned.objects.filter(
                 user=user, section=section, response_type=self.current_stage
@@ -241,7 +246,7 @@ class VolunteerProgressView(UserPassesTestMixin, CurrentStageMixin, ListView):
                         Question.objects.filter(
                             section=section,
                             questiongroup=OuterRef("questiongroup"),
-                            how_marked__in=Question.VOLUNTEER_TYPES,
+                            how_marked__in=types,
                         )
                         .values("questiongroup")
                         .annotate(num_questions=Count("pk"))
