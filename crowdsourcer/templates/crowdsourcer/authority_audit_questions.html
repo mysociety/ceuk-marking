@@ -168,8 +168,13 @@
                       {% else %}
                         "option": "{{ q_form.orig.option.id }}",
                       {% endif %}
+                      {% if q_form.question_obj.how_marked == "foi" %}
+                        "evidence": "",
+                        "public_notes": "{{ q_form.orig.evidence|default_if_none:''|escapejs }}",
+                      {% else %}
                         "evidence": "{{ q_form.orig.evidence|default_if_none:''|escapejs }}",
                         "public_notes": "{{ q_form.orig.public_notes|default_if_none:''|escapejs }}",
+                      {% endif %}
                         "page_number": "{{ q_form.orig.page_number|default_if_none:''|escapejs }}",
                         "private_notes": "{{ q_form.orig.private_notes|default_if_none:''|escapejs }}"
                     }
