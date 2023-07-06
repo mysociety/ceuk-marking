@@ -80,6 +80,10 @@ class OverviewView(CurrentStageMixin, ListView):
             .select_related("section")
         )
 
+        types = Question.VOLUNTEER_TYPES
+        if self.current_stage.type == "Audit":
+            types = ["volunteer", "national_volunteer", "foi"]
+
         progress = []
         question_cache = {}
         for assignment in assignments:
@@ -87,7 +91,7 @@ class OverviewView(CurrentStageMixin, ListView):
                 question_list = question_cache[assignment.section_id]
             else:
                 questions = Question.objects.filter(
-                    section=assignment.section, how_marked__in=Question.VOLUNTEER_TYPES
+                    section=assignment.section, how_marked__in=types
                 )
                 question_list = list(questions.values_list("id", flat=True))
                 question_cache[assignment.section_id] = question_list
@@ -106,7 +110,7 @@ class OverviewView(CurrentStageMixin, ListView):
                 args.append(authorities)
 
             response_counts = PublicAuthority.response_counts(
-                *args, response_type=self.current_stage
+                *args, question_types=types, response_type=self.current_stage
             ).distinct()
 
             total = 0
