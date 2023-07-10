@@ -1,0 +1,202 @@
+[
+{
+  "model": "crowdsourcer.question",
+  "pk": 350,
+  "fields": {
+    "number": 1,
+    "number_part": "",
+    "description": "Has the council completed extensive retrofit work on any of its significant buildings to make them low carbon?",
+    "criteria": "Criteria met if the council have done any of the following extensive retrofit works for any one of its significant buildings:\n- created on-site renewable energy\n- whole building retrofitting, including heat pump installations\n- extensive insulation of walls and floors\n- replacing gas boilers or installing a combined heating system\n\nAdditional points awarded if the retrofit has been awarded a standard such as BREEAM Refurbishment and fit-out (any level), AECB Retrofit standard (Bronze, Silver or Gold) or any other recognised standard.",
+    "section": 8,
+    "clarifications": "Significant council buildings refers to leisure centres, libraries, council town halls or offices, community centres, schools & colleges (not academies or private schools) or care homes.\n\nExtensive retrofit (sometimes called deep retrofit) refers to significant works of size or scale that result in a fundamental change to the building structure and/or services. This could be a collection of lots of small retrofit enhancements, or a single larger and disruptive measure, such as installing a combined heat system. \n\nThe work must be completed, not in progress.",
+    "topic": "Council buildings - retrofit",
+    "how_marked": "volunteer",
+    "question_type": "tiered",
+    "questiongroup": [
+      5
+    ]
+  }
+},
+{
+  "model": "crowdsourcer.question",
+  "pk": 351,
+  "fields": {
+    "number": 1,
+    "number_part": "",
+    "description": "Is the council transitioning their vehicle fleet to electric?",
+    "criteria": "Criteria met if over 10% of the council's fleet are electric vehicles.",
+    "section": 9,
+    "clarifications": "A council's fleet includes council owned or leased vehicles, and may include street cleaners and waste collection vehicles.",
+    "topic": "Council Fleet",
+    "how_marked": "volunteer",
+    "question_type": "yes_no",
+    "questiongroup": [
+      5
+    ]
+  }
+},
+{
+  "model": "crowdsourcer.question",
+  "pk": 352,
+  "fields": {
+    "number": 1,
+    "number_part": null,
+    "description": "Is the council's area wide net zero target a strategic objective of the Local Plan?        ",
+    "criteria": "Points awarded if the Local Plan includes:\n- reaching net zero as a strategic objective of the Local Plan\n- The council's net zero target date is also found within the Plan.\n\nThe net-zero target must be an area wide net-zero target.",
+    "section": 10,
+    "clarifications": "Reaching net-zero must be part of the strategic objectives listed initially in the council's Local Plan - even if the target date is not listed in the strategic objective. This is because the objectives are broader and Joint Local Plans may have different targets between the local authorities.\n\nWe will accept other language for target dates, including carbon neutrality or the carbon budget the council has committed to stay within.\n\nIf the Local Plan references a national net-zero target it must still be a strategic objective of the local plan to meet the national target, rather than the national target just being stated.",
+    "topic": "Net-zero in Local Plan",
+    "how_marked": "volunteer",
+    "question_type": "yes_no",
+    "questiongroup": [
+      5
+    ]
+  }
+},
+{
+  "model": "crowdsourcer.question",
+  "pk": 353,
+  "fields": {
+    "number": 1,
+    "number_part": null,
+    "description": "Does the council's corporate plan include a net-zero target and make tackling the climate emergency one of its main priorities?",
+    "criteria": "Criteria met if climate action (alternatively called Sustainability or Environment) is listed as one of the council's core priorities or equivalent. It must have its own heading or section and a net zero target date must be referenced.\n\nThe net-zero target date must be an area-wide target, either the UK Government's national target, the devolved nation's target or the council's area-wide net zero target. \n\n",
+    "section": 11,
+    "clarifications": "A corporate plan is a business planning document that sets out the council's future priorities and objectives to help ensure that the council manages its resources effectively.\n\nFor County Councils the document is called a(Strategic) Economic Plan\n\nWe will accept other language for target dates being used such as carbon neutrality. ",
+    "topic": "Net Zero Embedded in Corporate Plan",
+    "how_marked": "volunteer",
+    "question_type": "yes_no",
+    "questiongroup": [
+      5
+    ]
+  }
+},
+{
+  "model": "crowdsourcer.question",
+  "pk": 354,
+  "fields": {
+    "number": 1,
+    "number_part": "",
+    "description": "Do the council's climate pages include information about behaviour changes that residents can take, and are they easy to find?",
+    "criteria": "Criteria met if the council website has climate pages that are easy for residents to find and include information about what residents can do to reduce their carbon emissions.\n\nInformation about what residents can do must include links to council initiatives for further support. For example, a suggestion to reduce food waste could include a link to order a food waste caddy.",
+    "section": 12,
+    "clarifications": "\"Easy to find\" will be defined as meeting any of the following criteria:\n- Within 3 clicks of the homepage\n- Searchable on the site search bar using any of the phrases 'climate change', 'climate emergency', 'climate action' or 'environment'\n- There is an environment and/or climate section in the drop down menu\n\nLinks for further support can include links to collaborative initiatives with other councils.",
+    "topic": "Council website - information for residents",
+    "how_marked": "volunteer",
+    "question_type": "yes_no",
+    "questiongroup": [
+      5
+    ]
+  }
+},
+{
+  "model": "crowdsourcer.option",
+  "pk": 193,
+  "fields": {
+    "question": 350,
+    "score": 0,
+    "description": "None",
+    "ordering": 100
+  }
+},
+{
+  "model": "crowdsourcer.option",
+  "pk": 194,
+  "fields": {
+    "question": 350,
+    "score": 1,
+    "description": "One or more significant building have been retrofitted",
+    "ordering": 1
+  }
+},
+{
+  "model": "crowdsourcer.option",
+  "pk": 195,
+  "fields": {
+    "question": 350,
+    "score": 2,
+    "description": "One or more buildings have been retrofitted to a recognised standard",
+    "ordering": 2
+  }
+},
+{
+  "model": "crowdsourcer.option",
+  "pk": 196,
+  "fields": {
+    "question": 351,
+    "score": 1,
+    "description": "Yes",
+    "ordering": 1
+  }
+},
+{
+  "model": "crowdsourcer.option",
+  "pk": 197,
+  "fields": {
+    "question": 351,
+    "score": 0,
+    "description": "No",
+    "ordering": 100
+  }
+},
+{
+  "model": "crowdsourcer.option",
+  "pk": 198,
+  "fields": {
+    "question": 352,
+    "score": 1,
+    "description": "Yes",
+    "ordering": 1
+  }
+},
+{
+  "model": "crowdsourcer.option",
+  "pk": 199,
+  "fields": {
+    "question": 352,
+    "score": 0,
+    "description": "No",
+    "ordering": 100
+  }
+},
+{
+  "model": "crowdsourcer.option",
+  "pk": 199,
+  "fields": {
+    "question": 353,
+    "score": 1,
+    "description": "Yes",
+    "ordering": 1
+  }
+},
+{
+  "model": "crowdsourcer.option",
+  "pk": 200,
+  "fields": {
+    "question": 353,
+    "score": 0,
+    "description": "No",
+    "ordering": 100
+  }
+},
+{
+  "model": "crowdsourcer.option",
+  "pk": 201,
+  "fields": {
+    "question": 354,
+    "score": 1,
+    "description": "Yes",
+    "ordering": 1
+  }
+},
+{
+  "model": "crowdsourcer.option",
+  "pk": 202,
+  "fields": {
+    "question": 354,
+    "score": 0,
+    "description": "No",
+    "ordering": 100
+  }
+}
+]

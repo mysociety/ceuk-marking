@@ -1,0 +1,37 @@
+[
+{
+  "model": "crowdsourcer.section",
+  "pk": 8,
+  "fields": {
+    "title": "Buildings & Heating & Green Skills (CA)"
+  }
+},
+{
+  "model": "crowdsourcer.section",
+  "pk": 9,
+  "fields": {
+    "title": "Transport (CA)"
+  }
+},
+{
+  "model": "crowdsourcer.section",
+  "pk": 10,
+  "fields": {
+    "title": "Planning & Biodiversity (CA)"
+  }
+},
+{
+  "model": "crowdsourcer.section",
+  "pk": 11,
+  "fields": {
+    "title": "Governance & Finance (CA)"
+  }
+},
+{
+  "model": "crowdsourcer.section",
+  "pk": 12,
+  "fields": {
+    "title": "Collaboration & Engagement (CA)"
+  }
+}
+]

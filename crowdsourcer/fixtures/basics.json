@@ -77,6 +77,13 @@
   }
 },
 {
+  "model": "crowdsourcer.questiongroup",
+  "pk": 5,
+  "fields": {
+    "description": "Combined Authority"
+  }
+},
+{
   "model": "crowdsourcer.responsetype",
   "pk": 1,
   "fields": {
