@@ -82,6 +82,13 @@ class Command(BaseCommand):
 
         return section_maxes, group_totals
 
+    def write_files(self, percent_marks, raw_marks):
+        df = pd.DataFrame.from_records(percent_marks, index="council")
+        df.to_csv(self.total_scores_file)
+
+        df = pd.DataFrame.from_records(raw_marks, index="council")
+        df.to_csv(self.section_scores_file)
+
     def handle(self, quiet: bool = False, *args, **options):
         raw = []
         percent = []
@@ -106,9 +113,9 @@ class Command(BaseCommand):
         for council in PublicAuthority.objects.filter(do_not_mark=False).all():
             groups[council.name] = council.questiongroup.description
             if council.type == "COMB":
-                raw_scores[council.name] = ca_sections
+                raw_scores[council.name] = ca_sections.copy()
             else:
-                raw_scores[council.name] = non_ca_sections
+                raw_scores[council.name] = non_ca_sections.copy()
 
         for section in Section.objects.all():
             scores = (
@@ -121,6 +128,7 @@ class Command(BaseCommand):
                             Q(pk=OuterRef("option"))
                             | Q(pk__in=OuterRef("multi_option"))
                         )
+                        .values("question")
                         .annotate(total=Sum("score"))
                         .values("total")
                     )
@@ -145,8 +153,4 @@ class Command(BaseCommand):
             raw.append(row)
             percent.append(p)
 
-        df = pd.DataFrame.from_records(percent, index="council")
-        df.to_csv(self.total_scores_file)
-
-        df = pd.DataFrame.from_records(raw, index="council")
-        df.to_csv(self.section_scores_file)
+        self.write_files(percent, raw)

@@ -159,7 +159,6 @@
     "question_type": "foi",
     "questiongroup": [
       1,
-      2,
       3
     ]
   }
@@ -179,7 +178,6 @@
     "question_type": "select_one",
     "questiongroup": [
       1,
-      2,
       3,
       4
     ]
@@ -405,7 +403,7 @@
     "topic": "Peat Free",
     "how_marked": "volunteer",
     "question_type": "yes_no",
-    "questiongroup": []
+    "questiongroup": [1,2,3,4]
   }
 },
 {
