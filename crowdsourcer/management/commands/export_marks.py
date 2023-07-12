@@ -27,24 +27,6 @@ class Command(BaseCommand):
             "-q", "--quiet", action="store_true", help="Silence progress bars."
         )
 
-    def get_group(self, props):
-        group = "District"
-
-        print(props["name"], props["type"])
-        if props["type"] == "LGD":
-            group = "Northern Ireland"
-        elif props["country"] == "W":
-            group = "Single Tier"
-        elif props["country"] == "S":
-            group = "Single Tier"
-        elif props["type"] in ["CC", "MTD", "LBO", "UTA"]:
-            group = "Single Tier"
-        elif props["type"] in ["CTY"]:
-            group = "County"
-
-        g = QuestionGroup.objects.get(description=group)
-        return g
-
     def get_section_max(self):
         section_maxes = defaultdict(dict)
         group_totals = defaultdict(int)
