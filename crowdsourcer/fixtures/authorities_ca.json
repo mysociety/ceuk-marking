@@ -1,0 +1,13 @@
+[
+{
+  "model": "crowdsourcer.publicauthority",
+  "pk": 5,
+  "fields": {
+    "unique_id": "S12000099",
+    "name": "A Combined Authority",
+    "website": "https://www.example.org",
+    "type": "COMB",
+    "questiongroup": 5
+  }
+}
+]

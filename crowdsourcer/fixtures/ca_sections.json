@@ -1,0 +1,30 @@
+[
+{
+  "model": "crowdsourcer.section",
+  "pk": 8,
+  "fields": {
+    "title": "Buildings & Heating (CA)"
+  }
+},
+{
+  "model": "crowdsourcer.section",
+  "pk": 9,
+  "fields": {
+    "title": "Transport (CA)"
+  }
+},
+{
+  "model": "crowdsourcer.section",
+  "pk": 10,
+  "fields": {
+    "title": "Planning & Land Use (CA)"
+  }
+},
+{
+  "model": "crowdsourcer.section",
+  "pk": 11,
+  "fields": {
+    "title": "Governance & Finance (CA)"
+  }
+}
+]
