@@ -175,9 +175,35 @@ class ExportNoMarksTestCase(BaseCommandTestCase):
                 "total": 0,
             },
         ]
-        percent, raw = write_mock.call_args[0]
+
+        expected_linear = [
+            ("Aberdeen City Council", "Buildings & Heating", 0),
+            ("Aberdeen City Council", "Transport", 0),
+            ("Aberdeen City Council", "Planning & Land Use", 0),
+            ("Aberdeen City Council", "Governance & Finance", 0),
+            ("Aberdeen City Council", "Biodiversity", 0),
+            ("Aberdeen City Council", "Collaboration & Engagement", 0),
+            ("Aberdeen City Council", "Waste Reduction & Food", 0),
+            ("Aberdeenshire Council", "Buildings & Heating", 0),
+            ("Aberdeenshire Council", "Transport", 0),
+            ("Aberdeenshire Council", "Planning & Land Use", 0),
+            ("Aberdeenshire Council", "Governance & Finance", 0),
+            ("Aberdeenshire Council", "Biodiversity", 0),
+            ("Aberdeenshire Council", "Collaboration & Engagement", 0),
+            ("Aberdeenshire Council", "Waste Reduction & Food", 0),
+            ("Adur District Council", "Buildings & Heating", 0),
+            ("Adur District Council", "Transport", 0),
+            ("Adur District Council", "Planning & Land Use", 0),
+            ("Adur District Council", "Governance & Finance", 0),
+            ("Adur District Council", "Biodiversity", 0),
+            ("Adur District Council", "Collaboration & Engagement", 0),
+            ("Adur District Council", "Waste Reduction & Food", 0),
+        ]
+
+        percent, raw, linear = write_mock.call_args[0]
         self.assertEquals(percent, expected_percent)
         self.assertEquals(raw, expected_raw)
+        self.assertEquals(linear, expected_linear)
 
 
 class ExportWithMarksTestCase(BaseCommandTestCase):
@@ -265,9 +291,34 @@ class ExportWithMarksTestCase(BaseCommandTestCase):
                 "total": 1,
             },
         ]
-        percent, raw = write_mock.call_args[0]
+
+        expected_linear = [
+            ("Aberdeen City Council", "Buildings & Heating", 3),
+            ("Aberdeen City Council", "Transport", 0),
+            ("Aberdeen City Council", "Planning & Land Use", 0),
+            ("Aberdeen City Council", "Governance & Finance", 0),
+            ("Aberdeen City Council", "Biodiversity", 0),
+            ("Aberdeen City Council", "Collaboration & Engagement", 0),
+            ("Aberdeen City Council", "Waste Reduction & Food", 0),
+            ("Aberdeenshire Council", "Buildings & Heating", 0),
+            ("Aberdeenshire Council", "Transport", 2),
+            ("Aberdeenshire Council", "Planning & Land Use", 0),
+            ("Aberdeenshire Council", "Governance & Finance", 0),
+            ("Aberdeenshire Council", "Biodiversity", 0),
+            ("Aberdeenshire Council", "Collaboration & Engagement", 0),
+            ("Aberdeenshire Council", "Waste Reduction & Food", 0),
+            ("Adur District Council", "Buildings & Heating", 0),
+            ("Adur District Council", "Transport", 1),
+            ("Adur District Council", "Planning & Land Use", 0),
+            ("Adur District Council", "Governance & Finance", 0),
+            ("Adur District Council", "Biodiversity", 0),
+            ("Adur District Council", "Collaboration & Engagement", 0),
+            ("Adur District Council", "Waste Reduction & Food", 0),
+        ]
+        percent, raw, linear = write_mock.call_args[0]
         self.assertEquals(raw, expected_raw)
         self.assertEquals(percent, expected_percent)
+        self.assertEquals(linear, expected_linear)
 
 
 class ExportWithMultiMarksTestCase(BaseCommandTestCase):
@@ -355,7 +406,7 @@ class ExportWithMultiMarksTestCase(BaseCommandTestCase):
                 "total": 3,
             },
         ]
-        percent, raw = write_mock.call_args[0]
+        percent, raw, linear = write_mock.call_args[0]
 
         self.assertEquals(raw, expected_raw)
         self.assertEquals(percent, expected_percent)
@@ -446,7 +497,7 @@ class ExportWithMoreMarksTestCase(BaseCommandTestCase):
                 "total": 3,
             },
         ]
-        percent, raw = write_mock.call_args[0]
+        percent, raw, linear = write_mock.call_args[0]
 
         self.assertEquals(raw, expected_raw)
         self.assertEquals(percent, expected_percent)
@@ -603,9 +654,39 @@ class ExportNoMarksCATestCase(BaseCommandTestCase):
                 "total": 0,
             },
         ]
-        percent, raw = write_mock.call_args[0]
+
+        expected_linear = [
+            ("Aberdeen City Council", "Buildings & Heating", 0),
+            ("Aberdeen City Council", "Transport", 0),
+            ("Aberdeen City Council", "Planning & Land Use", 0),
+            ("Aberdeen City Council", "Governance & Finance", 0),
+            ("Aberdeen City Council", "Biodiversity", 0),
+            ("Aberdeen City Council", "Collaboration & Engagement", 0),
+            ("Aberdeen City Council", "Waste Reduction & Food", 0),
+            ("Aberdeenshire Council", "Buildings & Heating", 0),
+            ("Aberdeenshire Council", "Transport", 0),
+            ("Aberdeenshire Council", "Planning & Land Use", 0),
+            ("Aberdeenshire Council", "Governance & Finance", 0),
+            ("Aberdeenshire Council", "Biodiversity", 0),
+            ("Aberdeenshire Council", "Collaboration & Engagement", 0),
+            ("Aberdeenshire Council", "Waste Reduction & Food", 0),
+            ("Adur District Council", "Buildings & Heating", 0),
+            ("Adur District Council", "Transport", 0),
+            ("Adur District Council", "Planning & Land Use", 0),
+            ("Adur District Council", "Governance & Finance", 0),
+            ("Adur District Council", "Biodiversity", 0),
+            ("Adur District Council", "Collaboration & Engagement", 0),
+            ("Adur District Council", "Waste Reduction & Food", 0),
+            ("A Combined Authority", "Buildings & Heating (CA)", 0),
+            ("A Combined Authority", "Transport (CA)", 0),
+            ("A Combined Authority", "Planning & Land Use (CA)", 0),
+            ("A Combined Authority", "Governance & Finance (CA)", 0),
+        ]
+
+        percent, raw, linear = write_mock.call_args[0]
         self.assertEquals(percent, expected_percent)
         self.assertEquals(raw, expected_raw)
+        self.assertEquals(linear, expected_linear)
 
 
 class ExportWithMoreMarksCATestCase(BaseCommandTestCase):
@@ -714,7 +795,7 @@ class ExportWithMoreMarksCATestCase(BaseCommandTestCase):
     def test_export(self, write_mock):
         self.call_command("export_marks")
 
-        percent, raw = write_mock.call_args[0]
+        percent, raw, linear = write_mock.call_args[0]
 
         self.assertEquals(raw, self.expected_raw)
         self.assertEquals(percent, self.expected_percent)
@@ -747,7 +828,7 @@ class ExportWithMoreMarksCATestCase(BaseCommandTestCase):
             "council": "A Combined Authority",
             "total": 1.0,
         }
-        percent, raw = write_mock.call_args[0]
+        percent, raw, linear = write_mock.call_args[0]
 
         self.assertEquals(raw, expected_raw)
         self.assertEquals(percent, expected_percent)

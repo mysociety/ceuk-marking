@@ -20,6 +20,9 @@ class Command(BaseCommand):
     help = "export processed mark data"
 
     section_scores_file = settings.BASE_DIR / "data" / "raw_sections_marks.csv"
+    council_section_scores_file = (
+        settings.BASE_DIR / "data" / "raw_council_section_marks.csv"
+    )
     total_scores_file = settings.BASE_DIR / "data" / "all_section_scores.csv"
 
     def add_arguments(self, parser):
@@ -64,16 +67,22 @@ class Command(BaseCommand):
 
         return section_maxes, group_totals
 
-    def write_files(self, percent_marks, raw_marks):
+    def write_files(self, percent_marks, raw_marks, linear):
         df = pd.DataFrame.from_records(percent_marks, index="council")
         df.to_csv(self.total_scores_file)
 
         df = pd.DataFrame.from_records(raw_marks, index="council")
+        df.to_csv(self.council_section_scores_file)
+
+        df = pd.DataFrame.from_records(
+            linear, columns=["council", "section", "score"], index="council"
+        )
         df.to_csv(self.section_scores_file)
 
     def handle(self, quiet: bool = False, *args, **options):
         raw = []
         percent = []
+        linear = []
         groups = {}
         raw_scores = defaultdict(dict)
 
@@ -127,6 +136,7 @@ class Command(BaseCommand):
             total = 0
             p = {"council": council}
             for section, score in council_score.items():
+                linear.append((council, section, score))
                 p[section] = score / maxes[section][groups[council]]
                 total += score
 
@@ -135,4 +145,4 @@ class Command(BaseCommand):
             raw.append(row)
             percent.append(p)
 
-        self.write_files(percent, raw)
+        self.write_files(percent, raw, linear)
