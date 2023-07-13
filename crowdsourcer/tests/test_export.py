@@ -241,7 +241,7 @@ class ExportWithMarksTestCase(BaseCommandTestCase):
                 "Collaboration & Engagement": 0.0,
                 "Waste Reduction & Food": 0.0,
                 "raw_total": 0.05660377358490566,
-                "weighted_total": 0.05660377358490566,
+                "weighted_total": 0.02142857142857143,
             },
             {
                 "council": "Aberdeenshire Council",
@@ -254,7 +254,7 @@ class ExportWithMarksTestCase(BaseCommandTestCase):
                 "Collaboration & Engagement": 0.0,
                 "Waste Reduction & Food": 0.0,
                 "raw_total": 0.03773584905660377,
-                "weighted_total": 0.03773584905660377,
+                "weighted_total": 0.05714285714285714,
             },
             {
                 "council": "Adur District Council",
@@ -267,7 +267,7 @@ class ExportWithMarksTestCase(BaseCommandTestCase):
                 "Collaboration & Engagement": 0.0,
                 "Waste Reduction & Food": 0.0,
                 "raw_total": 0.019230769230769232,
-                "weighted_total": 0.019230769230769232,
+                "weighted_total": 0.007142857142857143,
             },
         ]
 
@@ -365,7 +365,7 @@ class ExportWithMultiMarksTestCase(BaseCommandTestCase):
                 "Collaboration & Engagement": 0.0,
                 "Waste Reduction & Food": 0.0,
                 "raw_total": 0.05660377358490566,
-                "weighted_total": 0.05660377358490566,
+                "weighted_total": 0.02142857142857143,
             },
             {
                 "council": "Aberdeenshire Council",
@@ -378,7 +378,7 @@ class ExportWithMultiMarksTestCase(BaseCommandTestCase):
                 "Collaboration & Engagement": 0.0,
                 "Waste Reduction & Food": 0.0,
                 "raw_total": 0.03773584905660377,
-                "weighted_total": 0.03773584905660377,
+                "weighted_total": 0.05714285714285714,
             },
             {
                 "council": "Adur District Council",
@@ -391,7 +391,7 @@ class ExportWithMultiMarksTestCase(BaseCommandTestCase):
                 "Collaboration & Engagement": 0.0,
                 "Waste Reduction & Food": 0.0,
                 "raw_total": 0.057692307692307696,
-                "weighted_total": 0.057692307692307696,
+                "weighted_total": 0.02142857142857143,
             },
         ]
 
@@ -465,7 +465,7 @@ class ExportWithMoreMarksTestCase(BaseCommandTestCase):
                 "Collaboration & Engagement": 0.0,
                 "Waste Reduction & Food": 0.0,
                 "raw_total": 0.05660377358490566,
-                "weighted_total": 0.05660377358490566,
+                "weighted_total": 0.02142857142857143,
             },
             {
                 "council": "Aberdeenshire Council",
@@ -478,7 +478,7 @@ class ExportWithMoreMarksTestCase(BaseCommandTestCase):
                 "Collaboration & Engagement": 0.2,
                 "Waste Reduction & Food": 0.6,
                 "raw_total": 0.4528301886792453,
-                "weighted_total": 0.4528301886792453,
+                "weighted_total": 0.5496428571428571,
             },
             {
                 "council": "Adur District Council",
@@ -491,7 +491,7 @@ class ExportWithMoreMarksTestCase(BaseCommandTestCase):
                 "Collaboration & Engagement": 0.0,
                 "Waste Reduction & Food": 0.0,
                 "raw_total": 0.057692307692307696,
-                "weighted_total": 0.057692307692307696,
+                "weighted_total": 0.02142857142857143,
             },
         ]
 
@@ -791,7 +791,7 @@ class ExportWithMoreMarksCATestCase(BaseCommandTestCase):
             "Collaboration & Engagement": 0.0,
             "Waste Reduction & Food": 0.0,
             "raw_total": 0.05660377358490566,
-            "weighted_total": 0.05660377358490566,
+            "weighted_total": 0.02142857142857143,
         },
         {
             "council": "Aberdeenshire Council",
@@ -804,7 +804,7 @@ class ExportWithMoreMarksCATestCase(BaseCommandTestCase):
             "Collaboration & Engagement": 0.2,
             "Waste Reduction & Food": 0.6,
             "raw_total": 0.4528301886792453,
-            "weighted_total": 0.4528301886792453,
+            "weighted_total": 0.5496428571428571,
         },
         {
             "council": "Adur District Council",
@@ -817,7 +817,7 @@ class ExportWithMoreMarksCATestCase(BaseCommandTestCase):
             "Collaboration & Engagement": 0.0,
             "Waste Reduction & Food": 0.0,
             "raw_total": 0.057692307692307696,
-            "weighted_total": 0.057692307692307696,
+            "weighted_total": 0.02142857142857143,
         },
         {
             "Buildings, Heating & Green Skills (CA)": 0.3333333333333333333,
@@ -827,8 +827,8 @@ class ExportWithMoreMarksCATestCase(BaseCommandTestCase):
             "Collaboration & Engagement (CA)": 1.0,
             "council": "A Combined Authority",
             "gss": "S12000099",
-            "raw_total": 0.5,
-            "weighted_total": 0.5,
+            "raw_total": 0.5714285714285714,
+            "weighted_total": 0.5833333333333334,
         },
     ]
 

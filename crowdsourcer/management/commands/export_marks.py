@@ -15,6 +15,66 @@ from crowdsourcer.models import (
     Section,
 )
 
+section_weightings = {
+    "Buildings & Heating": {
+        "Single Tier": 0.20,
+        "District": 0.25,
+        "County": 0.20,
+        "Northern Ireland": 0.20,
+    },
+    "Transport": {
+        "Single Tier": 0.20,
+        "District": 0.05,
+        "County": 0.30,
+        "Northern Ireland": 0.15,
+    },
+    "Planning & Land Use": {
+        "Single Tier": 0.15,
+        "District": 0.25,
+        "County": 0.05,
+        "Northern Ireland": 0.15,
+    },
+    "Governance & Finance": {
+        "Single Tier": 0.15,
+        "District": 0.15,
+        "County": 0.15,
+        "Northern Ireland": 0.20,
+    },
+    "Biodiversity": {
+        "Single Tier": 0.10,
+        "District": 0.10,
+        "County": 0.10,
+        "Northern Ireland": 0.10,
+    },
+    "Collaboration & Engagement": {
+        "Single Tier": 0.10,
+        "District": 0.10,
+        "County": 0.10,
+        "Northern Ireland": 0.10,
+    },
+    "Waste Reduction & Food": {
+        "Single Tier": 0.10,
+        "District": 0.10,
+        "County": 0.10,
+        "Northern Ireland": 0.10,
+    },
+    "Transport (CA)": {
+        "Combined Authority": 0.25,
+    },
+    "Buildings, Heating & Green Skills (CA)": {
+        "Combined Authority": 0.25,
+    },
+    "Governance & Finance (CA)": {
+        "Combined Authority": 0.20,
+    },
+    "Planning, Biodiversity & Land Use (CA)": {
+        "Combined Authority": 0.10,
+    },
+    "Collaboration & Engagement (CA)": {
+        "Combined Authority": 0.20,
+    },
+}
+
 
 class Command(BaseCommand):
     help = "export processed mark data"
@@ -138,6 +198,7 @@ class Command(BaseCommand):
 
         for council, council_score in raw_scores.items():
             total = 0
+            weighted_total = 0
             p = {"council": council, "gss": council_gss_map[council]}
             for section, score in council_score.items():
                 linear.append(
@@ -150,10 +211,13 @@ class Command(BaseCommand):
                     )
                 )
                 p[section] = score / maxes[section][groups[council]]
+                weighted_total += (
+                    p[section] * section_weightings[section][groups[council]]
+                )
                 total += score
 
             p["raw_total"] = total / group_maxes[groups[council]]
-            p["weighted_total"] = p["raw_total"]
+            p["weighted_total"] = weighted_total
             row = {
                 **council_score,
                 **{"council": council, "gss": council_gss_map[council], "total": total},
