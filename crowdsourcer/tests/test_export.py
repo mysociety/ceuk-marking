@@ -560,7 +560,7 @@ class ExportNoMarksCATestCase(BaseCommandTestCase):
         ca_max_section = {
             **max_section,
             **{
-                "Buildings & Heating (CA)": {
+                "Buildings, Heating & Green Skills (CA)": {
                     "Single Tier": 0,
                     "District": 0,
                     "County": 0,
@@ -574,7 +574,7 @@ class ExportNoMarksCATestCase(BaseCommandTestCase):
                     "Northern Ireland": 0,
                     "Combined Authority": 1,
                 },
-                "Planning & Land Use (CA)": {
+                "Planning, Biodiversity & Land Use (CA)": {
                     "Single Tier": 0,
                     "District": 0,
                     "County": 0,
@@ -588,11 +588,18 @@ class ExportNoMarksCATestCase(BaseCommandTestCase):
                     "Northern Ireland": 0,
                     "Combined Authority": 1,
                 },
+                "Collaboration & Engagement (CA)": {
+                    "Single Tier": 0,
+                    "District": 0,
+                    "County": 0,
+                    "Northern Ireland": 0,
+                    "Combined Authority": 1,
+                },
             },
         }
 
         ca_max_totals = max_totals.copy()
-        ca_max_totals["Combined Authority"] = 6
+        ca_max_totals["Combined Authority"] = 7
 
         self.assertEquals(section, ca_max_section)
         self.assertEquals(totals, ca_max_totals)
@@ -646,10 +653,11 @@ class ExportNoMarksCATestCase(BaseCommandTestCase):
             {
                 "council": "A Combined Authority",
                 "gss": "S12000099",
-                "Buildings & Heating (CA)": 0.0,
+                "Buildings, Heating & Green Skills (CA)": 0.0,
                 "Transport (CA)": 0.0,
-                "Planning & Land Use (CA)": 0.0,
+                "Planning, Biodiversity & Land Use (CA)": 0.0,
                 "Governance & Finance (CA)": 0.0,
+                "Collaboration & Engagement (CA)": 0.0,
                 "raw_total": 0.0,
                 "weighted_total": 0.0,
             },
@@ -694,10 +702,11 @@ class ExportNoMarksCATestCase(BaseCommandTestCase):
             },
             {
                 "council": "A Combined Authority",
-                "Buildings & Heating (CA)": 0,
+                "Buildings, Heating & Green Skills (CA)": 0,
                 "Transport (CA)": 0,
-                "Planning & Land Use (CA)": 0,
+                "Planning, Biodiversity & Land Use (CA)": 0,
                 "Governance & Finance (CA)": 0,
+                "Collaboration & Engagement (CA)": 0,
                 "gss": "S12000099",
                 "total": 0,
             },
@@ -725,10 +734,29 @@ class ExportNoMarksCATestCase(BaseCommandTestCase):
             ("Adur District Council", "E07000223", "Biodiversity", 0, 1),
             ("Adur District Council", "E07000223", "Collaboration & Engagement", 0, 5),
             ("Adur District Council", "E07000223", "Waste Reduction & Food", 0, 5),
-            ("A Combined Authority", "S12000099", "Buildings & Heating (CA)", 0, 3),
+            (
+                "A Combined Authority",
+                "S12000099",
+                "Buildings, Heating & Green Skills (CA)",
+                0,
+                3,
+            ),
             ("A Combined Authority", "S12000099", "Transport (CA)", 0, 1),
-            ("A Combined Authority", "S12000099", "Planning & Land Use (CA)", 0, 1),
+            (
+                "A Combined Authority",
+                "S12000099",
+                "Planning, Biodiversity & Land Use (CA)",
+                0,
+                1,
+            ),
             ("A Combined Authority", "S12000099", "Governance & Finance (CA)", 0, 1),
+            (
+                "A Combined Authority",
+                "S12000099",
+                "Collaboration & Engagement (CA)",
+                0,
+                1,
+            ),
         ]
 
         percent, raw, linear = write_mock.call_args[0]
@@ -792,10 +820,11 @@ class ExportWithMoreMarksCATestCase(BaseCommandTestCase):
             "weighted_total": 0.057692307692307696,
         },
         {
-            "Buildings & Heating (CA)": 0.3333333333333333333,
+            "Buildings, Heating & Green Skills (CA)": 0.3333333333333333333,
             "Transport (CA)": 0.0,
-            "Planning & Land Use (CA)": 1.0,
+            "Planning, Biodiversity & Land Use (CA)": 1.0,
             "Governance & Finance (CA)": 1.0,
+            "Collaboration & Engagement (CA)": 1.0,
             "council": "A Combined Authority",
             "gss": "S12000099",
             "raw_total": 0.5,
@@ -841,13 +870,14 @@ class ExportWithMoreMarksCATestCase(BaseCommandTestCase):
             "total": 3,
         },
         {
-            "Buildings & Heating (CA)": 1,
+            "Buildings, Heating & Green Skills (CA)": 1,
             "Transport (CA)": 0,
-            "Planning & Land Use (CA)": 1,
+            "Planning, Biodiversity & Land Use (CA)": 1,
             "Governance & Finance (CA)": 1,
+            "Collaboration & Engagement (CA)": 1,
             "council": "A Combined Authority",
             "gss": "S12000099",
-            "total": 3,
+            "total": 4,
         },
     ]
 
@@ -872,22 +902,24 @@ class ExportWithMoreMarksCATestCase(BaseCommandTestCase):
         expected_percent = self.expected_percent.copy()
 
         expected_raw[3] = {
-            "Buildings & Heating (CA)": 3,
+            "Buildings, Heating & Green Skills (CA)": 3,
             "Transport (CA)": 1,
-            "Planning & Land Use (CA)": 1,
+            "Planning, Biodiversity & Land Use (CA)": 1,
             "Governance & Finance (CA)": 1,
+            "Collaboration & Engagement (CA)": 1,
             "council": "A Combined Authority",
             "gss": "S12000099",
-            "total": 6,
+            "total": 7,
         }
 
         expected_percent[3] = {
             "council": "A Combined Authority",
             "gss": "S12000099",
-            "Buildings & Heating (CA)": 1.0,
+            "Buildings, Heating & Green Skills (CA)": 1.0,
             "Transport (CA)": 1.0,
-            "Planning & Land Use (CA)": 1.0,
+            "Planning, Biodiversity & Land Use (CA)": 1.0,
             "Governance & Finance (CA)": 1.0,
+            "Collaboration & Engagement (CA)": 1.0,
             "raw_total": 1.0,
             "weighted_total": 1.0,
         }

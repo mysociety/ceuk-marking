@@ -72,6 +72,24 @@
   }
 },
 {
+  "model": "crowdsourcer.question",
+  "pk": 354,
+  "fields": {
+    "number": 1,
+    "number_part": "",
+    "description": "Do the council's climate pages include information about behaviour changes that residents can take, and are they easy to find?",
+    "criteria": "Criteria met if the council website has climate pages that are easy for residents to find and include information about what residents can do to reduce their carbon emissions.\n\nInformation about what residents can do must include links to council initiatives for further support. For example, a suggestion to reduce food waste could include a link to order a food waste caddy.",
+    "section": 12,
+    "clarifications": "\"Easy to find\" will be defined as meeting any of the following criteria:\n- Within 3 clicks of the homepage\n- Searchable on the site search bar using any of the phrases 'climate change', 'climate emergency', 'climate action' or 'environment'\n- There is an environment and/or climate section in the drop down menu\n\nLinks for further support can include links to collaborative initiatives with other councils.",
+    "topic": "Council website - information for residents",
+    "how_marked": "volunteer",
+    "question_type": "yes_no",
+    "questiongroup": [
+      5
+    ]
+  }
+},
+{
   "model": "crowdsourcer.option",
   "pk": 193,
   "fields": {
@@ -156,6 +174,26 @@
   "pk": 200,
   "fields": {
     "question": 353,
+    "score": 0,
+    "description": "No",
+    "ordering": 100
+  }
+},
+{
+  "model": "crowdsourcer.option",
+  "pk": 201,
+  "fields": {
+    "question": 354,
+    "score": 1,
+    "description": "Yes",
+    "ordering": 1
+  }
+},
+{
+  "model": "crowdsourcer.option",
+  "pk": 202,
+  "fields": {
+    "question": 354,
     "score": 0,
     "description": "No",
     "ordering": 100

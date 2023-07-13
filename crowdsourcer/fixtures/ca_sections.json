@@ -3,7 +3,7 @@
   "model": "crowdsourcer.section",
   "pk": 8,
   "fields": {
-    "title": "Buildings & Heating (CA)"
+    "title": "Buildings, Heating & Green Skills (CA)"
   }
 },
 {
@@ -17,7 +17,7 @@
   "model": "crowdsourcer.section",
   "pk": 10,
   "fields": {
-    "title": "Planning & Land Use (CA)"
+    "title": "Planning, Biodiversity & Land Use (CA)"
   }
 },
 {
@@ -25,6 +25,13 @@
   "pk": 11,
   "fields": {
     "title": "Governance & Finance (CA)"
+  }
+},
+{
+  "model": "crowdsourcer.section",
+  "pk": 12,
+  "fields": {
+    "title": "Collaboration & Engagement (CA)"
   }
 }
 ]
