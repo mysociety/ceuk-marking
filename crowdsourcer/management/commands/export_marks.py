@@ -75,11 +75,14 @@ class Command(BaseCommand):
         df.to_csv(self.council_section_scores_file)
 
         df = pd.DataFrame.from_records(
-            linear, columns=["council", "section", "score"], index="council"
+            linear,
+            columns=["council", "gss", "section", "score", "max_score"],
+            index="council",
         )
         df.to_csv(self.section_scores_file)
 
     def handle(self, quiet: bool = False, *args, **options):
+        council_gss_map = {}
         raw = []
         percent = []
         linear = []
@@ -102,6 +105,7 @@ class Command(BaseCommand):
         }
 
         for council in PublicAuthority.objects.filter(do_not_mark=False).all():
+            council_gss_map[council.name] = council.unique_id
             groups[council.name] = council.questiongroup.description
             if council.type == "COMB":
                 raw_scores[council.name] = ca_sections.copy()
@@ -134,14 +138,26 @@ class Command(BaseCommand):
 
         for council, council_score in raw_scores.items():
             total = 0
-            p = {"council": council}
+            p = {"council": council, "gss": council_gss_map[council]}
             for section, score in council_score.items():
-                linear.append((council, section, score))
+                linear.append(
+                    (
+                        council,
+                        council_gss_map[council],
+                        section,
+                        score,
+                        maxes[section][groups[council]],
+                    )
+                )
                 p[section] = score / maxes[section][groups[council]]
                 total += score
 
-            p["total"] = total / group_maxes[groups[council]]
-            row = {**council_score, **{"council": council, "total": total}}
+            p["raw_total"] = total / group_maxes[groups[council]]
+            p["weighted_total"] = p["raw_total"]
+            row = {
+                **council_score,
+                **{"council": council, "gss": council_gss_map[council], "total": total},
+            }
             raw.append(row)
             percent.append(p)
 
