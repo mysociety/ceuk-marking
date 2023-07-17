@@ -10,6 +10,7 @@
     "section": 1,
     "clarifications": "Significant council buildings refers to leisure centres, libraries, council town halls or offices, community centres, schools & colleges (not academies or private schools) or care homes.\n\nExtensive retrofit (sometimes called deep retrofit) refers to significant works of size or scale that result in a fundamental change to the building structure and/or services. This could be a collection of lots of small retrofit enhancements, or a single larger and disruptive measure, such as installing a combined heat system. \n\nThe work must be completed, not in progress.",
     "topic": "Council buildings - retrofit",
+    "weighting": "low",
     "how_marked": "volunteer",
     "question_type": "tiered",
     "questiongroup": [
@@ -31,6 +32,7 @@
     "section": 1,
     "clarifications": "This includes all energy that the council is directly responsible for, in council offices and any other buildings leased and managed by the council where the council pays the energy tariff. \nThis includes all electricity used in these buildings (not gas). \nThis does not include homes owned or managed by the council.",
     "topic": "Council buildings - renewable energy tariff",
+    "weighting": "low",
     "how_marked": "foi",
     "question_type": "foi",
     "questiongroup": [
@@ -52,6 +54,7 @@
     "section": 1,
     "clarifications": "Environmental Performance Certificates (EPCs) show home buyers or tenants how energy efficient the building is. The EPC contains information on potential energy costs and carbon dioxide emissions.\n\nCouncil owned or managed homes includes arms-length management organisation (ALMO) if the homes are owned by the Council but not Housing Associations. \n\nThis question applies only to homes that councils have an available EPC rating for. \nThis question applies only to councils that own or manage any number of council homes. ",
     "topic": "Council homes - EPC ratings",
+    "weighting": "low",
     "how_marked": "foi",
     "question_type": "foi",
     "questiongroup": [
@@ -72,6 +75,7 @@
     "section": 1,
     "clarifications": "Home retrofit is the process of making changes to existing buildings so that energy consumption and emissions are reduced. These changes also provide more comfortable and healthier homes with lower fuel bills.\n\nThe council doesn't need to have all the funds available for the retrofit.\n\nThis question applies only to councils that own or manage any number of homes. ",
     "topic": "Council homes - target to retrofit",
+    "weighting": "low",
     "how_marked": "volunteer",
     "question_type": "tiered",
     "questiongroup": [
@@ -92,6 +96,7 @@
     "section": 1,
     "clarifications": "The criteria will be met if this partnership is a council task and finish group or sub-committee group with external members.",
     "topic": "Retrofit partnerships",
+    "weighting": "low",
     "how_marked": "volunteer",
     "question_type": "select_one",
     "questiongroup": [
@@ -113,6 +118,7 @@
     "section": 1,
     "clarifications": "nan",
     "topic": "Staff working on retrofit",
+    "weighting": "low",
     "how_marked": "foi",
     "question_type": "foi",
     "questiongroup": [
@@ -134,6 +140,7 @@
     "section": 1,
     "clarifications": "Environmental Performance Certificates (EPCs) show home buyers or tenants how energy efficient the building is. The EPC contains information on potential energy costs and carbon dioxide emissions. \n\nNot all buildings in the area have an EPC rating. We will be looking at only the ratings of the buildings that do have a rating. \n\nMarked using data provided by UK Government, Scottish EPC Register and the Department of Finance NI",
     "topic": "EPC ratings - whole area",
+    "weighting": "low",
     "how_marked": "national_data",
     "question_type": "national_data",
     "questiongroup": [
@@ -155,6 +162,7 @@
     "section": 1,
     "clarifications": "This question is applicable to English and Welsh District and Single tier councils only. \n\nAll district and single tier councils have legal powers to enforce Minimum Energy Efficiency Standards. This legislation states that a home cannot be rented out by a landlord if the home has an EPC rating of E or lower. The council can enforce this requirement through enforcement notices and fining landlords if they continue to rent out homes that have an EPC rating of E or lower. ",
     "topic": "Housing Efficiency Standards Enforcement ",
+    "weighting": "low",
     "how_marked": "foi",
     "question_type": "foi",
     "questiongroup": [
@@ -174,6 +182,7 @@
     "section": 1,
     "clarifications": "Points will not be awarded for webpages with standardised information on the council website. There must be links to a wider project or product being offered.",
     "topic": "Homeowner support - retrofit",
+    "weighting": "low",
     "how_marked": "volunteer",
     "question_type": "select_one",
     "questiongroup": [
@@ -194,6 +203,7 @@
     "section": 1,
     "clarifications": "This does not include services provided under the Energy Companies Obligation to replace or upgrade boilers to homes on low income as this is already required and administered by councils. The project cannot be a trial project.",
     "topic": "Homeowner funding - retrofit",
+    "weighting": "low",
     "how_marked": "volunteer",
     "question_type": "yes_no",
     "questiongroup": [
@@ -215,6 +225,7 @@
     "section": 1,
     "clarifications": "If the project is being led by the County Council and all other district councils are involved too, then all those district councils will be awarded the points. \n\nThe project cannot be a trial project.\n\nMarked using data provided by Solar Streets - https://solarstreets.co.uk/ and Solar Together - https://solartogether.co.uk/landing ",
     "topic": "Renewable Energy purchasing schemes",
+    "weighting": "low",
     "how_marked": "volunteer",
     "question_type": "tiered",
     "questiongroup": [
@@ -236,6 +247,7 @@
     "section": 1,
     "clarifications": "Marked using data provided by Community Energy England",
     "topic": "Community Renewable Energy",
+    "weighting": "low",
     "how_marked": "volunteer",
     "question_type": "yes_no",
     "questiongroup": [
@@ -257,6 +269,7 @@
     "section": 2,
     "clarifications": "A council's fleet includes council owned or leased vehicles, and may include street cleaners and waste collection vehicles.",
     "topic": "Council Fleet",
+    "weighting": "low",
     "how_marked": "volunteer",
     "question_type": "yes_no",
     "questiongroup": [
@@ -278,6 +291,7 @@
     "section": 2,
     "clarifications": "Marked mainly using Coordinated Mobility's publicly available data on shared transport schemes.",
     "topic": "Shared Transport Schemes",
+    "weighting": "low",
     "how_marked": "volunteer",
     "question_type": "multiple_choice",
     "questiongroup": [
@@ -299,6 +313,7 @@
     "section": 3,
     "clarifications": "Reaching net-zero must be part of the strategic objectives listed initially in the council's Local Plan - even if the target date is not listed in the strategic objective. This is because the objectives are broader and Joint Local Plans may have different targets between the local authorities.\n\nWe will accept other language for target dates, including carbon neutrality or the carbon budget the council has committed to stay within.\n\nIf the Local Plan references a national net-zero target it must still be a strategic objective of the local plan to meet the national target, rather than the national target just being stated.",
     "topic": "Net-zero in Local Plan",
+    "weighting": "low",
     "how_marked": "volunteer",
     "question_type": "yes_no",
     "questiongroup": [
@@ -319,6 +334,7 @@
     "section": 3,
     "clarifications": "High energy efficiency includes building new council owned or managed housing building standards such as Passivhaus/BREAM excellent or LEED standard or a similar council own standard.\n\nFor operationally net-zero policies, we will accept those that define this as only concerning regulated emissions. Definitions for operationally net-zero and regulated emissions are below.\n\nOperationally net-zero: when the amount of carbon emissions associated with the building’s operational energy on an annual basis is zero or negative. A net zero carbon building is highly energy efficient and powered from on-site and/or off-site renewable energy sources, with any remaining carbon balance offset.” Definition from:\nhttps://ukgbc.s3.eu-west-2.amazonaws.com/wp-content/uploads/2019/04/05150856/Net-Zero-Carbon-Buildings-A-framework-definition.pdf\n\nRegulated emissions: Emissions generated through building energy consumption resulting from the specification of controlled, fixed building services and fittings, including space heating and cooling, hot water, ventilation, fans, pumps and lighting. Such energy uses are inherent in the design of a building.\" For more information: https://www.designingbuildings.co.uk/wiki/Regulated_and_unregulated_energy_consumption \n\nCouncil owned or managed housing: This includes arms-length management organisation (ALMO) if the homes are owned by the Council but not Housing Associations. ",
     "topic": "Council homes - energy efficient and low carbon",
+    "weighting": "low",
     "how_marked": "volunteer",
     "question_type": "tiered",
     "questiongroup": [
@@ -338,6 +354,7 @@
     "section": 4,
     "clarifications": "A corporate plan is a business planning document that sets out the council's future priorities and objectives to help ensure that the council manages its resources effectively.\n\nFor County Councils the document is called a(Strategic) Economic Plan\n\nWe will accept other language for target dates being used such as carbon neutrality. ",
     "topic": "Net Zero Embedded in Corporate Plan",
+    "weighting": "low",
     "how_marked": "volunteer",
     "question_type": "yes_no",
     "questiongroup": [
@@ -359,6 +376,7 @@
     "section": 4,
     "clarifications": "A mid-term Financial Plan is a plan (often covering four years) which sets out the council's commitment to provide services that meet the needs of people locally and that represent value for money within the overall resources available to the council. \n\nWe will accept other language for target dates being used such as carbon neutrality. ",
     "topic": "Net-Zero Embedded in mid-term Financial Plan",
+    "weighting": "low",
     "how_marked": "volunteer",
     "question_type": "yes_no",
     "questiongroup": [
@@ -380,6 +398,7 @@
     "section": 4,
     "clarifications": "Environmental risks of climate change in the local area include flooding, extreme heat, air pollution or other extreme weather events. ",
     "topic": "Climate Change Risk Register",
+    "weighting": "low",
     "how_marked": "volunteer",
     "question_type": "yes_no",
     "questiongroup": [
@@ -401,6 +420,7 @@
     "section": 5,
     "clarifications": "nan",
     "topic": "Peat Free",
+    "weighting": "low",
     "how_marked": "volunteer",
     "question_type": "yes_no",
     "questiongroup": [1,2,3,4]
@@ -417,6 +437,7 @@
     "section": 6,
     "clarifications": "\"Easy to find\" will be defined as meeting any of the following criteria:\n- Within 3 clicks of the homepage\n- Searchable on the site search bar using any of the phrases 'climate change', 'climate emergency', 'climate action' or 'environment'\n- There is an environment and/or climate section in the drop down menu\n\nLinks for further support can include links to collaborative initiatives with other councils.",
     "topic": "Council website - information for residents",
+    "weighting": "high",
     "how_marked": "volunteer",
     "question_type": "yes_no",
     "questiongroup": [
@@ -438,6 +459,7 @@
     "section": 6,
     "clarifications": "This question will be marked using the criteria for Q3.12.1 of the Climate Action Plan Scorecards.",
     "topic": "Climate Action Plan",
+    "weighting": "low",
     "how_marked": "volunteer",
     "question_type": "yes_no",
     "questiongroup": [
@@ -459,6 +481,7 @@
     "section": 6,
     "clarifications": "We have chosen the date 1st of January 2022 to ensure that the report is being issued on a yearly basis, while allowing for some delays. \n\n\"Easy to read\" will be defined as clearly meant for public reading, and may include features such as a contents page, an executive summary, definitions for acronyms or complex language, simple English wherever possible, and graphics or tables to aid comprehension and navigation. \n\nScottish councils are obliged to publish statutory annual reports which will meet the criteria for an annual report, but they must release a more easy-to-read version with reference to SMART targets for further points.",
     "topic": "Published Annual report",
+    "weighting": "low",
     "how_marked": "volunteer",
     "question_type": "multiple_choice",
     "questiongroup": [
@@ -480,6 +503,7 @@
     "section": 7,
     "clarifications": "Single use plastic or disposable plastics are used only once before they are thrown away or recycled. They are made from fossil fuels like petroleum and can be very hard to recycle. ",
     "topic": "Single Use Plastic",
+    "weighting": "low",
     "how_marked": "volunteer",
     "question_type": "yes_no",
     "questiongroup": [
@@ -501,6 +525,7 @@
     "section": 7,
     "clarifications": "nan",
     "topic": "Single Use Plastic",
+    "weighting": "low",
     "how_marked": "volunteer",
     "question_type": "tiered",
     "questiongroup": [
@@ -522,6 +547,7 @@
     "section": 7,
     "clarifications": "A circular economy is a model of production and consumption, which involves sharing, leasing, reusing, repairing, refurbishing and recycling existing materials and products as long as possible.",
     "topic": "Circular Economy",
+    "weighting": "low",
     "how_marked": "volunteer",
     "question_type": "select_one",
     "questiongroup": [

@@ -66,6 +66,68 @@ max_totals = {
     "Combined Authority": 0,
 }
 
+max_questions = {
+    "Buildings & Heating": {"5": 1, "9": 1, "10": 1, "12": 1, "1": 5, "4": 16, "11": 3},
+    "Transport": {"1": 1, "2": 6},
+    "Planning & Land Use": {"1": 1, "2": 3},
+    "Governance & Finance": {"1a": 1, "1b": 1, "2": 1},
+    "Biodiversity": {"1": 1},
+    "Collaboration & Engagement": {"1": 1, "2a": 1, "2b": 3},
+    "Waste Reduction & Food": {"1": 1, "2": 1, "1b": 3},
+}
+
+max_weighted = {
+    "Buildings & Heating": {
+        "Single Tier": 12,
+        "District": 10,
+        "County": 12,
+        "Northern Ireland": 9,
+        "Combined Authority": 0,
+    },
+    "Transport": {
+        "Single Tier": 2,
+        "District": 2,
+        "County": 2,
+        "Northern Ireland": 2,
+        "Combined Authority": 0,
+    },
+    "Planning & Land Use": {
+        "Single Tier": 2,
+        "District": 2,
+        "County": 0,
+        "Northern Ireland": 1,
+        "Combined Authority": 0,
+    },
+    "Governance & Finance": {
+        "Single Tier": 3,
+        "District": 3,
+        "County": 3,
+        "Northern Ireland": 3,
+        "Combined Authority": 0,
+    },
+    "Biodiversity": {
+        "Single Tier": 1,
+        "District": 1,
+        "County": 1,
+        "Northern Ireland": 1,
+        "Combined Authority": 0,
+    },
+    "Collaboration & Engagement": {
+        "Single Tier": 5,
+        "District": 5,
+        "County": 5,
+        "Northern Ireland": 5,
+        "Combined Authority": 0,
+    },
+    "Waste Reduction & Food": {
+        "Single Tier": 3,
+        "District": 3,
+        "County": 3,
+        "Northern Ireland": 3,
+        "Combined Authority": 0,
+    },
+}
+
 
 class BaseCommandTestCase(TestCase):
     def call_command(self, command, *args, **kwargs):
@@ -90,13 +152,18 @@ class ExportNoMarksTestCase(BaseCommandTestCase):
     ]
 
     def test_max_calculation(self):
+        cs = crowdsourcer.management.commands.export_marks.Command()
         (
             section,
             totals,
-        ) = crowdsourcer.management.commands.export_marks.Command.get_section_max(None)
+            q_maxes,
+            weighted,
+        ) = cs.get_section_max()
 
         self.assertEquals(section, max_section)
         self.assertEquals(totals, max_totals)
+        self.assertEquals(q_maxes, max_questions)
+        self.assertEquals(weighted, max_weighted)
 
     @mock.patch("crowdsourcer.management.commands.export_marks.Command.write_files")
     def test_export_with_no_marks(self, write_mock):
@@ -241,7 +308,7 @@ class ExportWithMarksTestCase(BaseCommandTestCase):
                 "Collaboration & Engagement": 0.0,
                 "Waste Reduction & Food": 0.0,
                 "raw_total": 0.05660377358490566,
-                "weighted_total": 0.02142857142857143,
+                "weighted_total": 0.021041666666666667,
             },
             {
                 "council": "Aberdeenshire Council",
@@ -254,7 +321,7 @@ class ExportWithMarksTestCase(BaseCommandTestCase):
                 "Collaboration & Engagement": 0.0,
                 "Waste Reduction & Food": 0.0,
                 "raw_total": 0.03773584905660377,
-                "weighted_total": 0.05714285714285714,
+                "weighted_total": 0.11666666666666668,
             },
             {
                 "council": "Adur District Council",
@@ -267,7 +334,7 @@ class ExportWithMarksTestCase(BaseCommandTestCase):
                 "Collaboration & Engagement": 0.0,
                 "Waste Reduction & Food": 0.0,
                 "raw_total": 0.019230769230769232,
-                "weighted_total": 0.007142857142857143,
+                "weighted_total": 0.004166666666666667,
             },
         ]
 
@@ -365,7 +432,7 @@ class ExportWithMultiMarksTestCase(BaseCommandTestCase):
                 "Collaboration & Engagement": 0.0,
                 "Waste Reduction & Food": 0.0,
                 "raw_total": 0.05660377358490566,
-                "weighted_total": 0.02142857142857143,
+                "weighted_total": 0.021041666666666667,
             },
             {
                 "council": "Aberdeenshire Council",
@@ -378,7 +445,7 @@ class ExportWithMultiMarksTestCase(BaseCommandTestCase):
                 "Collaboration & Engagement": 0.0,
                 "Waste Reduction & Food": 0.0,
                 "raw_total": 0.03773584905660377,
-                "weighted_total": 0.05714285714285714,
+                "weighted_total": 0.11666666666666668,
             },
             {
                 "council": "Adur District Council",
@@ -391,7 +458,7 @@ class ExportWithMultiMarksTestCase(BaseCommandTestCase):
                 "Collaboration & Engagement": 0.0,
                 "Waste Reduction & Food": 0.0,
                 "raw_total": 0.057692307692307696,
-                "weighted_total": 0.02142857142857143,
+                "weighted_total": 0.03333333333333334,
             },
         ]
 
@@ -465,7 +532,7 @@ class ExportWithMoreMarksTestCase(BaseCommandTestCase):
                 "Collaboration & Engagement": 0.0,
                 "Waste Reduction & Food": 0.0,
                 "raw_total": 0.05660377358490566,
-                "weighted_total": 0.02142857142857143,
+                "weighted_total": 0.021041666666666667,
             },
             {
                 "council": "Aberdeenshire Council",
@@ -478,7 +545,7 @@ class ExportWithMoreMarksTestCase(BaseCommandTestCase):
                 "Collaboration & Engagement": 0.2,
                 "Waste Reduction & Food": 0.6,
                 "raw_total": 0.4528301886792453,
-                "weighted_total": 0.5496428571428571,
+                "weighted_total": 0.5427083333333333,
             },
             {
                 "council": "Adur District Council",
@@ -491,7 +558,7 @@ class ExportWithMoreMarksTestCase(BaseCommandTestCase):
                 "Collaboration & Engagement": 0.0,
                 "Waste Reduction & Food": 0.0,
                 "raw_total": 0.057692307692307696,
-                "weighted_total": 0.02142857142857143,
+                "weighted_total": 0.03333333333333334,
             },
         ]
 
@@ -552,10 +619,13 @@ class ExportNoMarksCATestCase(BaseCommandTestCase):
     ]
 
     def test_max_calculation(self):
+        cs = crowdsourcer.management.commands.export_marks.Command
         (
             section,
             totals,
-        ) = crowdsourcer.management.commands.export_marks.Command.get_section_max(None)
+            q_maxes,
+            weighted,
+        ) = cs.get_section_max(cs)
 
         ca_max_section = {
             **max_section,
@@ -791,7 +861,7 @@ class ExportWithMoreMarksCATestCase(BaseCommandTestCase):
             "Collaboration & Engagement": 0.0,
             "Waste Reduction & Food": 0.0,
             "raw_total": 0.05660377358490566,
-            "weighted_total": 0.02142857142857143,
+            "weighted_total": 0.021041666666666667,
         },
         {
             "council": "Aberdeenshire Council",
@@ -804,7 +874,7 @@ class ExportWithMoreMarksCATestCase(BaseCommandTestCase):
             "Collaboration & Engagement": 0.2,
             "Waste Reduction & Food": 0.6,
             "raw_total": 0.4528301886792453,
-            "weighted_total": 0.5496428571428571,
+            "weighted_total": 0.5427083333333333,
         },
         {
             "council": "Adur District Council",
@@ -817,7 +887,7 @@ class ExportWithMoreMarksCATestCase(BaseCommandTestCase):
             "Collaboration & Engagement": 0.0,
             "Waste Reduction & Food": 0.0,
             "raw_total": 0.057692307692307696,
-            "weighted_total": 0.02142857142857143,
+            "weighted_total": 0.03333333333333334,
         },
         {
             "Buildings, Heating & Green Skills (CA)": 0.3333333333333333333,

@@ -90,11 +90,29 @@ class Command(BaseCommand):
             "-q", "--quiet", action="store_true", help="Silence progress bars."
         )
 
+    def number_and_part(self, number=None, number_part=None):
+        if number_part is not None:
+            return f"{number}{number_part}"
+        return f"{number}"
+
+    def weighting_to_points(self, weighting="low"):
+        weighting = weighting.lower()
+        points = 1
+        if weighting == "medium":
+            points = 2
+        elif weighting == "high":
+            points = 3
+
+        return points
+
     def get_section_max(self):
         section_maxes = defaultdict(dict)
+        section_weighted_maxes = defaultdict(dict)
         group_totals = defaultdict(int)
+        q_maxes = defaultdict(int)
 
         for section in Section.objects.all():
+            q_section_maxes = {}
             for group in QuestionGroup.objects.all():
                 questions = Question.objects.filter(
                     section=section, questiongroup=group
@@ -105,27 +123,45 @@ class Command(BaseCommand):
                         question__in=questions,
                         question__question_type__in=["yes_no", "select_one"],
                     )
-                    .values("question__pk")
+                    .select_related("question")
+                    .values("question__pk", "question__number", "question__number_part")
                     .annotate(highest=Max("score"))
                 )
                 totals = (
                     Option.objects.filter(question__in=questions)
                     .exclude(question__question_type__in=["yes_no", "select_one"])
-                    .values("question__pk")
+                    .select_related("question")
+                    .values("question__pk", "question__number", "question__number_part")
                     .annotate(highest=Sum("score"))
                 )
 
                 max_score = 0
                 for m in maxes:
+                    q_section_maxes[
+                        self.number_and_part(
+                            m["question__number"], m["question__number_part"]
+                        )
+                    ] = m["highest"]
                     max_score += m["highest"]
 
                 for m in totals:
+                    q_section_maxes[
+                        self.number_and_part(
+                            m["question__number"], m["question__number_part"]
+                        )
+                    ] = m["highest"]
                     max_score += m["highest"]
 
-                section_maxes[section.title][group.description] = max_score
-                group_totals[group.description] += max_score
+                weighted_max = 0
+                for q in questions:
+                    weighted_max += self.weighting_to_points(q.weighting)
 
-        return section_maxes, group_totals
+                section_maxes[section.title][group.description] = max_score
+                section_weighted_maxes[section.title][group.description] = weighted_max
+                group_totals[group.description] += max_score
+                q_maxes[section.title] = q_section_maxes.copy()
+
+        return section_maxes, group_totals, q_maxes, section_weighted_maxes
 
     def write_files(self, percent_marks, raw_marks, linear):
         df = pd.DataFrame.from_records(percent_marks, index="council")
@@ -148,8 +184,9 @@ class Command(BaseCommand):
         linear = []
         groups = {}
         raw_scores = defaultdict(dict)
+        weighted = defaultdict(dict)
 
-        maxes, group_maxes = self.get_section_max()
+        maxes, group_maxes, q_maxes, weighted_maxes = self.get_section_max()
 
         non_ca_sections = {
             x: 0
@@ -168,8 +205,10 @@ class Command(BaseCommand):
             council_gss_map[council.name] = council.unique_id
             groups[council.name] = council.questiongroup.description
             if council.type == "COMB":
+                weighted[council.name] = ca_sections.copy()
                 raw_scores[council.name] = ca_sections.copy()
             else:
+                weighted[council.name] = non_ca_sections.copy()
                 raw_scores[council.name] = non_ca_sections.copy()
 
         for section in Section.objects.all():
@@ -189,12 +228,32 @@ class Command(BaseCommand):
                     )
                 )
                 .select_related("authority")
-                .values("authority__name")
-                .annotate(total=Sum("score"))
+            )
+
+            raw_scores_qs = scores.values("authority__name").annotate(
+                total=Sum("score")
+            )
+
+            for score in raw_scores_qs:
+                raw_scores[score["authority__name"]][section.title] = score["total"]
+
+            scores = scores.select_related("questions").values(
+                "score",
+                "authority__name",
+                "question__number",
+                "question__number_part",
+                "question__weighting",
             )
 
             for score in scores:
-                raw_scores[score["authority__name"]][section.title] = score["total"]
+                q = self.number_and_part(
+                    score["question__number"], score["question__number_part"]
+                )
+                q_max = q_maxes[section.title][q]
+                weighted_score = (score["score"] / q_max) * self.weighting_to_points(
+                    score["question__weighting"]
+                )
+                weighted[score["authority__name"]][section.title] += weighted_score
 
         for council, council_score in raw_scores.items():
             total = 0
@@ -212,8 +271,9 @@ class Command(BaseCommand):
                 )
                 p[section] = score / maxes[section][groups[council]]
                 weighted_total += (
-                    p[section] * section_weightings[section][groups[council]]
-                )
+                    weighted[council][section]
+                    / weighted_maxes[section][groups[council]]
+                ) * section_weightings[section][groups[council]]
                 total += score
 
             p["raw_total"] = total / group_maxes[groups[council]]
