@@ -35,6 +35,11 @@ class Question(models.Model):
         ("tiered", "Tiered Answer"),
         ("multiple_choice", "Multiple Choice"),
     ]
+    WEIGHTINGS = [
+        ("low", "Low"),
+        ("medium", "Medium"),
+        ("high", "High"),
+    ]
     VOLUNTEER_TYPES = ["volunteer", "national_volunteer"]
     number = models.IntegerField(blank=True, null=True)
     number_part = models.CharField(max_length=4, blank=True, null=True)
@@ -50,6 +55,7 @@ class Question(models.Model):
     question_type = models.CharField(
         max_length=30, default="yes_no", choices=QUESTION_TYPES
     )
+    weighting = models.CharField(max_length=20, default="low", choices=WEIGHTINGS)
 
     @property
     def number_and_part(self):
