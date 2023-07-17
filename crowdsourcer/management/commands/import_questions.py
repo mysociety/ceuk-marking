@@ -20,8 +20,8 @@ class Command(BaseCommand):
         "criteria",
         "clarifications",
         "how_marked",
-        "climate_justice",
         "weighting",
+        "climate_justice",
         "district",
         "single_tier",
         "county",
@@ -39,6 +39,12 @@ class Command(BaseCommand):
             "--text_only",
             action="store_true",
             help="Only update question text, criteria and clarifications",
+        )
+
+        parser.add_argument(
+            "--weighting_only",
+            action="store_true",
+            help="Only update question weighting",
         )
 
     def handle(self, quiet: bool = False, *args, **kwargs):
@@ -100,13 +106,23 @@ class Command(BaseCommand):
                     "how_marked": how_marked,
                     "clarifications": row["clarifications"],
                     "topic": row["topic"],
+                    "weighting": row["weighting"],
                 }
 
-                if kwargs["text_only"]:
+                if kwargs["text_only"] or kwargs["weighting_only"]:
                     for default in [
                         "question_type",
                         "how_marked",
                         "topic",
+                    ]:
+                        del defaults[default]
+
+                print(row["weighting"])
+                if kwargs["weighting_only"]:
+                    for default in [
+                        "description",
+                        "criteria",
+                        "clarifications",
                     ]:
                         del defaults[default]
 
@@ -117,7 +133,7 @@ class Command(BaseCommand):
                     defaults=defaults,
                 )
 
-                if kwargs["text_only"]:
+                if kwargs["text_only"] or kwargs["weighting_only"]:
                     continue
 
                 if q.question_type in ["select_one", "tiered", "multiple_choice"]:
