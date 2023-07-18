@@ -4,8 +4,8 @@ from unittest import mock
 from django.core.management import call_command
 from django.test import TestCase
 
-import crowdsourcer
 from crowdsourcer.models import Response
+from crowdsourcer.scoring import get_section_maxes
 
 max_section = {
     "Buildings & Heating": {
@@ -152,13 +152,12 @@ class ExportNoMarksTestCase(BaseCommandTestCase):
     ]
 
     def test_max_calculation(self):
-        cs = crowdsourcer.management.commands.export_marks.Command()
         (
             section,
             totals,
             q_maxes,
             weighted,
-        ) = cs.get_section_max()
+        ) = get_section_maxes()
 
         self.assertEquals(section, max_section)
         self.assertEquals(totals, max_totals)
@@ -619,13 +618,12 @@ class ExportNoMarksCATestCase(BaseCommandTestCase):
     ]
 
     def test_max_calculation(self):
-        cs = crowdsourcer.management.commands.export_marks.Command
         (
             section,
             totals,
             q_maxes,
             weighted,
-        ) = cs.get_section_max(cs)
+        ) = get_section_maxes()
 
         ca_max_section = {
             **max_section,
