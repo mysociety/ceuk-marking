@@ -183,6 +183,11 @@ urlpatterns = [
         stats.QuestionDataCSVView.as_view(),
         name="question_data_csv",
     ),
+    path(
+        "stats/scores/weighted_totals/",
+        stats.WeightedScoresDataCSVView.as_view(),
+        name="weighted_totals_csv",
+    ),
     # audit screens
     path(
         "section/audit/<section_title>/authorities/",

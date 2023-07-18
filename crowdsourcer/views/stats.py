@@ -7,9 +7,14 @@ from django.contrib.auth.mixins import UserPassesTestMixin
 from django.db.models import Count
 from django.http import HttpResponse
 from django.utils.text import slugify
-from django.views.generic import ListView
+from django.views.generic import ListView, TemplateView
 
 from crowdsourcer.models import PublicAuthority, Question, Response
+from crowdsourcer.scoring import (
+    calculate_council_totals,
+    get_section_maxes,
+    get_section_scores,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -329,3 +334,72 @@ class RoRQuestionDataCSVView(QuestionDataCSVView):
         ]
 
         return data
+
+
+class WeightedScoresDataCSVView(UserPassesTestMixin, TemplateView):
+    def test_func(self):
+        return self.request.user.is_superuser
+
+    def get_context_data(self, **kwargs):
+        ordered_sections = [
+            "Buildings & Heating",
+            "Transport",
+            "Planning & Land Use",
+            "Governance & Finance",
+            "Biodiversity",
+            "Collaboration & Engagement",
+            "Waste Reduction & Food",
+            "Transport (CA)",
+            "Buildings & Heating & Green Skills (CA)",
+            "Governance & Finance (CA)",
+            "Planning & Biodiversity (CA)",
+            "Collaboration & Engagement (CA)",
+        ]
+        context = super().get_context_data(**kwargs)
+
+        council_gss_map, groups = PublicAuthority.maps()
+        maxes, group_maxes, q_maxes, weighted_maxes = get_section_maxes()
+        raw_scores, weighted = get_section_scores(q_maxes)
+
+        council_totals, section_totals = calculate_council_totals(
+            raw_scores, weighted, weighted_maxes, maxes, group_maxes, groups
+        )
+
+        rows = []
+        rows.append(
+            [
+                "council",
+            ]
+            + ordered_sections
+            + [
+                "total",
+            ]
+        )
+
+        for council, council_score in section_totals.items():
+            row = [council]
+            for section in ordered_sections:
+                if council_score.get(section, None) is not None:
+                    row.append(council_score[section]["weighted"])
+                else:
+                    row.append(0)
+
+            row.append(council_totals[council]["weighted_total"])
+
+            rows.append(row)
+
+        context["weighted_scores"] = rows
+
+        return context
+
+    def render_to_response(self, context, **response_kwargs):
+        file_name = "all_sections_scores.csv"
+
+        response = HttpResponse(
+            content_type="text/csv",
+            headers={"Content-Disposition": f'attachment; filename="{file_name}"'},
+        )
+        writer = csv.writer(response)
+        for row in context["weighted_scores"]:
+            writer.writerow(row)
+        return response
