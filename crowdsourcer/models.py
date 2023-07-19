@@ -134,10 +134,11 @@ class PublicAuthority(models.Model):
                     question__in=questions,
                     response_type=response_type,
                 )
+                .exclude(id__in=Response.null_responses())
                 .values("authority")
-                .annotate(response_count=Count("pk"))
+                .annotate(response_count=Count("question_id", distinct=True))
                 .values("response_count")
-            )
+            ),
         )
 
         if assigned is not None:
@@ -226,6 +227,10 @@ class Response(models.Model):
                 "number": self.question.number,
             },
         )
+
+    @classmethod
+    def null_responses(cls):
+        return cls.objects.filter(option__isnull=True, multi_option__isnull=True)
 
 
 class Assigned(models.Model):

@@ -50,6 +50,40 @@ class TestAssignmentView(BaseTestCase):
         self.assertEqual(second.total, 2)
         self.assertEqual(second.complete, 0)
 
+    def test_null_answers_ignored(self):
+        Response.objects.filter(question_id=272, user=3, response_type=2).update(
+            option=None
+        )
+        url = reverse("authority_ror_sections", args=("Aberdeenshire Council",))
+        response = self.client.get(url)
+
+        context = response.context
+        sections = context["sections"]
+
+        self.assertEqual(len(sections), 7)
+
+        first = sections[0]
+        self.assertEqual(first.title, "Buildings & Heating")
+
+        self.assertEqual(first.complete, 1)
+
+    def test_duplicate_answers_ignored(self):
+        Response.objects.filter(question_id=272, user=3, response_type=2).update(
+            question_id=273
+        )
+        url = reverse("authority_ror_sections", args=("Aberdeenshire Council",))
+        response = self.client.get(url)
+
+        context = response.context
+        sections = context["sections"]
+
+        self.assertEqual(len(sections), 7)
+
+        first = sections[0]
+        self.assertEqual(first.title, "Buildings & Heating")
+
+        self.assertEqual(first.complete, 1)
+
 
 class TestTwoCouncilsAssignmentView(BaseTestCase):
     def setUp(self):

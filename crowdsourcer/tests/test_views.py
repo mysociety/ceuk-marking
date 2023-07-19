@@ -106,6 +106,23 @@ class TestAssignmentCompletionStats(BaseTestCase):
         second = progress[1]
         self.assertEqual(second["complete"], 2)
 
+    def test_completion_stats_ignore_null_responses(self):
+        response = self.client.get("/")
+        context = response.context
+        progress = context["progress"]
+
+        second = progress[1]
+        self.assertEqual(second["complete"], 1)
+
+        Response.objects.filter(question_id=281, user=2).update(option=None)
+
+        response = self.client.get("/")
+        context = response.context
+        progress = context["progress"]
+
+        second = progress[1]
+        self.assertEqual(second["complete"], 0)
+
 
 class TestUserSectionProgressView(BaseTestCase):
     def test_view(self):
@@ -119,6 +136,16 @@ class TestUserSectionProgressView(BaseTestCase):
         self.assertEqual(context["authorities"][0].num_questions, 2)
         self.assertEqual(context["authorities"][1].num_responses, None)
         self.assertEqual(context["authorities"][1].num_questions, 2)
+
+    def test_null_responses_ignored(self):
+        Response.objects.filter(question_id=281, user=2).update(option=None)
+
+        url = reverse("section_authorities", args=("Transport",))
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+
+        context = response.context
+        self.assertEqual(context["authorities"][0].num_responses, 1)
 
 
 class TestSaveView(BaseTestCase):
@@ -443,7 +470,7 @@ class TestAllAuthorityProgressView(BaseTestCase):
         self.assertEquals(context["councils"]["total"], 4)
 
 
-class TestSectionProgressView(BaseTestCase):
+class TestAllSectionProgressView(BaseTestCase):
     def test_non_admin_denied(self):
         response = self.client.get(reverse("all_section_progress"))
         self.assertEquals(response.status_code, 403)
@@ -464,6 +491,20 @@ class TestSectionProgressView(BaseTestCase):
         self.assertEquals(context["Buildings & Heating"]["complete"], 0)
         self.assertEquals(context["Buildings & Heating"]["assigned"], 1)
         self.assertEquals(context["Buildings & Heating"]["total"], 4)
+
+    def test_null_responses_ignored(self):
+        Response.objects.filter(question_id=281, user=2).update(option=None)
+
+        u = User.objects.get(username="admin")
+        self.client.force_login(u)
+        response = self.client.get(reverse("all_section_progress"))
+        self.assertEqual(response.status_code, 200)
+
+        context = response.context["progress"]
+        self.assertEquals(context["Transport"]["complete"], 0)
+        self.assertEquals(context["Transport"]["started"], 1)
+        self.assertEquals(context["Transport"]["assigned"], 2)
+        self.assertEquals(context["Transport"]["total"], 4)
 
 
 class TestAuthorityLoginView(BaseTestCase):

@@ -84,8 +84,9 @@ class BaseAllAuthorityProgressView(UserPassesTestMixin, ListView):
                         authority=OuterRef("pk"),
                         response_type=response_type,
                     )
+                    .exclude(id__in=Response.null_responses())
                     .values("authority")
-                    .annotate(response_count=Count("pk"))
+                    .annotate(response_count=Count("question_id", distinct=True))
                     .values("response_count")
                 )
             )
@@ -150,6 +151,7 @@ class BaseAuthorityProgressView(UserPassesTestMixin, ListView):
 
         stage = ResponseType.objects.get(type=self.stage)
         sections = context["sections"]
+
         for section in sections:
             questions = Question.objects.filter(
                 section=section, how_marked__in=self.types
@@ -176,8 +178,9 @@ class BaseAuthorityProgressView(UserPassesTestMixin, ListView):
                             question__in=question_list,
                             response_type=stage,
                         )
+                        .exclude(id__in=Response.null_responses())
                         .values("authority")
-                        .annotate(response_count=Count("pk"))
+                        .annotate(response_count=Count("question_id", distict=True))
                         .values("response_count")
                     )
                 )
@@ -260,8 +263,9 @@ class VolunteerProgressView(UserPassesTestMixin, CurrentStageMixin, ListView):
                             authority=OuterRef("pk"),
                             response_type=self.current_stage,
                         )
+                        .exclude(id__in=Response.null_responses())
                         .values("authority")
-                        .annotate(response_count=Count("pk"))
+                        .annotate(response_count=Count("question_id", distinct=True))
                         .values("response_count")
                     )
                 )
@@ -428,7 +432,7 @@ class AllSectionChallengeView(UserPassesTestMixin, ListView):
                             agree_with_response=False,
                         )
                         .values("authority")
-                        .annotate(response_count=Count("pk"))
+                        .annotate(response_count=Count("question_id", distict=True))
                         .values("response_count")
                     )
                 )
