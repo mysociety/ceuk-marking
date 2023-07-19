@@ -188,6 +188,11 @@ urlpatterns = [
         stats.WeightedScoresDataCSVView.as_view(),
         name="weighted_totals_csv",
     ),
+    path(
+        "stats/scores/bad_responses/",
+        stats.BadResponsesView.as_view(),
+        name="bad_responses",
+    ),
     # audit screens
     path(
         "section/audit/<section_title>/authorities/",

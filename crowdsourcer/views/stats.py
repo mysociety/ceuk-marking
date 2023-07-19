@@ -403,3 +403,24 @@ class WeightedScoresDataCSVView(UserPassesTestMixin, TemplateView):
         for row in context["weighted_scores"]:
             writer.writerow(row)
         return response
+
+
+class BadResponsesView(UserPassesTestMixin, ListView):
+    context_object_name = "responses"
+    template_name = "crowdsourcer/bad_responses.html"
+
+    def test_func(self):
+        return self.request.user.is_superuser
+
+    def get_queryset(self):
+        responses = (
+            Response.objects.filter(
+                response_type__type="Audit",
+                option__isnull=True,
+                multi_option__isnull=True,
+            )
+            .select_related("authority", "question", "question__section")
+            .order_by("authority", "question__section")
+        )
+
+        return responses

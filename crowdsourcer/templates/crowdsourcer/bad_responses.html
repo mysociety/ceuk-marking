@@ -1,0 +1,39 @@
+{% extends 'crowdsourcer/base.html' %}
+
+{% block content %}
+{% if show_login %}
+<h1 class="mb-4">Sign in</h1>
+<a href="{% url 'login' %}">Sign in</a>
+{% else %}
+<h1 class="mb-4">Bad Audit Responses</h1>
+
+<p>
+    This is a list of audit responses that don't have an answer set.
+</p>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Authority</th>
+            <th>Section</th>
+            <th>Question</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for response in responses %}
+        <tr>
+            <td>
+                <a href="{% url 'authority_ror_progress' response.authority.name %}">{{ response.authority.name }}</a>
+            </td>
+            <td>
+                <a href="{% url 'authority_ror' response.authority.name response.question.section.title %}">{{ response.question.section.title }}</a>
+            </td>
+            <td>
+                {{ response.question.number_and_part }}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+{% endblock %}
