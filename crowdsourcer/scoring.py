@@ -213,6 +213,28 @@ def get_section_scores(q_maxes):
                 score["question__number"], score["question__number_part"]
             )
             q_max = q_maxes[section.title][q]
+
+            if score["score"] is None:
+                print(
+                    "score is None:",
+                    score["authority__name"],
+                    section.title,
+                    q,
+                    score["score"],
+                    q_max,
+                )
+                continue
+            if q_max is None or q_max == 0:
+                print(
+                    "Max score is None or 0:",
+                    score["authority__name"],
+                    section.title,
+                    q,
+                    score["score"],
+                    q_max,
+                )
+                continue
+
             weighted_score = get_weighted_question_score(
                 score["score"], q_max, score["question__weighting"]
             )
