@@ -266,6 +266,9 @@ def calculate_council_totals(
             section_totals[council][section] = {
                 "raw": score,
                 "raw_percent": percentage_score,
+                "raw_weighted": weighted_scores[council][section],
+                "unweighted_percentage": weighted_scores[council][section]
+                / weighted_maxes[section][council_group],
                 "weighted": weighted_score,
             }
 

@@ -9,11 +9,12 @@ from django.http import HttpResponse
 from django.utils.text import slugify
 from django.views.generic import ListView, TemplateView
 
-from crowdsourcer.models import PublicAuthority, Question, Response
+from crowdsourcer.models import Option, PublicAuthority, Question, Response
 from crowdsourcer.scoring import (
     calculate_council_totals,
     get_section_maxes,
     get_section_scores,
+    weighting_to_points,
 )
 
 logger = logging.getLogger(__name__)
@@ -336,7 +337,39 @@ class RoRQuestionDataCSVView(QuestionDataCSVView):
         return data
 
 
-class WeightedScoresDataCSVView(UserPassesTestMixin, TemplateView):
+class BaseScoresView(UserPassesTestMixin, TemplateView):
+    def test_func(self):
+        return self.request.user.is_superuser
+
+    def get_scores(self):
+        council_gss_map, groups = PublicAuthority.maps()
+        maxes, group_maxes, q_maxes, weighted_maxes = get_section_maxes()
+        raw_scores, weighted = get_section_scores(q_maxes)
+
+        council_totals, section_totals = calculate_council_totals(
+            raw_scores, weighted, weighted_maxes, maxes, group_maxes, groups
+        )
+
+        self.groups = groups
+        self.maxes = maxes
+        self.weighted_maxes = weighted_maxes
+
+        return council_totals, section_totals
+
+    def render_to_response(self, context, **response_kwargs):
+        response = HttpResponse(
+            content_type="text/csv",
+            headers={"Content-Disposition": f'attachment; filename="{self.file_name}"'},
+        )
+        writer = csv.writer(response)
+        for row in context["rows"]:
+            writer.writerow(row)
+        return response
+
+
+class WeightedScoresDataCSVView(BaseScoresView):
+    file_name = "all_sections_scores.csv"
+
     def test_func(self):
         return self.request.user.is_superuser
 
@@ -357,13 +390,7 @@ class WeightedScoresDataCSVView(UserPassesTestMixin, TemplateView):
         ]
         context = super().get_context_data(**kwargs)
 
-        council_gss_map, groups = PublicAuthority.maps()
-        maxes, group_maxes, q_maxes, weighted_maxes = get_section_maxes()
-        raw_scores, weighted = get_section_scores(q_maxes)
-
-        council_totals, section_totals = calculate_council_totals(
-            raw_scores, weighted, weighted_maxes, maxes, group_maxes, groups
-        )
+        council_totals, section_totals = self.get_scores()
 
         rows = []
         rows.append(
@@ -388,19 +415,144 @@ class WeightedScoresDataCSVView(UserPassesTestMixin, TemplateView):
 
             rows.append(row)
 
-        context["weighted_scores"] = rows
+        context["rows"] = rows
+
+        return context
+
+
+class SectionScoresDataCSVView(BaseScoresView):
+    file_name = "raw_and_weighted_sections_scores.csv"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        council_totals, section_totals = self.get_scores()
+
+        rows = []
+        rows.append(
+            [
+                "council",
+                "section",
+                "raw score",
+                "raw max",
+                "raw weighted",
+                "weighted max",
+                "weighted score",
+                "section weighted score",
+            ]
+        )
+
+        for council, council_score in section_totals.items():
+            for section, scores in council_score.items():
+                row = [
+                    council,
+                    section,
+                    scores["raw"],
+                    self.maxes[section][self.groups[council]],
+                    scores["raw_weighted"],
+                    self.weighted_maxes[section][self.groups[council]],
+                    scores["unweighted_percentage"],
+                    scores["weighted"],
+                ]
+
+                rows.append(row)
+
+        context["rows"] = rows
+
+        return context
+
+
+class QuestionScoresCSV(UserPassesTestMixin, ListView):
+    context_object_name = "options"
+
+    def test_func(self):
+
+        return self.request.user.is_superuser
+
+    def get_queryset(self):
+        return Option.objects.select_related("question", "question__section").order_by(
+            "question__section__title",
+            "question__number",
+            "question__number_part",
+            "score",
+        )
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        maxes, group_maxes, q_maxes, weighted_maxes = get_section_maxes()
+
+        sections = defaultdict(dict)
+        for option in context["options"]:
+            section = option.question.section.title
+            number = option.question.number_and_part
+
+            option_text = f"{option.description} ({option.score})"
+
+            try:
+                q = sections[section][number]
+            except KeyError:
+                max_score = q_maxes[section].get(number, 0)
+                q = {
+                    "q": option.question.description,
+                    "how_marked": option.question.how_marked,
+                    "type": option.question.question_type,
+                    "raw_max": max_score,
+                    "weighted_max": weighting_to_points(option.question.weighting),
+                    "options": [],
+                }
+            q["options"].append(option_text)
+
+            sections[section][number] = q
+
+        rows = []
+        rows.append(
+            [
+                "section",
+                "No",
+                "question",
+                "how marked",
+                "type",
+                "raw max",
+                "weighted max",
+                "options",
+            ]
+        )
+
+        for section, questions in sections.items():
+            keys = sorted(
+                list(questions.keys()),
+                key=lambda s: [
+                    int(t) if t.isdigit() else t.lower() for t in re.split(r"(\d+)", s)
+                ],
+            )
+            for k in keys:
+                q = questions[k]
+                row = [
+                    section,
+                    k,
+                    q["q"],
+                    q["how_marked"],
+                    q["type"],
+                    q["raw_max"],
+                    q["weighted_max"],
+                    q["options"],
+                ]
+                rows.append(row)
+
+        context["rows"] = rows
 
         return context
 
     def render_to_response(self, context, **response_kwargs):
-        file_name = "all_sections_scores.csv"
-
         response = HttpResponse(
             content_type="text/csv",
-            headers={"Content-Disposition": f'attachment; filename="{file_name}"'},
+            headers={
+                "Content-Disposition": 'attachment; filename="questions_with_max_scores.csv"'
+            },
         )
         writer = csv.writer(response)
-        for row in context["weighted_scores"]:
+        for row in context["rows"]:
             writer.writerow(row)
         return response
 

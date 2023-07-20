@@ -184,9 +184,19 @@ urlpatterns = [
         name="question_data_csv",
     ),
     path(
+        "stats/scores/question_scores/",
+        stats.QuestionScoresCSV.as_view(),
+        name="question_scores_csv",
+    ),
+    path(
         "stats/scores/weighted_totals/",
         stats.WeightedScoresDataCSVView.as_view(),
         name="weighted_totals_csv",
+    ),
+    path(
+        "stats/scores/raw_and_weighted_totals/",
+        stats.SectionScoresDataCSVView.as_view(),
+        name="raw_and_weighted_totals_csv",
     ),
     path(
         "stats/scores/bad_responses/",
