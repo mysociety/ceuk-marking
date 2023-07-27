@@ -1,0 +1,77 @@
+{% extends 'crowdsourcer/base.html' %}
+
+{% block content %}
+{% if show_login %}
+<h1 class="mb-4">Sign in</h1>
+<a href="{% url 'login' %}">Sign in</a>
+{% else %}
+<h1 class="mb-4">Duplicate Audit Responses</h1>
+
+<p>
+    This is a list of audit responses that have an multiple answers.
+</p>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Authority</th>
+            <th>Section</th>
+            <th>Question</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for dupe in dupes %}
+        {% for response in dupe %}
+        {% if forloop.first %}
+        <tr>
+            <td>
+                <a href="{% url 'authority_ror_progress' response.authority.name %}">{{ response.authority.name }}</a>
+            </td>
+            <td>
+                <a href="{% url 'authority_ror' response.authority.name response.question.section.title %}">{{ response.question.section.title }}</a>
+            </td>
+            <td>
+                {{ response.question.number_and_part }}
+            </td>
+        </tr>
+        <tr>
+            <td colspan="3">
+                <table class="table">
+                    <thead>
+                        <tr>
+                        <th>Answer</th>
+                        <th>Public Notes</th>
+                        <th>Private Notes</th>
+                        <th>Evidence</th>
+                        <th>Pages</th>
+                        </tr>
+                    </thead>
+        {% endif %}
+                    <tr>
+                        <td>
+                            {{ response.option }}
+                        </td>
+                        <td>
+                            {{ response.public_notes }}
+                        </td>
+                        <td>
+                            {{ response.private_notes }}
+                        </td>
+                        <td>
+                            {{ response.evidence }}
+                        </td>
+                        <td>
+                            {{ response.page_number }}
+                        </td>
+                    </tr>
+        {% if forloop.last %}
+                </table>
+            </td>
+        </tr>
+        {% endif %}
+        {% endfor %}
+        {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+{% endblock %}

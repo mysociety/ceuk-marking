@@ -203,6 +203,11 @@ urlpatterns = [
         stats.BadResponsesView.as_view(),
         name="bad_responses",
     ),
+    path(
+        "stats/scores/duplicate_responses/",
+        stats.DuplicateResponsesView.as_view(),
+        name="duplicate_responses",
+    ),
     # audit screens
     path(
         "section/audit/<section_title>/authorities/",

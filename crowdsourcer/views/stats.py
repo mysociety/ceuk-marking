@@ -576,3 +576,43 @@ class BadResponsesView(UserPassesTestMixin, ListView):
         )
 
         return responses
+
+
+class DuplicateResponsesView(UserPassesTestMixin, ListView):
+    context_object_name = "responses"
+    template_name = "crowdsourcer/duplicate_responses.html"
+
+    def test_func(self):
+        return self.request.user.is_superuser
+
+    def get_queryset(self):
+        responses = (
+            Response.objects.filter(
+                response_type__type="Audit",
+            )
+            .values("question_id", "authority_id")
+            .annotate(answer_count=Count("id"))
+            .filter(answer_count__gte=2)
+        )
+
+        return responses
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        duplicates = context["responses"]
+
+        dupes = []
+        for d in duplicates:
+            rs = Response.objects.filter(
+                question_id=d["question_id"], authority_id=d["authority_id"]
+            ).select_related("authority", "question", "question__section")
+
+            dupe = []
+            for r in rs:
+                dupe.append(r)
+            dupes.append(dupe)
+
+        context["dupes"] = dupes
+
+        return context
