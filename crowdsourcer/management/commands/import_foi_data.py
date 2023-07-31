@@ -554,7 +554,7 @@ class Command(BaseCommand):
                 multi_option = None
                 if "multi_option" in defaults:
                     multi_option = defaults["multi_option"]
-                    if type(multi_option) == Option:
+                    if isinstance(multi_option, Option):
                         multi_option = (multi_option,)
                     defaults["option"] = None
                     del defaults["multi_option"]
