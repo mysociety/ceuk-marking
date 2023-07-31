@@ -34,7 +34,12 @@ class OptionAdmin(admin.ModelAdmin):
         "ordering",
     ]
     list_filter = ["question__section", "question__question_type"]
-    list_display = ("question", "description", "score", "ordering")
+    list_display = (
+        "question",
+        "description",
+        "score",
+        "ordering",
+    )
 
 
 @admin.register(PublicAuthority)
@@ -52,6 +57,7 @@ class QuestionAdmin(admin.ModelAdmin):
         "number",
         "number_part",
         "description",
+        "weighting",
     )
     list_filter = ["section", "how_marked", "questiongroup"]
     ordering = ("section", "number", "number_part")
