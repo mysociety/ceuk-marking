@@ -72,12 +72,20 @@ class Question(models.Model):
 
 
 class PublicAuthority(models.Model):
+    COUNTRIES = [
+        ("england", "England"),
+        ("northern ireland", "Northern Ireland"),
+        ("scotland", "Scotland"),
+        ("wales", "Wales"),
+    ]
+
     unique_id = models.CharField(max_length=100, unique=True)
     name = models.TextField(max_length=300)
     website = models.URLField(null=True)
     questiongroup = models.ForeignKey(QuestionGroup, on_delete=models.CASCADE)
     do_not_mark = models.BooleanField(default=False)
     type = models.TextField(max_length=20, default="", blank=True, null=True)
+    country = models.CharField(max_length=20, blank=True, null=True, choices=COUNTRIES)
 
     def __str__(self):
         name = self.name
