@@ -39,6 +39,7 @@ class Question(models.Model):
         ("low", "Low"),
         ("medium", "Medium"),
         ("high", "High"),
+        ("unweighted", "Unweighted"),
     ]
     VOLUNTEER_TYPES = ["volunteer", "national_volunteer"]
     number = models.IntegerField(blank=True, null=True)
