@@ -88,5 +88,6 @@ class Command(BaseCommand):
                     "questiongroup": self.get_group(area),
                     "do_not_mark": do_not_mark,
                     "type": area["type"],
+                    "country": area["country_name"].lower(),
                 },
             )
