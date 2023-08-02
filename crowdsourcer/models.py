@@ -98,12 +98,14 @@ class PublicAuthority(models.Model):
     def maps(cls):
         gss_map = {}
         groups = {}
+        countries = {}
 
         for a in cls.objects.filter(do_not_mark=False).all():
             gss_map[a.name] = a.unique_id
             groups[a.name] = a.questiongroup.description
+            countries[a.name] = a.country
 
-        return gss_map, groups
+        return gss_map, groups, countries
 
     @classmethod
     def response_counts(

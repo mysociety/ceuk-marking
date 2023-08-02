@@ -1,4 +1,5 @@
 from collections import defaultdict
+from copy import deepcopy
 
 from django.db.models import Count, Max, OuterRef, Q, Subquery, Sum
 
@@ -72,6 +73,29 @@ SECTION_WEIGHTINGS = {
     },
 }
 
+EXCEPTIONS = {
+    "Transport": {
+        "Single Tier": {
+            "scotland": ["6", "8b"],
+            "wales": ["6", "8b"],
+        }
+    },
+    "Biodiversity": {
+        "Single Tier": {
+            "scotland": ["4"],
+            "wales": ["4"],
+        }
+    },
+    "Buildings & Heating": {
+        "Single Tier": {
+            "scotland": [8],
+        },
+        "Northern Ireland": {
+            "northern ireland": [8],
+        },
+    },
+}
+
 
 def number_and_part(number=None, number_part=None):
     if number_part is not None:
@@ -90,14 +114,16 @@ def weighting_to_points(weighting="low"):
     return points
 
 
-def get_section_maxes():
+def get_section_maxes(scoring):
     section_maxes = defaultdict(dict)
     section_weighted_maxes = defaultdict(dict)
     group_totals = defaultdict(int)
     q_maxes = defaultdict(int)
+    q_weighted_maxes = defaultdict(int)
 
     for section in Section.objects.all():
         q_section_maxes = {}
+        q_section_weighted_maxes = {}
         for group in QuestionGroup.objects.all():
             questions = Question.objects.filter(section=section, questiongroup=group)
 
@@ -133,17 +159,51 @@ def get_section_maxes():
 
             weighted_max = 0
             for q in questions:
+                q_max = weighting_to_points(q.weighting)
                 if q.weighting == "unweighted":
-                    weighted_max += q_section_maxes[q.number_and_part]
-                else:
-                    weighted_max += weighting_to_points(q.weighting)
+                    q_max = q_section_maxes[q.number_and_part]
+                q_section_weighted_maxes[q.number_and_part] = q_max
+                weighted_max += q_max
 
             section_maxes[section.title][group.description] = max_score
             section_weighted_maxes[section.title][group.description] = weighted_max
             group_totals[group.description] += max_score
-            q_maxes[section.title] = q_section_maxes.copy()
+            q_weighted_maxes[section.title] = deepcopy(q_section_weighted_maxes)
+            q_maxes[section.title] = deepcopy(q_section_maxes)
 
-    return section_maxes, group_totals, q_maxes, section_weighted_maxes
+    scoring["section_maxes"] = section_maxes
+    scoring["group_maxes"] = group_totals
+    scoring["q_maxes"] = q_maxes
+    scoring["section_weighted_maxes"] = section_weighted_maxes
+    scoring["q_section_weighted_maxes"] = q_weighted_maxes
+
+
+def q_is_exception(q, section, group, country):
+    try:
+        exceptions = EXCEPTIONS[section][group][country]
+        if q in exceptions:
+            return True
+    except KeyError:
+        return False
+
+    return False
+
+
+def get_maxes_for_council(scoring, group, country):
+    maxes = deepcopy(scoring["section_maxes"])
+    weighted_maxes = deepcopy(scoring["section_weighted_maxes"])
+    for section in maxes.keys():
+        try:
+            exceptions = EXCEPTIONS[section][group][country]
+            for q in exceptions:
+                maxes[section][group] -= scoring["q_maxes"][section][q]
+                weighted_maxes[section][group] -= scoring["q_section_weighted_maxes"][
+                    section
+                ][q]
+        except KeyError:
+            pass
+
+    return maxes, weighted_maxes
 
 
 def get_blank_section_scores():
@@ -177,19 +237,20 @@ def get_blank_section_scores():
 def get_weighted_question_score(score, max_score, weighting):
     percentage = score / max_score
     if weighting == "unweighted":
-        print(score, max_score, percentage)
         return percentage
 
     return percentage * weighting_to_points(weighting)
 
 
-def get_section_scores(q_maxes):
+def get_section_scores(scoring):
     raw_scores, weighted = get_blank_section_scores()
 
     for section in Section.objects.all():
         options = (
             Response.objects.filter(
-                response_type__type="Audit", question__section=section
+                response_type__type="Audit",
+                question__section=section,
+                authority__do_not_mark=False,
             )
             .annotate(
                 score=Subquery(
@@ -218,10 +279,24 @@ def get_section_scores(q_maxes):
         )
 
         for score in scores:
+            # skip qs in sections that are not for that council
+            if weighted[score["authority__name"]].get(section.title, None) is None:
+                continue
+
             q = number_and_part(
                 score["question__number"], score["question__number_part"]
             )
-            q_max = q_maxes[section.title][q]
+
+            if q_is_exception(
+                q,
+                section.title,
+                scoring["council_groups"][score["authority__name"]],
+                scoring["council_countries"][score["authority__name"]],
+            ):
+                print(f"exception: {q}")
+                continue
+
+            q_max = scoring["q_maxes"][section.title][q]
 
             if score["score"] is None:
                 print(
@@ -249,35 +324,45 @@ def get_section_scores(q_maxes):
             )
             weighted[score["authority__name"]][section.title] += weighted_score
 
-    return raw_scores, weighted
+    scoring["raw_scores"] = raw_scores
+    scoring["weighted_scores"] = weighted
 
 
-def calculate_council_totals(
-    raw_scores, weighted_scores, weighted_maxes, raw_maxes, group_maxes, groups
-):
+def calculate_council_totals(scoring):
     section_totals = defaultdict(dict)
     totals = {}
+    scoring["council_maxes"] = {}
 
-    for council, raw in raw_scores.items():
+    for council, raw in scoring["raw_scores"].items():
         total = 0
         weighted_total = 0
-        council_group = groups[council]
+        council_group = scoring["council_groups"][council]
+
+        council_max, council_weighted_max = get_maxes_for_council(
+            scoring,
+            scoring["council_groups"][council],
+            scoring["council_countries"][council],
+        )
+        scoring["council_maxes"][council] = {
+            "raw": deepcopy(council_max),
+            "weighted": deepcopy(council_weighted_max),
+        }
 
         for section, score in raw.items():
             total += score
 
-            percentage_score = score / raw_maxes[section][council_group]
+            percentage_score = score / council_max[section][council_group]
             weighted_score = (
-                weighted_scores[council][section]
-                / weighted_maxes[section][council_group]
+                scoring["weighted_scores"][council][section]
+                / council_weighted_max[section][council_group]
             ) * SECTION_WEIGHTINGS[section][council_group]
 
             section_totals[council][section] = {
                 "raw": score,
                 "raw_percent": percentage_score,
-                "raw_weighted": weighted_scores[council][section],
-                "unweighted_percentage": weighted_scores[council][section]
-                / weighted_maxes[section][council_group],
+                "raw_weighted": scoring["weighted_scores"][council][section],
+                "unweighted_percentage": scoring["weighted_scores"][council][section]
+                / council_weighted_max[section][council_group],
                 "weighted": weighted_score,
             }
 
@@ -285,11 +370,27 @@ def calculate_council_totals(
 
         totals[council] = {
             "raw_total": total,
-            "percent_total": total / group_maxes[council_group],
+            "percent_total": total / scoring["group_maxes"][council_group],
             "weighted_total": weighted_total,
         }
 
-    return totals, section_totals
+    scoring["council_totals"] = totals
+    scoring["section_totals"] = section_totals
+
+
+def get_scoring_object():
+    scoring = {}
+
+    council_gss_map, groups, countries = PublicAuthority.maps()
+    scoring["council_gss_map"] = council_gss_map
+    scoring["council_groups"] = groups
+    scoring["council_countries"] = countries
+
+    get_section_maxes(scoring)
+    get_section_scores(scoring)
+    calculate_council_totals(scoring)
+
+    return scoring
 
 
 def get_duplicate_responses(response_type="Audit"):

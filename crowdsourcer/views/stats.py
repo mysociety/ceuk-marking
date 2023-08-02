@@ -11,11 +11,10 @@ from django.views.generic import ListView, TemplateView
 
 from crowdsourcer.models import Option, PublicAuthority, Question, Response
 from crowdsourcer.scoring import (
-    calculate_council_totals,
     get_duplicate_responses,
     get_exact_duplicates,
+    get_scoring_object,
     get_section_maxes,
-    get_section_scores,
     weighting_to_points,
 )
 
@@ -344,19 +343,7 @@ class BaseScoresView(UserPassesTestMixin, TemplateView):
         return self.request.user.is_superuser
 
     def get_scores(self):
-        council_gss_map, groups = PublicAuthority.maps()
-        maxes, group_maxes, q_maxes, weighted_maxes = get_section_maxes()
-        raw_scores, weighted = get_section_scores(q_maxes)
-
-        council_totals, section_totals = calculate_council_totals(
-            raw_scores, weighted, weighted_maxes, maxes, group_maxes, groups
-        )
-
-        self.groups = groups
-        self.maxes = maxes
-        self.weighted_maxes = weighted_maxes
-
-        return council_totals, section_totals
+        self.scoring = get_scoring_object()
 
     def render_to_response(self, context, **response_kwargs):
         response = HttpResponse(
@@ -392,7 +379,7 @@ class WeightedScoresDataCSVView(BaseScoresView):
         ]
         context = super().get_context_data(**kwargs)
 
-        council_totals, section_totals = self.get_scores()
+        self.get_scores()
 
         rows = []
         rows.append(
@@ -405,7 +392,7 @@ class WeightedScoresDataCSVView(BaseScoresView):
             ]
         )
 
-        for council, council_score in section_totals.items():
+        for council, council_score in self.scoring["section_totals"].items():
             row = [council]
             for section in ordered_sections:
                 if council_score.get(section, None) is not None:
@@ -413,7 +400,7 @@ class WeightedScoresDataCSVView(BaseScoresView):
                 else:
                     row.append(0)
 
-            row.append(council_totals[council]["weighted_total"])
+            row.append(self.scoring["council_totals"][council]["weighted_total"])
 
             rows.append(row)
 
@@ -428,7 +415,7 @@ class SectionScoresDataCSVView(BaseScoresView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        council_totals, section_totals = self.get_scores()
+        self.get_scores()
 
         rows = []
         rows.append(
@@ -444,15 +431,19 @@ class SectionScoresDataCSVView(BaseScoresView):
             ]
         )
 
-        for council, council_score in section_totals.items():
+        for council, council_score in self.scoring["section_totals"].items():
             for section, scores in council_score.items():
                 row = [
                     council,
                     section,
                     scores["raw"],
-                    self.maxes[section][self.groups[council]],
+                    self.scoring["council_maxes"][council]["raw"][section][
+                        self.scoring["council_groups"][council]
+                    ],
                     scores["raw_weighted"],
-                    self.weighted_maxes[section][self.groups[council]],
+                    self.scoring["council_maxes"][council]["weighted"][section][
+                        self.scoring["council_groups"][council]
+                    ],
                     scores["unweighted_percentage"],
                     scores["weighted"],
                 ]
@@ -482,7 +473,8 @@ class QuestionScoresCSV(UserPassesTestMixin, ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        maxes, group_maxes, q_maxes, weighted_maxes = get_section_maxes()
+        scoring = {}
+        get_section_maxes(scoring)
 
         sections = defaultdict(dict)
         for option in context["options"]:
@@ -494,7 +486,7 @@ class QuestionScoresCSV(UserPassesTestMixin, ListView):
             try:
                 q = sections[section][number]
             except KeyError:
-                max_score = q_maxes[section].get(number, 0)
+                max_score = scoring["q_maxes"][section].get(number, 0)
                 q = {
                     "q": option.question.description,
                     "how_marked": option.question.how_marked,

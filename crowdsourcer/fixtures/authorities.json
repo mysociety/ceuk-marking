@@ -6,6 +6,7 @@
     "unique_id": "S12000033",
     "name": "Aberdeen City Council",
     "website": "https://www.aberdeencity.gov.uk",
+    "country": "scotland",
     "questiongroup": 1
   }
 },
@@ -16,6 +17,7 @@
     "unique_id": "S12000034",
     "name": "Aberdeenshire Council",
     "website": "https://www.aberdeenshire.gov.uk",
+    "country": "scotland",
     "questiongroup": 1
   }
 },
@@ -26,6 +28,7 @@
     "unique_id": "E07000223",
     "name": "Adur District Council",
     "website": "https://www.adur-worthing.gov.uk/",
+    "country": "england",
     "questiongroup": 2
   }
 },
@@ -37,6 +40,7 @@
     "name": "Armagh City, Banbridge and Craigavon Borough Council",
     "website": "https://www.armagh.gov.uk/",
     "questiongroup": 2,
+    "country": "northern ireland",
     "do_not_mark": true
   }
 }

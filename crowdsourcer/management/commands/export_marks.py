@@ -3,12 +3,7 @@ from django.core.management.base import BaseCommand
 
 import pandas as pd
 
-from crowdsourcer.models import PublicAuthority
-from crowdsourcer.scoring import (
-    calculate_council_totals,
-    get_section_maxes,
-    get_section_scores,
-)
+from crowdsourcer.scoring import get_scoring_object
 
 
 class Command(BaseCommand):
@@ -44,38 +39,35 @@ class Command(BaseCommand):
         percent = []
         linear = []
 
-        council_gss_map, groups = PublicAuthority.maps()
-        maxes, group_maxes, q_maxes, weighted_maxes = get_section_maxes()
-        raw_scores, weighted = get_section_scores(q_maxes)
+        scoring = get_scoring_object()
 
-        council_totals, section_totals = calculate_council_totals(
-            raw_scores, weighted, weighted_maxes, maxes, group_maxes, groups
-        )
+        for council, council_score in scoring["section_totals"].items():
 
-        for council, council_score in section_totals.items():
-            p = {"council": council, "gss": council_gss_map[council]}
+            p = {"council": council, "gss": scoring["council_gss_map"][council]}
             raw_sections = {}
             for section, scores in council_score.items():
                 raw_sections[section] = scores["raw"]
                 linear.append(
                     (
                         council,
-                        council_gss_map[council],
+                        scoring["council_gss_map"][council],
                         section,
                         scores["raw"],
-                        maxes[section][groups[council]],
+                        scoring["council_maxes"][council]["raw"][section][
+                            scoring["council_groups"][council]
+                        ],
                     )
                 )
                 p[section] = scores["raw_percent"]
 
-            p["raw_total"] = council_totals[council]["percent_total"]
-            p["weighted_total"] = council_totals[council]["weighted_total"]
+            p["raw_total"] = scoring["council_totals"][council]["percent_total"]
+            p["weighted_total"] = scoring["council_totals"][council]["weighted_total"]
             row = {
                 **raw_sections,
                 **{
                     "council": council,
-                    "gss": council_gss_map[council],
-                    "total": council_totals[council]["raw_total"],
+                    "gss": scoring["council_gss_map"][council],
+                    "total": scoring["council_totals"][council]["raw_total"],
                 },
             }
             raw.append(row)

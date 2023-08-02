@@ -1,3 +1,4 @@
+from copy import deepcopy
 from io import StringIO
 from unittest import mock
 
@@ -152,27 +153,19 @@ class ExportNoMarksTestCase(BaseCommandTestCase):
     ]
 
     def test_max_calculation(self):
-        (
-            section,
-            totals,
-            q_maxes,
-            weighted,
-        ) = get_section_maxes()
+        scoring = {}
+        get_section_maxes(scoring)
 
-        self.assertEquals(section, max_section)
-        self.assertEquals(totals, max_totals)
-        self.assertEquals(q_maxes, max_questions)
-        self.assertEquals(weighted, max_weighted)
+        self.assertEquals(scoring["section_maxes"], max_section)
+        self.assertEquals(scoring["group_maxes"], max_totals)
+        self.assertEquals(scoring["q_maxes"], max_questions)
+        self.assertEquals(scoring["section_weighted_maxes"], max_weighted)
 
     def test_max_calculation_with_unweighted_q(self):
         Question.objects.filter(pk=272).update(weighting="unweighted")
 
-        (
-            section,
-            totals,
-            q_maxes,
-            weighted,
-        ) = get_section_maxes()
+        scoring = {}
+        get_section_maxes(scoring)
 
         local_max_w = max_weighted.copy()
         local_max_w["Buildings & Heating"] = {
@@ -183,10 +176,10 @@ class ExportNoMarksTestCase(BaseCommandTestCase):
             "Combined Authority": 0,
         }
 
-        self.assertEquals(section, max_section)
-        self.assertEquals(totals, max_totals)
-        self.assertEquals(q_maxes, max_questions)
-        self.assertEquals(weighted, local_max_w)
+        self.assertEquals(scoring["section_maxes"], max_section)
+        self.assertEquals(scoring["group_maxes"], max_totals)
+        self.assertEquals(scoring["q_maxes"], max_questions)
+        self.assertEquals(scoring["section_weighted_maxes"], local_max_w)
 
     @mock.patch("crowdsourcer.management.commands.export_marks.Command.write_files")
     def test_export_with_no_marks(self, write_mock):
@@ -420,6 +413,14 @@ class ExportWithMarksTestCase(BaseCommandTestCase):
         ("Adur District Council", "E07000223", "Waste Reduction & Food", 0, 5),
     ]
 
+    exceptions_mock = {
+        "Transport": {
+            "Single Tier": {
+                "scotland": ["2"],
+            }
+        }
+    }
+
     @mock.patch("crowdsourcer.management.commands.export_marks.Command.write_files")
     def test_export(self, write_mock):
         self.call_command("export_marks")
@@ -435,12 +436,50 @@ class ExportWithMarksTestCase(BaseCommandTestCase):
 
         self.call_command("export_marks")
 
-        self.expected_percent[0]["weighted_total"] = 0.009351851851851853
+        expected_percent = deepcopy(self.expected_percent)
+        expected_percent[0]["weighted_total"] = 0.009351851851851853
 
         percent, raw, linear = write_mock.call_args[0]
         self.assertEquals(raw, self.expected_raw)
-        self.assertEquals(percent, self.expected_percent)
+        self.assertEquals(percent, expected_percent)
         self.assertEquals(linear, self.expected_linear)
+
+    @mock.patch("crowdsourcer.management.commands.export_marks.Command.write_files")
+    @mock.patch("crowdsourcer.scoring.EXCEPTIONS", exceptions_mock)
+    def test_export_with_exceptions(self, write_mock):
+        Response.objects.filter(question_id=282, authority_id=2).delete()
+
+        self.call_command("export_marks")
+        expected_linear = deepcopy(self.expected_linear)
+
+        expected_linear[1] = (
+            "Aberdeen City Council",
+            "S12000033",
+            "Transport",
+            0,
+            1,
+        )
+        expected_linear[8] = (
+            "Aberdeenshire Council",
+            "S12000034",
+            "Transport",
+            1,
+            1,
+        )
+
+        expected_raw = deepcopy(self.expected_raw)
+        expected_raw[1]["Transport"] = 1
+        expected_raw[1]["total"] = 1
+
+        expected_percent = deepcopy(self.expected_percent)
+        expected_percent[1]["Transport"] = 1.0
+        expected_percent[1]["raw_total"] = 0.018867924528301886
+        expected_percent[1]["weighted_total"] = 0.2
+
+        percent, raw, linear = write_mock.call_args[0]
+        self.assertEquals(linear, expected_linear)
+        self.assertEquals(raw, expected_raw)
+        self.assertEquals(percent, expected_percent)
 
 
 class ExportWithMultiMarksTestCase(BaseCommandTestCase):
@@ -656,12 +695,8 @@ class ExportNoMarksCATestCase(BaseCommandTestCase):
     ]
 
     def test_max_calculation(self):
-        (
-            section,
-            totals,
-            q_maxes,
-            weighted,
-        ) = get_section_maxes()
+        scoring = {}
+        get_section_maxes(scoring)
 
         ca_max_section = {
             **max_section,
@@ -707,8 +742,8 @@ class ExportNoMarksCATestCase(BaseCommandTestCase):
         ca_max_totals = max_totals.copy()
         ca_max_totals["Combined Authority"] = 7
 
-        self.assertEquals(section, ca_max_section)
-        self.assertEquals(totals, ca_max_totals)
+        self.assertEquals(scoring["section_maxes"], ca_max_section)
+        self.assertEquals(scoring["group_maxes"], ca_max_totals)
 
     @mock.patch("crowdsourcer.management.commands.export_marks.Command.write_files")
     def test_export_with_no_marks(self, write_mock):
@@ -1032,8 +1067,4 @@ class ExportWithMoreMarksCATestCase(BaseCommandTestCase):
         percent, raw, linear = write_mock.call_args[0]
 
         self.assertEquals(raw, expected_raw)
-        # import pprint
-
-        # pprint.pp(percent)
-        # pprint.pp(expected_percent)
         self.assertEquals(percent, expected_percent)
