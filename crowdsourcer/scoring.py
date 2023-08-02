@@ -132,7 +132,10 @@ def get_section_maxes():
 
             weighted_max = 0
             for q in questions:
-                weighted_max += weighting_to_points(q.weighting)
+                if q.weighting == "unweighted":
+                    weighted_max += q_section_maxes[q.number_and_part]
+                else:
+                    weighted_max += weighting_to_points(q.weighting)
 
             section_maxes[section.title][group.description] = max_score
             section_weighted_maxes[section.title][group.description] = weighted_max
@@ -171,7 +174,12 @@ def get_blank_section_scores():
 
 
 def get_weighted_question_score(score, max_score, weighting):
-    return (score / max_score) * weighting_to_points(weighting)
+    percentage = score / max_score
+    if weighting == "unweighted":
+        print(score, max_score, percentage)
+        return percentage
+
+    return percentage * weighting_to_points(weighting)
 
 
 def get_section_scores(q_maxes):

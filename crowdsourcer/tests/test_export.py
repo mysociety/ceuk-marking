@@ -4,7 +4,7 @@ from unittest import mock
 from django.core.management import call_command
 from django.test import TestCase
 
-from crowdsourcer.models import Response
+from crowdsourcer.models import Question, Response
 from crowdsourcer.scoring import get_section_maxes
 
 max_section = {
@@ -164,6 +164,30 @@ class ExportNoMarksTestCase(BaseCommandTestCase):
         self.assertEquals(q_maxes, max_questions)
         self.assertEquals(weighted, max_weighted)
 
+    def test_max_calculation_with_unweighted_q(self):
+        Question.objects.filter(pk=272).update(weighting="unweighted")
+
+        (
+            section,
+            totals,
+            q_maxes,
+            weighted,
+        ) = get_section_maxes()
+
+        local_max_w = max_weighted.copy()
+        local_max_w["Buildings & Heating"] = {
+            "Single Tier": 27,
+            "District": 25,
+            "County": 27,
+            "Northern Ireland": 9,
+            "Combined Authority": 0,
+        }
+
+        self.assertEquals(section, max_section)
+        self.assertEquals(totals, max_totals)
+        self.assertEquals(q_maxes, max_questions)
+        self.assertEquals(weighted, local_max_w)
+
     @mock.patch("crowdsourcer.management.commands.export_marks.Command.write_files")
     def test_export_with_no_marks(self, write_mock):
         self.call_command(
@@ -291,118 +315,132 @@ class ExportWithMarksTestCase(BaseCommandTestCase):
         "audit_responses.json",
     ]
 
+    expected_percent = [
+        {
+            "council": "Aberdeen City Council",
+            "gss": "S12000033",
+            "Buildings & Heating": 0.10714285714285714,
+            "Transport": 0.0,
+            "Planning & Land Use": 0.0,
+            "Governance & Finance": 0.0,
+            "Biodiversity": 0.0,
+            "Collaboration & Engagement": 0.0,
+            "Waste Reduction & Food": 0.0,
+            "raw_total": 0.05660377358490566,
+            "weighted_total": 0.021041666666666667,
+        },
+        {
+            "council": "Aberdeenshire Council",
+            "gss": "S12000034",
+            "Buildings & Heating": 0.0,
+            "Transport": 0.2857142857142857,
+            "Planning & Land Use": 0.0,
+            "Governance & Finance": 0.0,
+            "Biodiversity": 0.0,
+            "Collaboration & Engagement": 0.0,
+            "Waste Reduction & Food": 0.0,
+            "raw_total": 0.03773584905660377,
+            "weighted_total": 0.11666666666666668,
+        },
+        {
+            "council": "Adur District Council",
+            "gss": "E07000223",
+            "Buildings & Heating": 0.0,
+            "Transport": 0.14285714285714285,
+            "Planning & Land Use": 0.0,
+            "Governance & Finance": 0.0,
+            "Biodiversity": 0.0,
+            "Collaboration & Engagement": 0.0,
+            "Waste Reduction & Food": 0.0,
+            "raw_total": 0.019230769230769232,
+            "weighted_total": 0.004166666666666667,
+        },
+    ]
+
+    expected_raw = [
+        {
+            "Buildings & Heating": 3,
+            "Transport": 0,
+            "Planning & Land Use": 0,
+            "Governance & Finance": 0,
+            "Biodiversity": 0,
+            "Collaboration & Engagement": 0,
+            "Waste Reduction & Food": 0,
+            "council": "Aberdeen City Council",
+            "gss": "S12000033",
+            "total": 3,
+        },
+        {
+            "Buildings & Heating": 0,
+            "Transport": 2,
+            "Planning & Land Use": 0,
+            "Governance & Finance": 0,
+            "Biodiversity": 0,
+            "Collaboration & Engagement": 0,
+            "Waste Reduction & Food": 0,
+            "council": "Aberdeenshire Council",
+            "gss": "S12000034",
+            "total": 2,
+        },
+        {
+            "Buildings & Heating": 0,
+            "Transport": 1,
+            "Planning & Land Use": 0,
+            "Governance & Finance": 0,
+            "Biodiversity": 0,
+            "Collaboration & Engagement": 0,
+            "Waste Reduction & Food": 0,
+            "council": "Adur District Council",
+            "gss": "E07000223",
+            "total": 1,
+        },
+    ]
+
+    expected_linear = [
+        ("Aberdeen City Council", "S12000033", "Buildings & Heating", 3, 28),
+        ("Aberdeen City Council", "S12000033", "Transport", 0, 7),
+        ("Aberdeen City Council", "S12000033", "Planning & Land Use", 0, 4),
+        ("Aberdeen City Council", "S12000033", "Governance & Finance", 0, 3),
+        ("Aberdeen City Council", "S12000033", "Biodiversity", 0, 1),
+        ("Aberdeen City Council", "S12000033", "Collaboration & Engagement", 0, 5),
+        ("Aberdeen City Council", "S12000033", "Waste Reduction & Food", 0, 5),
+        ("Aberdeenshire Council", "S12000034", "Buildings & Heating", 0, 28),
+        ("Aberdeenshire Council", "S12000034", "Transport", 2, 7),
+        ("Aberdeenshire Council", "S12000034", "Planning & Land Use", 0, 4),
+        ("Aberdeenshire Council", "S12000034", "Governance & Finance", 0, 3),
+        ("Aberdeenshire Council", "S12000034", "Biodiversity", 0, 1),
+        ("Aberdeenshire Council", "S12000034", "Collaboration & Engagement", 0, 5),
+        ("Aberdeenshire Council", "S12000034", "Waste Reduction & Food", 0, 5),
+        ("Adur District Council", "E07000223", "Buildings & Heating", 0, 27),
+        ("Adur District Council", "E07000223", "Transport", 1, 7),
+        ("Adur District Council", "E07000223", "Planning & Land Use", 0, 4),
+        ("Adur District Council", "E07000223", "Governance & Finance", 0, 3),
+        ("Adur District Council", "E07000223", "Biodiversity", 0, 1),
+        ("Adur District Council", "E07000223", "Collaboration & Engagement", 0, 5),
+        ("Adur District Council", "E07000223", "Waste Reduction & Food", 0, 5),
+    ]
+
     @mock.patch("crowdsourcer.management.commands.export_marks.Command.write_files")
     def test_export(self, write_mock):
         self.call_command("export_marks")
 
-        expected_percent = [
-            {
-                "council": "Aberdeen City Council",
-                "gss": "S12000033",
-                "Buildings & Heating": 0.10714285714285714,
-                "Transport": 0.0,
-                "Planning & Land Use": 0.0,
-                "Governance & Finance": 0.0,
-                "Biodiversity": 0.0,
-                "Collaboration & Engagement": 0.0,
-                "Waste Reduction & Food": 0.0,
-                "raw_total": 0.05660377358490566,
-                "weighted_total": 0.021041666666666667,
-            },
-            {
-                "council": "Aberdeenshire Council",
-                "gss": "S12000034",
-                "Buildings & Heating": 0.0,
-                "Transport": 0.2857142857142857,
-                "Planning & Land Use": 0.0,
-                "Governance & Finance": 0.0,
-                "Biodiversity": 0.0,
-                "Collaboration & Engagement": 0.0,
-                "Waste Reduction & Food": 0.0,
-                "raw_total": 0.03773584905660377,
-                "weighted_total": 0.11666666666666668,
-            },
-            {
-                "council": "Adur District Council",
-                "gss": "E07000223",
-                "Buildings & Heating": 0.0,
-                "Transport": 0.14285714285714285,
-                "Planning & Land Use": 0.0,
-                "Governance & Finance": 0.0,
-                "Biodiversity": 0.0,
-                "Collaboration & Engagement": 0.0,
-                "Waste Reduction & Food": 0.0,
-                "raw_total": 0.019230769230769232,
-                "weighted_total": 0.004166666666666667,
-            },
-        ]
-
-        expected_raw = [
-            {
-                "Buildings & Heating": 3,
-                "Transport": 0,
-                "Planning & Land Use": 0,
-                "Governance & Finance": 0,
-                "Biodiversity": 0,
-                "Collaboration & Engagement": 0,
-                "Waste Reduction & Food": 0,
-                "council": "Aberdeen City Council",
-                "gss": "S12000033",
-                "total": 3,
-            },
-            {
-                "Buildings & Heating": 0,
-                "Transport": 2,
-                "Planning & Land Use": 0,
-                "Governance & Finance": 0,
-                "Biodiversity": 0,
-                "Collaboration & Engagement": 0,
-                "Waste Reduction & Food": 0,
-                "council": "Aberdeenshire Council",
-                "gss": "S12000034",
-                "total": 2,
-            },
-            {
-                "Buildings & Heating": 0,
-                "Transport": 1,
-                "Planning & Land Use": 0,
-                "Governance & Finance": 0,
-                "Biodiversity": 0,
-                "Collaboration & Engagement": 0,
-                "Waste Reduction & Food": 0,
-                "council": "Adur District Council",
-                "gss": "E07000223",
-                "total": 1,
-            },
-        ]
-
-        expected_linear = [
-            ("Aberdeen City Council", "S12000033", "Buildings & Heating", 3, 28),
-            ("Aberdeen City Council", "S12000033", "Transport", 0, 7),
-            ("Aberdeen City Council", "S12000033", "Planning & Land Use", 0, 4),
-            ("Aberdeen City Council", "S12000033", "Governance & Finance", 0, 3),
-            ("Aberdeen City Council", "S12000033", "Biodiversity", 0, 1),
-            ("Aberdeen City Council", "S12000033", "Collaboration & Engagement", 0, 5),
-            ("Aberdeen City Council", "S12000033", "Waste Reduction & Food", 0, 5),
-            ("Aberdeenshire Council", "S12000034", "Buildings & Heating", 0, 28),
-            ("Aberdeenshire Council", "S12000034", "Transport", 2, 7),
-            ("Aberdeenshire Council", "S12000034", "Planning & Land Use", 0, 4),
-            ("Aberdeenshire Council", "S12000034", "Governance & Finance", 0, 3),
-            ("Aberdeenshire Council", "S12000034", "Biodiversity", 0, 1),
-            ("Aberdeenshire Council", "S12000034", "Collaboration & Engagement", 0, 5),
-            ("Aberdeenshire Council", "S12000034", "Waste Reduction & Food", 0, 5),
-            ("Adur District Council", "E07000223", "Buildings & Heating", 0, 27),
-            ("Adur District Council", "E07000223", "Transport", 1, 7),
-            ("Adur District Council", "E07000223", "Planning & Land Use", 0, 4),
-            ("Adur District Council", "E07000223", "Governance & Finance", 0, 3),
-            ("Adur District Council", "E07000223", "Biodiversity", 0, 1),
-            ("Adur District Council", "E07000223", "Collaboration & Engagement", 0, 5),
-            ("Adur District Council", "E07000223", "Waste Reduction & Food", 0, 5),
-        ]
         percent, raw, linear = write_mock.call_args[0]
-        self.assertEquals(raw, expected_raw)
-        self.assertEquals(percent, expected_percent)
-        self.assertEquals(linear, expected_linear)
+        self.assertEquals(raw, self.expected_raw)
+        self.assertEquals(percent, self.expected_percent)
+        self.assertEquals(linear, self.expected_linear)
+
+    @mock.patch("crowdsourcer.management.commands.export_marks.Command.write_files")
+    def test_export_with_unweighted_q(self, write_mock):
+        Question.objects.filter(pk=272).update(weighting="unweighted")
+
+        self.call_command("export_marks")
+
+        self.expected_percent[0]["weighted_total"] = 0.009351851851851853
+
+        percent, raw, linear = write_mock.call_args[0]
+        self.assertEquals(raw, self.expected_raw)
+        self.assertEquals(percent, self.expected_percent)
+        self.assertEquals(linear, self.expected_linear)
 
 
 class ExportWithMultiMarksTestCase(BaseCommandTestCase):
