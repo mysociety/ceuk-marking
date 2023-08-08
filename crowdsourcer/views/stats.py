@@ -12,6 +12,7 @@ from django.views.generic import ListView, TemplateView
 from crowdsourcer.models import Option, PublicAuthority, Question, Response
 from crowdsourcer.scoring import (
     calculate_council_totals,
+    get_duplicate_responses,
     get_section_maxes,
     get_section_scores,
     weighting_to_points,
@@ -586,16 +587,7 @@ class DuplicateResponsesView(UserPassesTestMixin, ListView):
         return self.request.user.is_superuser
 
     def get_queryset(self):
-        responses = (
-            Response.objects.filter(
-                response_type__type="Audit",
-            )
-            .values("question_id", "authority_id")
-            .annotate(answer_count=Count("id"))
-            .filter(answer_count__gte=2)
-        )
-
-        return responses
+        return get_duplicate_responses()
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

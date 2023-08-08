@@ -1,6 +1,6 @@
 from collections import defaultdict
 
-from django.db.models import Max, OuterRef, Q, Subquery, Sum
+from django.db.models import Count, Max, OuterRef, Q, Subquery, Sum
 
 from crowdsourcer.models import (
     Option,
@@ -289,3 +289,16 @@ def calculate_council_totals(
         }
 
     return totals, section_totals
+
+
+def get_duplicate_responses():
+    responses = (
+        Response.objects.filter(
+            response_type__type="Audit",
+        )
+        .values("question_id", "authority_id")
+        .annotate(answer_count=Count("id"))
+        .filter(answer_count__gte=2)
+    )
+
+    return responses

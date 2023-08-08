@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 from django.core.management import call_command
 from django.test import TestCase
 
-from crowdsourcer.models import Assigned, Marker
+from crowdsourcer.models import Assigned, Marker, Response
 
 
 class BaseCommandTestCase(TestCase):
@@ -118,3 +118,27 @@ class ImportCouncilsTestCase(BaseCommandTestCase):
         )
 
         self.assertFalse(User.objects.filter(username="armagh@example.org").exists())
+
+
+class RemoveIdenticalDuplicatesTestCase(BaseCommandTestCase):
+    fixtures = [
+        "authorities.json",
+        "basics.json",
+        "users.json",
+        "questions.json",
+        "options.json",
+        "assignments.json",
+        "audit_responses.json",
+        "audit_duplicate_responses.json",
+    ]
+
+    def test_deduplicate(self):
+        self.assertEquals(Response.objects.count(), 20)
+        self.call_command("remove_identical_duplicates")
+        self.assertEquals(Response.objects.count(), 20)
+
+        self.call_command("remove_identical_duplicates", commit=True)
+        self.assertEquals(Response.objects.count(), 17)
+
+        for pk in [16, 19, 25]:
+            self.assertFalse(Response.objects.filter(pk=pk).exists())
