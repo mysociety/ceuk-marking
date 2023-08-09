@@ -11,6 +11,15 @@
     This is a list of audit responses that have an multiple answers.
 </p>
 
+<p>
+    {% if ignore_exacts == "1" %}
+    <a href="{% url "duplicate_responses" %}">Show exact matches</a>
+    {% else %}
+    <a href="{% url "duplicate_responses" %}?ignore_exacts=1">Hide exact matches</a>
+    {% endif %}
+    ({{ exact_dupes|length }})
+</p>
+
 <table class="table">
     <thead>
         <tr>
@@ -36,7 +45,7 @@
         </tr>
         <tr>
             <td colspan="3">
-                <table class="table">
+                <table class="table{% if response.dupe_id in exact_dupes %} text-muted{% endif %}">
                     <thead>
                         <tr>
                         <th>Answer</th>
