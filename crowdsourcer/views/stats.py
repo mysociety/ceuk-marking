@@ -13,6 +13,7 @@ from crowdsourcer.models import Option, PublicAuthority, Question, Response
 from crowdsourcer.scoring import (
     calculate_council_totals,
     get_duplicate_responses,
+    get_exact_duplicates,
     get_section_maxes,
     get_section_scores,
     weighting_to_points,
@@ -594,17 +595,27 @@ class DuplicateResponsesView(UserPassesTestMixin, ListView):
 
         duplicates = context["responses"]
 
+        exact_duplicates = get_exact_duplicates(duplicates)
+
+        exact_ids = []
+        for exact in exact_duplicates:
+            exact_ids.append(f"{exact[0].question_id}:{exact[0].authority_id}")
+
         dupes = []
         for d in duplicates:
             rs = Response.objects.filter(
-                question_id=d["question_id"], authority_id=d["authority_id"]
+                question_id=d["question_id"],
+                authority_id=d["authority_id"],
+                response_type__type="Audit",
             ).select_related("authority", "question", "question__section")
 
             dupe = []
             for r in rs:
+                r.dupe_id = f"{r.question_id}:{r.authority_id}"
                 dupe.append(r)
             dupes.append(dupe)
 
+        context["exact_dupes"] = exact_ids
         context["dupes"] = dupes
 
         return context

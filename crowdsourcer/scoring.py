@@ -8,6 +8,7 @@ from crowdsourcer.models import (
     Question,
     QuestionGroup,
     Response,
+    ResponseType,
     Section,
 )
 
@@ -291,10 +292,10 @@ def calculate_council_totals(
     return totals, section_totals
 
 
-def get_duplicate_responses():
+def get_duplicate_responses(response_type="Audit"):
     responses = (
         Response.objects.filter(
-            response_type__type="Audit",
+            response_type__type=response_type,
         )
         .values("question_id", "authority_id")
         .annotate(answer_count=Count("id"))
@@ -302,3 +303,65 @@ def get_duplicate_responses():
     )
 
     return responses
+
+
+def get_exact_duplicates(duplicates, response_type="Audit"):
+    rt = ResponseType.objects.get(type="Audit")
+
+    potentials = {}
+    for d in duplicates:
+        rs = Response.objects.filter(
+            question_id=d["question_id"],
+            authority_id=d["authority_id"],
+            response_type=rt,
+        ).select_related("question", "authority")
+
+        for r in rs:
+            if potentials.get(r.authority.name, None) is None:
+                potentials[r.authority.name] = {}
+
+            if (
+                potentials[r.authority.name].get(r.question.number_and_part, None)
+                is None
+            ):
+                potentials[r.authority.name][r.question.number_and_part] = []
+
+            potentials[r.authority.name][r.question.number_and_part].append(r)
+
+    dupes = []
+    for authority, questions in potentials.items():
+        for question, responses in questions.items():
+            diff = False
+            first = responses[0]
+            first_multi = sorted([o.pk for o in first.multi_option.all()])
+            for response in responses:
+                for prop in [
+                    "evidence",
+                    "public_notes",
+                    "page_number",
+                    "private_notes",
+                    "agree_with_response",
+                    "foi_answer_in_ror",
+                ]:
+                    if getattr(response, prop) != getattr(first, prop):
+                        diff = True
+
+                if response.option is None and first.option is not None:
+                    diff = True
+                elif response.option is not None and first.option is None:
+                    diff = True
+                elif (
+                    response.option is not None
+                    and first.option is not None
+                    and response.option.id != first.option.id
+                ):
+                    diff = True
+
+                multi = sorted([o.pk for o in response.multi_option.all()])
+                if multi != first_multi:
+                    diff = True
+
+            if not diff:
+                dupes.append(responses[1:])
+
+    return dupes
