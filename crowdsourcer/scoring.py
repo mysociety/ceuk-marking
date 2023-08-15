@@ -351,24 +351,32 @@ def calculate_council_totals(scoring):
         for section, score in raw.items():
             total += score
 
-            try:
-                percentage_score = score / council_max[section][council_group]
-            except ZeroDivisionError:
+            if score > 0 and council_max[section][council_group] == 0:
                 raise ZeroDivisionError(
                     f"Division by zero when calculating percentage score for {council}, {section}, {council_group}"
                 )
+            elif score == 0 and council_max[section][council_group] == 0:
+                percentage_score = 0
+                weighted_score = 0
+                unweighted_percentage = 0
+            else:
+                percentage_score = score / council_max[section][council_group]
 
-            weighted_score = (
-                scoring["weighted_scores"][council][section]
-                / council_weighted_max[section][council_group]
-            ) * SECTION_WEIGHTINGS[section][council_group]
+                weighted_score = (
+                    scoring["weighted_scores"][council][section]
+                    / council_weighted_max[section][council_group]
+                ) * SECTION_WEIGHTINGS[section][council_group]
+
+                unweighted_percentage = (
+                    scoring["weighted_scores"][council][section]
+                    / council_weighted_max[section][council_group],
+                )
 
             section_totals[council][section] = {
                 "raw": score,
                 "raw_percent": percentage_score,
                 "raw_weighted": scoring["weighted_scores"][council][section],
-                "unweighted_percentage": scoring["weighted_scores"][council][section]
-                / council_weighted_max[section][council_group],
+                "unweighted_percentage": unweighted_percentage,
                 "weighted": weighted_score,
             }
 
