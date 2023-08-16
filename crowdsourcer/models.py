@@ -34,6 +34,7 @@ class Question(models.Model):
         ("select_one", "Select One"),
         ("tiered", "Tiered Answer"),
         ("multiple_choice", "Multiple Choice"),
+        ("negative", "Negatively Marked"),
     ]
     WEIGHTINGS = [
         ("low", "Low"),
