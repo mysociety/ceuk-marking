@@ -78,7 +78,9 @@ EXCEPTIONS = {
         "Single Tier": {
             "scotland": ["6", "8b"],
             "wales": ["6", "8b"],
-        }
+        },
+        "LBO": ["6"],
+        "Greater London Authority": ["6"],
     },
     "Biodiversity": {
         "Single Tier": {
@@ -88,10 +90,10 @@ EXCEPTIONS = {
     },
     "Buildings & Heating": {
         "Single Tier": {
-            "scotland": [8],
+            "scotland": ["8"],
         },
         "Northern Ireland": {
-            "northern ireland": [8],
+            "northern ireland": ["8"],
         },
     },
 }
@@ -199,30 +201,59 @@ def get_section_maxes(scoring):
     scoring["negative_q"] = negative_q
 
 
-def q_is_exception(q, section, group, country):
+def q_is_exception(q, section, group, country, council):
+    all_exceptions = []
     try:
         exceptions = EXCEPTIONS[section][group][country]
-        if q in exceptions:
-            return True
+        all_exceptions = all_exceptions + exceptions
     except KeyError:
-        return False
+        pass
 
+    try:
+        exceptions = EXCEPTIONS[section][council.type]
+        all_exceptions = all_exceptions + exceptions
+    except KeyError:
+        pass
+
+    try:
+        exceptions = EXCEPTIONS[section][council.name]
+        all_exceptions = all_exceptions + exceptions
+    except KeyError:
+        pass
+
+    if q in all_exceptions:
+        return True
     return False
 
 
-def get_maxes_for_council(scoring, group, country):
+def get_maxes_for_council(scoring, group, country, council):
     maxes = deepcopy(scoring["section_maxes"])
     weighted_maxes = deepcopy(scoring["section_weighted_maxes"])
     for section in maxes.keys():
+        all_exceptions = []
         try:
             exceptions = EXCEPTIONS[section][group][country]
-            for q in exceptions:
-                maxes[section][group] -= scoring["q_maxes"][section][q]
-                weighted_maxes[section][group] -= scoring["q_section_weighted_maxes"][
-                    section
-                ][q]
+            all_exceptions = all_exceptions + exceptions
         except KeyError:
             pass
+
+        try:
+            exceptions = EXCEPTIONS[section][council.type]
+            all_exceptions = all_exceptions + exceptions
+        except KeyError:
+            pass
+
+        try:
+            exceptions = EXCEPTIONS[section][council.name]
+            all_exceptions = all_exceptions + exceptions
+        except KeyError:
+            pass
+
+        for q in all_exceptions:
+            maxes[section][group] -= scoring["q_maxes"][section][q]
+            weighted_maxes[section][group] -= scoring["q_section_weighted_maxes"][
+                section
+            ][q]
 
     return maxes, weighted_maxes
 
@@ -313,6 +344,7 @@ def get_section_scores(scoring):
                 section.title,
                 scoring["council_groups"][score["authority__name"]],
                 scoring["council_countries"][score["authority__name"]],
+                scoring["councils"][score["authority__name"]],
             ):
                 print(f"exception: {q}")
                 continue
@@ -369,6 +401,7 @@ def calculate_council_totals(scoring):
             scoring,
             scoring["council_groups"][council],
             scoring["council_countries"][council],
+            scoring["councils"][council],
         )
         scoring["council_maxes"][council] = {
             "raw": deepcopy(council_max),
@@ -426,6 +459,9 @@ def get_scoring_object():
     scoring["council_gss_map"] = council_gss_map
     scoring["council_groups"] = groups
     scoring["council_countries"] = countries
+    scoring["councils"] = {}
+    for council in PublicAuthority.objects.all():
+        scoring["councils"][council.name] = council
 
     get_section_maxes(scoring)
     get_section_scores(scoring)

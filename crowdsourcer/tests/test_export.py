@@ -182,6 +182,10 @@ class ExportNoMarksTestCase(BaseCommandTestCase):
         self.assertEquals(scoring["section_weighted_maxes"], local_max_w)
 
     @mock.patch("crowdsourcer.management.commands.export_marks.Command.write_files")
+    # this gets patched everywhere are the exceptions are in the scoring file and have
+    # question numbers that don't exist in the fixtures and hence throw errors when the
+    # code tries to handle them
+    @mock.patch("crowdsourcer.scoring.EXCEPTIONS", {})
     def test_export_with_no_marks(self, write_mock):
         self.call_command(
             "export_marks",
@@ -442,8 +446,19 @@ class ExportWithMarksTestCase(BaseCommandTestCase):
             }
         }
     }
+    exceptions_type_mock = {
+        "Transport": {
+            "UTA": ["2"],
+        }
+    }
+    exceptions_name_mock = {
+        "Transport": {
+            "Aberdeen City Council": ["2"],
+        }
+    }
 
     @mock.patch("crowdsourcer.management.commands.export_marks.Command.write_files")
+    @mock.patch("crowdsourcer.scoring.EXCEPTIONS", {})
     def test_export(self, write_mock):
         self.call_command("export_marks")
 
@@ -453,6 +468,7 @@ class ExportWithMarksTestCase(BaseCommandTestCase):
         self.assertEquals(linear, self.expected_linear)
 
     @mock.patch("crowdsourcer.management.commands.export_marks.Command.write_files")
+    @mock.patch("crowdsourcer.scoring.EXCEPTIONS", {})
     def test_export_with_unweighted_q(self, write_mock):
         Question.objects.filter(pk=272).update(weighting="unweighted")
 
@@ -497,6 +513,80 @@ class ExportWithMarksTestCase(BaseCommandTestCase):
         expected_percent[1]["Transport"] = 1.0
         expected_percent[1]["raw_total"] = 0.02857142857142857
         expected_percent[1]["weighted_total"] = 0.2
+
+        percent, raw, linear = write_mock.call_args[0]
+        self.assertEquals(linear, expected_linear)
+        self.assertEquals(raw, expected_raw)
+        self.assertEquals(percent, expected_percent)
+
+    @mock.patch("crowdsourcer.management.commands.export_marks.Command.write_files")
+    @mock.patch("crowdsourcer.scoring.EXCEPTIONS", exceptions_type_mock)
+    def test_export_with_council_type_exceptions(self, write_mock):
+        Response.objects.filter(question_id=282, authority_id=2).delete()
+
+        self.call_command("export_marks")
+        expected_linear = deepcopy(self.expected_linear)
+
+        expected_linear[1] = (
+            "Aberdeen City Council",
+            "S12000033",
+            "Transport",
+            0,
+            1,
+        )
+        expected_linear[8] = (
+            "Aberdeenshire Council",
+            "S12000034",
+            "Transport",
+            1,
+            1,
+        )
+
+        expected_raw = deepcopy(self.expected_raw)
+        expected_raw[1]["Transport"] = 1
+        expected_raw[1]["total"] = 1
+
+        expected_percent = deepcopy(self.expected_percent)
+        expected_percent[1]["Transport"] = 1.0
+        expected_percent[1]["raw_total"] = 0.02857142857142857
+        expected_percent[1]["weighted_total"] = 0.2
+
+        percent, raw, linear = write_mock.call_args[0]
+        self.assertEquals(linear, expected_linear)
+        self.assertEquals(raw, expected_raw)
+        self.assertEquals(percent, expected_percent)
+
+    @mock.patch("crowdsourcer.management.commands.export_marks.Command.write_files")
+    @mock.patch("crowdsourcer.scoring.EXCEPTIONS", exceptions_name_mock)
+    def test_export_with_council_name_exceptions(self, write_mock):
+        Response.objects.filter(question_id=282, authority_id=2).delete()
+
+        self.call_command("export_marks")
+        expected_linear = deepcopy(self.expected_linear)
+
+        expected_linear[1] = (
+            "Aberdeen City Council",
+            "S12000033",
+            "Transport",
+            0,
+            1,
+        )
+        expected_linear[8] = (
+            "Aberdeenshire Council",
+            "S12000034",
+            "Transport",
+            1,
+            7,
+        )
+
+        expected_raw = deepcopy(self.expected_raw)
+        expected_raw[1]["Transport"] = 1
+        expected_raw[1]["total"] = 1
+
+        expected_percent = deepcopy(self.expected_percent)
+        expected_percent[1]["Transport"] = 0.14285714285714285
+        expected_percent[1]["raw_total"] = 0.02857142857142857
+        expected_percent[1]["weighted_total"] = 0.1
 
         percent, raw, linear = write_mock.call_args[0]
         self.assertEquals(linear, expected_linear)
@@ -580,6 +670,7 @@ class ExportWithMarksNegativeQTestCase(BaseCommandTestCase):
     ]
 
     @mock.patch("crowdsourcer.management.commands.export_marks.Command.write_files")
+    @mock.patch("crowdsourcer.scoring.EXCEPTIONS", {})
     def test_export(self, write_mock):
         self.call_command("export_marks")
 
@@ -599,6 +690,7 @@ class ExportWithMultiMarksTestCase(BaseCommandTestCase):
     ]
 
     @mock.patch("crowdsourcer.management.commands.export_marks.Command.write_files")
+    @mock.patch("crowdsourcer.scoring.EXCEPTIONS", {})
     def test_export(self, write_mock):
         self.call_command("export_marks")
 
@@ -699,6 +791,7 @@ class ExportWithMoreMarksTestCase(BaseCommandTestCase):
     ]
 
     @mock.patch("crowdsourcer.management.commands.export_marks.Command.write_files")
+    @mock.patch("crowdsourcer.scoring.EXCEPTIONS", {})
     def test_export(self, write_mock):
         self.call_command("export_marks")
 
@@ -852,6 +945,7 @@ class ExportNoMarksCATestCase(BaseCommandTestCase):
         self.assertEquals(scoring["group_maxes"], ca_max_totals)
 
     @mock.patch("crowdsourcer.management.commands.export_marks.Command.write_files")
+    @mock.patch("crowdsourcer.scoring.EXCEPTIONS", {})
     def test_export_with_no_marks(self, write_mock):
         self.call_command(
             "export_marks",
@@ -1129,6 +1223,7 @@ class ExportWithMoreMarksCATestCase(BaseCommandTestCase):
     ]
 
     @mock.patch("crowdsourcer.management.commands.export_marks.Command.write_files")
+    @mock.patch("crowdsourcer.scoring.EXCEPTIONS", {})
     def test_export(self, write_mock):
         self.call_command("export_marks")
 
@@ -1138,6 +1233,7 @@ class ExportWithMoreMarksCATestCase(BaseCommandTestCase):
         self.assertEquals(percent, self.expected_percent)
 
     @mock.patch("crowdsourcer.management.commands.export_marks.Command.write_files")
+    @mock.patch("crowdsourcer.scoring.EXCEPTIONS", {})
     def test_export_100_percent(self, write_mock):
 
         Response.objects.filter(pk=37).update(option_id=196)

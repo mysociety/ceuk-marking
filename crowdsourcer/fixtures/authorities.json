@@ -7,6 +7,7 @@
     "name": "Aberdeen City Council",
     "website": "https://www.aberdeencity.gov.uk",
     "country": "scotland",
+    "type": "UTA",
     "questiongroup": 1
   }
 },
@@ -18,6 +19,7 @@
     "name": "Aberdeenshire Council",
     "website": "https://www.aberdeenshire.gov.uk",
     "country": "scotland",
+    "type": "UTA",
     "questiongroup": 1
   }
 },
@@ -29,6 +31,7 @@
     "name": "Adur District Council",
     "website": "https://www.adur-worthing.gov.uk/",
     "country": "england",
+    "type": "DIS",
     "questiongroup": 2
   }
 },
@@ -41,6 +44,7 @@
     "website": "https://www.armagh.gov.uk/",
     "questiongroup": 2,
     "country": "northern ireland",
+    "type": "NID",
     "do_not_mark": true
   }
 }
