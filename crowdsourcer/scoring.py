@@ -130,7 +130,7 @@ def get_section_maxes(scoring):
             maxes = (
                 Option.objects.filter(
                     question__in=questions,
-                    question__question_type__in=["yes_no", "select_one"],
+                    question__question_type__in=["yes_no", "select_one", "tiered"],
                 )
                 .select_related("question")
                 .values("question__pk", "question__number", "question__number_part")
@@ -138,7 +138,7 @@ def get_section_maxes(scoring):
             )
             totals = (
                 Option.objects.filter(question__in=questions)
-                .exclude(question__question_type__in=["yes_no", "select_one"])
+                .exclude(question__question_type__in=["yes_no", "select_one", "tiered"])
                 .select_related("question")
                 .values("question__pk", "question__number", "question__number_part")
                 .annotate(highest=Sum("score"))

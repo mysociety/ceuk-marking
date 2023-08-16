@@ -11,7 +11,7 @@
     "clarifications": "Significant council buildings refers to leisure centres, libraries, council town halls or offices, community centres, schools & colleges (not academies or private schools) or care homes.\n\nExtensive retrofit (sometimes called deep retrofit) refers to significant works of size or scale that result in a fundamental change to the building structure and/or services. This could be a collection of lots of small retrofit enhancements, or a single larger and disruptive measure, such as installing a combined heat system. \n\nThe work must be completed, not in progress.",
     "topic": "Council buildings - retrofit",
     "how_marked": "volunteer",
-    "question_type": "tiered",
+    "question_type": "multiple_choice",
     "questiongroup": [
       5
     ]

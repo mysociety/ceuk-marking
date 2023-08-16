@@ -10,10 +10,10 @@ from crowdsourcer.scoring import get_section_maxes
 
 max_section = {
     "Buildings & Heating": {
-        "Single Tier": 28,
-        "District": 27,
-        "County": 28,
-        "Northern Ireland": 12,
+        "Single Tier": 12,
+        "District": 11,
+        "County": 12,
+        "Northern Ireland": 8,
         "Combined Authority": 0,
     },
     "Transport": {
@@ -24,8 +24,8 @@ max_section = {
         "Combined Authority": 0,
     },
     "Planning & Land Use": {
-        "Single Tier": 4,
-        "District": 4,
+        "Single Tier": 3,
+        "District": 3,
         "County": 0,
         "Northern Ireland": 1,
         "Combined Authority": 0,
@@ -52,29 +52,29 @@ max_section = {
         "Combined Authority": 0,
     },
     "Waste Reduction & Food": {
-        "Single Tier": 5,
-        "District": 5,
-        "County": 5,
-        "Northern Ireland": 5,
+        "Single Tier": 4,
+        "District": 4,
+        "County": 4,
+        "Northern Ireland": 4,
         "Combined Authority": 0,
     },
 }
 max_totals = {
-    "Single Tier": 53,
-    "District": 52,
-    "County": 49,
-    "Northern Ireland": 34,
+    "Single Tier": 35,
+    "District": 34,
+    "County": 32,
+    "Northern Ireland": 29,
     "Combined Authority": 0,
 }
 
 max_questions = {
-    "Buildings & Heating": {"5": 1, "9": 1, "10": 1, "12": 1, "1": 5, "4": 16, "11": 3},
+    "Buildings & Heating": {"5": 1, "9": 1, "10": 1, "12": 1, "1": 2, "4": 4, "11": 2},
     "Transport": {"1": 1, "2": 6},
-    "Planning & Land Use": {"1": 1, "2": 3},
+    "Planning & Land Use": {"1": 1, "2": 2},
     "Governance & Finance": {"1a": 1, "1b": 1, "2": 1},
     "Biodiversity": {"1": 1},
     "Collaboration & Engagement": {"1": 1, "2a": 1, "2b": 3},
-    "Waste Reduction & Food": {"1": 1, "2": 1, "1b": 3},
+    "Waste Reduction & Food": {"1": 1, "2": 1, "1b": 2},
 }
 
 max_weighted = {
@@ -169,9 +169,9 @@ class ExportNoMarksTestCase(BaseCommandTestCase):
 
         local_max_w = max_weighted.copy()
         local_max_w["Buildings & Heating"] = {
-            "Single Tier": 27,
-            "District": 25,
-            "County": 27,
+            "Single Tier": 15,
+            "District": 13,
+            "County": 15,
             "Northern Ireland": 9,
             "Combined Authority": 0,
         }
@@ -269,27 +269,27 @@ class ExportNoMarksTestCase(BaseCommandTestCase):
         ]
 
         expected_linear = [
-            ("Aberdeen City Council", "S12000033", "Buildings & Heating", 0, 28),
+            ("Aberdeen City Council", "S12000033", "Buildings & Heating", 0, 12),
             ("Aberdeen City Council", "S12000033", "Transport", 0, 7),
-            ("Aberdeen City Council", "S12000033", "Planning & Land Use", 0, 4),
+            ("Aberdeen City Council", "S12000033", "Planning & Land Use", 0, 3),
             ("Aberdeen City Council", "S12000033", "Governance & Finance", 0, 3),
             ("Aberdeen City Council", "S12000033", "Biodiversity", 0, 1),
             ("Aberdeen City Council", "S12000033", "Collaboration & Engagement", 0, 5),
-            ("Aberdeen City Council", "S12000033", "Waste Reduction & Food", 0, 5),
-            ("Aberdeenshire Council", "S12000034", "Buildings & Heating", 0, 28),
+            ("Aberdeen City Council", "S12000033", "Waste Reduction & Food", 0, 4),
+            ("Aberdeenshire Council", "S12000034", "Buildings & Heating", 0, 12),
             ("Aberdeenshire Council", "S12000034", "Transport", 0, 7),
-            ("Aberdeenshire Council", "S12000034", "Planning & Land Use", 0, 4),
+            ("Aberdeenshire Council", "S12000034", "Planning & Land Use", 0, 3),
             ("Aberdeenshire Council", "S12000034", "Governance & Finance", 0, 3),
             ("Aberdeenshire Council", "S12000034", "Biodiversity", 0, 1),
             ("Aberdeenshire Council", "S12000034", "Collaboration & Engagement", 0, 5),
-            ("Aberdeenshire Council", "S12000034", "Waste Reduction & Food", 0, 5),
-            ("Adur District Council", "E07000223", "Buildings & Heating", 0, 27),
+            ("Aberdeenshire Council", "S12000034", "Waste Reduction & Food", 0, 4),
+            ("Adur District Council", "E07000223", "Buildings & Heating", 0, 11),
             ("Adur District Council", "E07000223", "Transport", 0, 7),
-            ("Adur District Council", "E07000223", "Planning & Land Use", 0, 4),
+            ("Adur District Council", "E07000223", "Planning & Land Use", 0, 3),
             ("Adur District Council", "E07000223", "Governance & Finance", 0, 3),
             ("Adur District Council", "E07000223", "Biodiversity", 0, 1),
             ("Adur District Council", "E07000223", "Collaboration & Engagement", 0, 5),
-            ("Adur District Council", "E07000223", "Waste Reduction & Food", 0, 5),
+            ("Adur District Council", "E07000223", "Waste Reduction & Food", 0, 4),
         ]
 
         percent, raw, linear = write_mock.call_args[0]
@@ -312,15 +312,15 @@ class ExportWithMarksTestCase(BaseCommandTestCase):
         {
             "council": "Aberdeen City Council",
             "gss": "S12000033",
-            "Buildings & Heating": 0.10714285714285714,
+            "Buildings & Heating": 0.25,
             "Transport": 0.0,
             "Planning & Land Use": 0.0,
             "Governance & Finance": 0.0,
             "Biodiversity": 0.0,
             "Collaboration & Engagement": 0.0,
             "Waste Reduction & Food": 0.0,
-            "raw_total": 0.05660377358490566,
-            "weighted_total": 0.021041666666666667,
+            "raw_total": 0.08571428571428572,
+            "weighted_total": 0.02916666666666667,
         },
         {
             "council": "Aberdeenshire Council",
@@ -332,7 +332,7 @@ class ExportWithMarksTestCase(BaseCommandTestCase):
             "Biodiversity": 0.0,
             "Collaboration & Engagement": 0.0,
             "Waste Reduction & Food": 0.0,
-            "raw_total": 0.03773584905660377,
+            "raw_total": 0.05714285714285714,
             "weighted_total": 0.11666666666666668,
         },
         {
@@ -345,7 +345,7 @@ class ExportWithMarksTestCase(BaseCommandTestCase):
             "Biodiversity": 0.0,
             "Collaboration & Engagement": 0.0,
             "Waste Reduction & Food": 0.0,
-            "raw_total": 0.019230769230769232,
+            "raw_total": 0.029411764705882353,
             "weighted_total": 0.004166666666666667,
         },
     ]
@@ -390,27 +390,27 @@ class ExportWithMarksTestCase(BaseCommandTestCase):
     ]
 
     expected_linear = [
-        ("Aberdeen City Council", "S12000033", "Buildings & Heating", 3, 28),
+        ("Aberdeen City Council", "S12000033", "Buildings & Heating", 3, 12),
         ("Aberdeen City Council", "S12000033", "Transport", 0, 7),
-        ("Aberdeen City Council", "S12000033", "Planning & Land Use", 0, 4),
+        ("Aberdeen City Council", "S12000033", "Planning & Land Use", 0, 3),
         ("Aberdeen City Council", "S12000033", "Governance & Finance", 0, 3),
         ("Aberdeen City Council", "S12000033", "Biodiversity", 0, 1),
         ("Aberdeen City Council", "S12000033", "Collaboration & Engagement", 0, 5),
-        ("Aberdeen City Council", "S12000033", "Waste Reduction & Food", 0, 5),
-        ("Aberdeenshire Council", "S12000034", "Buildings & Heating", 0, 28),
+        ("Aberdeen City Council", "S12000033", "Waste Reduction & Food", 0, 4),
+        ("Aberdeenshire Council", "S12000034", "Buildings & Heating", 0, 12),
         ("Aberdeenshire Council", "S12000034", "Transport", 2, 7),
-        ("Aberdeenshire Council", "S12000034", "Planning & Land Use", 0, 4),
+        ("Aberdeenshire Council", "S12000034", "Planning & Land Use", 0, 3),
         ("Aberdeenshire Council", "S12000034", "Governance & Finance", 0, 3),
         ("Aberdeenshire Council", "S12000034", "Biodiversity", 0, 1),
         ("Aberdeenshire Council", "S12000034", "Collaboration & Engagement", 0, 5),
-        ("Aberdeenshire Council", "S12000034", "Waste Reduction & Food", 0, 5),
-        ("Adur District Council", "E07000223", "Buildings & Heating", 0, 27),
+        ("Aberdeenshire Council", "S12000034", "Waste Reduction & Food", 0, 4),
+        ("Adur District Council", "E07000223", "Buildings & Heating", 0, 11),
         ("Adur District Council", "E07000223", "Transport", 1, 7),
-        ("Adur District Council", "E07000223", "Planning & Land Use", 0, 4),
+        ("Adur District Council", "E07000223", "Planning & Land Use", 0, 3),
         ("Adur District Council", "E07000223", "Governance & Finance", 0, 3),
         ("Adur District Council", "E07000223", "Biodiversity", 0, 1),
         ("Adur District Council", "E07000223", "Collaboration & Engagement", 0, 5),
-        ("Adur District Council", "E07000223", "Waste Reduction & Food", 0, 5),
+        ("Adur District Council", "E07000223", "Waste Reduction & Food", 0, 4),
     ]
 
     exceptions_mock = {
@@ -437,7 +437,7 @@ class ExportWithMarksTestCase(BaseCommandTestCase):
         self.call_command("export_marks")
 
         expected_percent = deepcopy(self.expected_percent)
-        expected_percent[0]["weighted_total"] = 0.009351851851851853
+        expected_percent[0]["weighted_total"] = 0.023333333333333334
 
         percent, raw, linear = write_mock.call_args[0]
         self.assertEquals(raw, self.expected_raw)
@@ -473,7 +473,7 @@ class ExportWithMarksTestCase(BaseCommandTestCase):
 
         expected_percent = deepcopy(self.expected_percent)
         expected_percent[1]["Transport"] = 1.0
-        expected_percent[1]["raw_total"] = 0.018867924528301886
+        expected_percent[1]["raw_total"] = 0.02857142857142857
         expected_percent[1]["weighted_total"] = 0.2
 
         percent, raw, linear = write_mock.call_args[0]
@@ -500,15 +500,15 @@ class ExportWithMultiMarksTestCase(BaseCommandTestCase):
             {
                 "council": "Aberdeen City Council",
                 "gss": "S12000033",
-                "Buildings & Heating": 0.10714285714285714,
+                "Buildings & Heating": 0.25,
                 "Transport": 0.0,
                 "Planning & Land Use": 0.0,
                 "Governance & Finance": 0.0,
                 "Biodiversity": 0.0,
                 "Collaboration & Engagement": 0.0,
                 "Waste Reduction & Food": 0.0,
-                "raw_total": 0.05660377358490566,
-                "weighted_total": 0.021041666666666667,
+                "raw_total": 0.08571428571428572,
+                "weighted_total": 0.02916666666666667,
             },
             {
                 "council": "Aberdeenshire Council",
@@ -520,7 +520,7 @@ class ExportWithMultiMarksTestCase(BaseCommandTestCase):
                 "Biodiversity": 0.0,
                 "Collaboration & Engagement": 0.0,
                 "Waste Reduction & Food": 0.0,
-                "raw_total": 0.03773584905660377,
+                "raw_total": 0.05714285714285714,
                 "weighted_total": 0.11666666666666668,
             },
             {
@@ -533,7 +533,7 @@ class ExportWithMultiMarksTestCase(BaseCommandTestCase):
                 "Biodiversity": 0.0,
                 "Collaboration & Engagement": 0.0,
                 "Waste Reduction & Food": 0.0,
-                "raw_total": 0.057692307692307696,
+                "raw_total": 0.08823529411764706,
                 "weighted_total": 0.03333333333333334,
             },
         ]
@@ -600,28 +600,28 @@ class ExportWithMoreMarksTestCase(BaseCommandTestCase):
             {
                 "council": "Aberdeen City Council",
                 "gss": "S12000033",
-                "Buildings & Heating": 0.10714285714285714,
+                "Buildings & Heating": 0.25,
                 "Transport": 0.0,
                 "Planning & Land Use": 0.0,
                 "Governance & Finance": 0.0,
                 "Biodiversity": 0.0,
                 "Collaboration & Engagement": 0.0,
                 "Waste Reduction & Food": 0.0,
-                "raw_total": 0.05660377358490566,
-                "weighted_total": 0.021041666666666667,
+                "raw_total": 0.08571428571428572,
+                "weighted_total": 0.02916666666666667,
             },
             {
                 "council": "Aberdeenshire Council",
                 "gss": "S12000034",
-                "Buildings & Heating": 0.2857142857142857,
+                "Buildings & Heating": 0.6666666666666666,
                 "Transport": 1.0,
-                "Planning & Land Use": 0.75,
+                "Planning & Land Use": 1.0,
                 "Governance & Finance": 0.6666666666666666,
                 "Biodiversity": 0.0,
                 "Collaboration & Engagement": 0.2,
-                "Waste Reduction & Food": 0.6,
-                "raw_total": 0.4528301886792453,
-                "weighted_total": 0.5427083333333333,
+                "Waste Reduction & Food": 0.75,
+                "raw_total": 0.6857142857142857,
+                "weighted_total": 0.6025,
             },
             {
                 "council": "Adur District Council",
@@ -633,7 +633,7 @@ class ExportWithMoreMarksTestCase(BaseCommandTestCase):
                 "Biodiversity": 0.0,
                 "Collaboration & Engagement": 0.0,
                 "Waste Reduction & Food": 0.0,
-                "raw_total": 0.057692307692307696,
+                "raw_total": 0.08823529411764706,
                 "weighted_total": 0.03333333333333334,
             },
         ]
@@ -854,27 +854,27 @@ class ExportNoMarksCATestCase(BaseCommandTestCase):
         ]
 
         expected_linear = [
-            ("Aberdeen City Council", "S12000033", "Buildings & Heating", 0, 28),
+            ("Aberdeen City Council", "S12000033", "Buildings & Heating", 0, 12),
             ("Aberdeen City Council", "S12000033", "Transport", 0, 7),
-            ("Aberdeen City Council", "S12000033", "Planning & Land Use", 0, 4),
+            ("Aberdeen City Council", "S12000033", "Planning & Land Use", 0, 3),
             ("Aberdeen City Council", "S12000033", "Governance & Finance", 0, 3),
             ("Aberdeen City Council", "S12000033", "Biodiversity", 0, 1),
             ("Aberdeen City Council", "S12000033", "Collaboration & Engagement", 0, 5),
-            ("Aberdeen City Council", "S12000033", "Waste Reduction & Food", 0, 5),
-            ("Aberdeenshire Council", "S12000034", "Buildings & Heating", 0, 28),
+            ("Aberdeen City Council", "S12000033", "Waste Reduction & Food", 0, 4),
+            ("Aberdeenshire Council", "S12000034", "Buildings & Heating", 0, 12),
             ("Aberdeenshire Council", "S12000034", "Transport", 0, 7),
-            ("Aberdeenshire Council", "S12000034", "Planning & Land Use", 0, 4),
+            ("Aberdeenshire Council", "S12000034", "Planning & Land Use", 0, 3),
             ("Aberdeenshire Council", "S12000034", "Governance & Finance", 0, 3),
             ("Aberdeenshire Council", "S12000034", "Biodiversity", 0, 1),
             ("Aberdeenshire Council", "S12000034", "Collaboration & Engagement", 0, 5),
-            ("Aberdeenshire Council", "S12000034", "Waste Reduction & Food", 0, 5),
-            ("Adur District Council", "E07000223", "Buildings & Heating", 0, 27),
+            ("Aberdeenshire Council", "S12000034", "Waste Reduction & Food", 0, 4),
+            ("Adur District Council", "E07000223", "Buildings & Heating", 0, 11),
             ("Adur District Council", "E07000223", "Transport", 0, 7),
-            ("Adur District Council", "E07000223", "Planning & Land Use", 0, 4),
+            ("Adur District Council", "E07000223", "Planning & Land Use", 0, 3),
             ("Adur District Council", "E07000223", "Governance & Finance", 0, 3),
             ("Adur District Council", "E07000223", "Biodiversity", 0, 1),
             ("Adur District Council", "E07000223", "Collaboration & Engagement", 0, 5),
-            ("Adur District Council", "E07000223", "Waste Reduction & Food", 0, 5),
+            ("Adur District Council", "E07000223", "Waste Reduction & Food", 0, 4),
             (
                 "A Combined Authority",
                 "S12000099",
@@ -924,28 +924,28 @@ class ExportWithMoreMarksCATestCase(BaseCommandTestCase):
         {
             "council": "Aberdeen City Council",
             "gss": "S12000033",
-            "Buildings & Heating": 0.10714285714285714,
+            "Buildings & Heating": 0.25,
             "Transport": 0.0,
             "Planning & Land Use": 0.0,
             "Governance & Finance": 0.0,
             "Biodiversity": 0.0,
             "Collaboration & Engagement": 0.0,
             "Waste Reduction & Food": 0.0,
-            "raw_total": 0.05660377358490566,
-            "weighted_total": 0.021041666666666667,
+            "raw_total": 0.08571428571428572,
+            "weighted_total": 0.02916666666666667,
         },
         {
             "council": "Aberdeenshire Council",
             "gss": "S12000034",
-            "Buildings & Heating": 0.2857142857142857,
+            "Buildings & Heating": 0.6666666666666666,
             "Transport": 1.0,
-            "Planning & Land Use": 0.75,
+            "Planning & Land Use": 1.0,
             "Governance & Finance": 0.6666666666666666,
             "Biodiversity": 0.0,
             "Collaboration & Engagement": 0.2,
-            "Waste Reduction & Food": 0.6,
-            "raw_total": 0.4528301886792453,
-            "weighted_total": 0.5427083333333333,
+            "Waste Reduction & Food": 0.75,
+            "raw_total": 0.6857142857142857,
+            "weighted_total": 0.6025,
         },
         {
             "council": "Adur District Council",
@@ -957,11 +957,11 @@ class ExportWithMoreMarksCATestCase(BaseCommandTestCase):
             "Biodiversity": 0.0,
             "Collaboration & Engagement": 0.0,
             "Waste Reduction & Food": 0.0,
-            "raw_total": 0.057692307692307696,
+            "raw_total": 0.08823529411764706,
             "weighted_total": 0.03333333333333334,
         },
         {
-            "Buildings & Heating & Green Skills (CA)": 0.3333333333333333333,
+            "Buildings & Heating & Green Skills (CA)": 0.3333333333333333,
             "Transport (CA)": 0.0,
             "Planning & Biodiversity (CA)": 1.0,
             "Governance & Finance (CA)": 1.0,
