@@ -125,7 +125,9 @@ def get_section_maxes(scoring):
         q_section_maxes = {}
         q_section_weighted_maxes = {}
         for group in QuestionGroup.objects.all():
-            questions = Question.objects.filter(section=section, questiongroup=group)
+            questions = Question.objects.filter(
+                section=section, questiongroup=group
+            ).exclude(question_type="negative")
 
             maxes = (
                 Option.objects.filter(
@@ -138,7 +140,14 @@ def get_section_maxes(scoring):
             )
             totals = (
                 Option.objects.filter(question__in=questions)
-                .exclude(question__question_type__in=["yes_no", "select_one", "tiered"])
+                .exclude(
+                    question__question_type__in=[
+                        "yes_no",
+                        "select_one",
+                        "tiered",
+                        "negative",
+                    ]
+                )
                 .select_related("question")
                 .values("question__pk", "question__number", "question__number_part")
                 .annotate(highest=Sum("score"))

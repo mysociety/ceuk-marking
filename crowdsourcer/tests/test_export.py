@@ -298,6 +298,26 @@ class ExportNoMarksTestCase(BaseCommandTestCase):
         self.assertEquals(linear, expected_linear)
 
 
+class ExportNoMarksNegativeQTestCase(BaseCommandTestCase):
+    fixtures = [
+        "authorities.json",
+        "basics.json",
+        "users.json",
+        "questions.json",
+        "options.json",
+        "negative_questions.json",
+    ]
+
+    def test_max_calculation(self):
+        scoring = {}
+        get_section_maxes(scoring)
+
+        self.assertEquals(scoring["section_maxes"], max_section)
+        self.assertEquals(scoring["group_maxes"], max_totals)
+        self.assertEquals(scoring["q_maxes"], max_questions)
+        self.assertEquals(scoring["section_weighted_maxes"], max_weighted)
+
+
 class ExportWithMarksTestCase(BaseCommandTestCase):
     fixtures = [
         "authorities.json",

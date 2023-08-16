@@ -1,0 +1,40 @@
+[
+{
+  "model": "crowdsourcer.question",
+  "pk": 355,
+  "fields": {
+    "number": 1,
+    "number_part": "",
+    "description": "Has the council build an oil field",
+    "criteria": "",
+    "section": 1,
+    "clarifications": "",
+    "topic": "Council projects - oilfields",
+    "how_marked": "national_data",
+    "question_type": "negative",
+    "questiongroup": [
+      1
+    ]
+  }
+},
+{
+  "model": "crowdsourcer.option",
+  "pk": 203,
+  "fields": {
+    "question": 355,
+    "score": 0,
+    "description": "No",
+    "ordering": 100
+  }
+},
+{
+  "model": "crowdsourcer.option",
+  "pk": 204,
+  "fields": {
+    "question": 355,
+    "score": -2,
+    "description": "Yes",
+    "ordering": 100
+  }
+}
+]
