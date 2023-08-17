@@ -310,11 +310,13 @@ class ExportNoMarksNegativeQTestCase(BaseCommandTestCase):
 
     def test_max_calculation(self):
         scoring = {}
+        expected_max_q = deepcopy(max_questions)
+        expected_max_q["Buildings & Heating"]["20"] = 0
         get_section_maxes(scoring)
 
         self.assertEquals(scoring["section_maxes"], max_section)
         self.assertEquals(scoring["group_maxes"], max_totals)
-        self.assertEquals(scoring["q_maxes"], max_questions)
+        self.assertEquals(scoring["q_maxes"], expected_max_q)
         self.assertEquals(scoring["section_weighted_maxes"], max_weighted)
 
 
@@ -500,6 +502,90 @@ class ExportWithMarksTestCase(BaseCommandTestCase):
         self.assertEquals(linear, expected_linear)
         self.assertEquals(raw, expected_raw)
         self.assertEquals(percent, expected_percent)
+
+
+class ExportWithMarksNegativeQTestCase(BaseCommandTestCase):
+    fixtures = [
+        "authorities.json",
+        "basics.json",
+        "users.json",
+        "questions.json",
+        "options.json",
+        "audit_responses.json",
+        "negative_questions.json",
+        "negative_audit_responses.json",
+    ]
+
+    expected_raw = [
+        {
+            "Buildings & Heating": 1,
+            "Transport": 0,
+            "Planning & Land Use": 0,
+            "Governance & Finance": 0,
+            "Biodiversity": 0,
+            "Collaboration & Engagement": 0,
+            "Waste Reduction & Food": 0,
+            "council": "Aberdeen City Council",
+            "gss": "S12000033",
+            "total": 1,
+        },
+        {
+            "Buildings & Heating": 0,
+            "Transport": 2,
+            "Planning & Land Use": 0,
+            "Governance & Finance": 0,
+            "Biodiversity": 0,
+            "Collaboration & Engagement": 0,
+            "Waste Reduction & Food": 0,
+            "council": "Aberdeenshire Council",
+            "gss": "S12000034",
+            "total": 2,
+        },
+        {
+            "Buildings & Heating": 0,
+            "Transport": 1,
+            "Planning & Land Use": 0,
+            "Governance & Finance": 0,
+            "Biodiversity": 0,
+            "Collaboration & Engagement": 0,
+            "Waste Reduction & Food": 0,
+            "council": "Adur District Council",
+            "gss": "E07000223",
+            "total": 1,
+        },
+    ]
+
+    expected_linear = [
+        ("Aberdeen City Council", "S12000033", "Buildings & Heating", 1, 12),
+        ("Aberdeen City Council", "S12000033", "Transport", 0, 7),
+        ("Aberdeen City Council", "S12000033", "Planning & Land Use", 0, 3),
+        ("Aberdeen City Council", "S12000033", "Governance & Finance", 0, 3),
+        ("Aberdeen City Council", "S12000033", "Biodiversity", 0, 1),
+        ("Aberdeen City Council", "S12000033", "Collaboration & Engagement", 0, 5),
+        ("Aberdeen City Council", "S12000033", "Waste Reduction & Food", 0, 4),
+        ("Aberdeenshire Council", "S12000034", "Buildings & Heating", 0, 12),
+        ("Aberdeenshire Council", "S12000034", "Transport", 2, 7),
+        ("Aberdeenshire Council", "S12000034", "Planning & Land Use", 0, 3),
+        ("Aberdeenshire Council", "S12000034", "Governance & Finance", 0, 3),
+        ("Aberdeenshire Council", "S12000034", "Biodiversity", 0, 1),
+        ("Aberdeenshire Council", "S12000034", "Collaboration & Engagement", 0, 5),
+        ("Aberdeenshire Council", "S12000034", "Waste Reduction & Food", 0, 4),
+        ("Adur District Council", "E07000223", "Buildings & Heating", 0, 11),
+        ("Adur District Council", "E07000223", "Transport", 1, 7),
+        ("Adur District Council", "E07000223", "Planning & Land Use", 0, 3),
+        ("Adur District Council", "E07000223", "Governance & Finance", 0, 3),
+        ("Adur District Council", "E07000223", "Biodiversity", 0, 1),
+        ("Adur District Council", "E07000223", "Collaboration & Engagement", 0, 5),
+        ("Adur District Council", "E07000223", "Waste Reduction & Food", 0, 4),
+    ]
+
+    @mock.patch("crowdsourcer.management.commands.export_marks.Command.write_files")
+    def test_export(self, write_mock):
+        self.call_command("export_marks")
+
+        percent, raw, linear = write_mock.call_args[0]
+        self.assertEquals(raw, self.expected_raw)
+        self.assertEquals(linear, self.expected_linear)
 
 
 class ExportWithMultiMarksTestCase(BaseCommandTestCase):

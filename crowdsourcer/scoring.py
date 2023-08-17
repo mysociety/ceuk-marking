@@ -120,10 +120,12 @@ def get_section_maxes(scoring):
     group_totals = defaultdict(int)
     q_maxes = defaultdict(int)
     q_weighted_maxes = defaultdict(int)
+    negative_q = defaultdict(int)
 
     for section in Section.objects.all():
         q_section_maxes = {}
         q_section_weighted_maxes = {}
+        q_section_negatives = {}
         for group in QuestionGroup.objects.all():
             questions = Question.objects.filter(
                 section=section, questiongroup=group
@@ -152,6 +154,9 @@ def get_section_maxes(scoring):
                 .values("question__pk", "question__number", "question__number_part")
                 .annotate(highest=Sum("score"))
             )
+            negatives = Question.objects.filter(
+                section=section, questiongroup=group
+            ).filter(question_type="negative")
 
             max_score = 0
             for m in maxes:
@@ -166,6 +171,11 @@ def get_section_maxes(scoring):
                 ] = m["highest"]
                 max_score += m["highest"]
 
+            # this stops lookup errors later on
+            for q in negatives:
+                q_section_negatives[q.number_and_part] = 1
+                q_section_maxes[q.number_and_part] = 0
+
             weighted_max = 0
             for q in questions:
                 q_max = weighting_to_points(q.weighting)
@@ -179,12 +189,14 @@ def get_section_maxes(scoring):
             group_totals[group.description] += max_score
             q_weighted_maxes[section.title] = deepcopy(q_section_weighted_maxes)
             q_maxes[section.title] = deepcopy(q_section_maxes)
+            negative_q[section.title] = deepcopy(q_section_negatives)
 
     scoring["section_maxes"] = section_maxes
     scoring["group_maxes"] = group_totals
     scoring["q_maxes"] = q_maxes
     scoring["section_weighted_maxes"] = section_weighted_maxes
     scoring["q_section_weighted_maxes"] = q_weighted_maxes
+    scoring["negative_q"] = negative_q
 
 
 def q_is_exception(q, section, group, country):
@@ -317,7 +329,9 @@ def get_section_scores(scoring):
                     q_max,
                 )
                 continue
-            if q_max is None or q_max == 0:
+            if scoring["negative_q"][section.title].get(q, None) is None and (
+                q_max is None or q_max == 0
+            ):
                 print(
                     "Max score is None or 0:",
                     score["authority__name"],
@@ -328,9 +342,13 @@ def get_section_scores(scoring):
                 )
                 continue
 
-            weighted_score = get_weighted_question_score(
-                score["score"], q_max, score["question__weighting"]
-            )
+            if scoring["negative_q"][section.title].get(q, None) is None:
+                weighted_score = get_weighted_question_score(
+                    score["score"], q_max, score["question__weighting"]
+                )
+            else:
+                weighted_score = score["score"]
+
             weighted[score["authority__name"]][section.title] += weighted_score
 
     scoring["raw_scores"] = raw_scores

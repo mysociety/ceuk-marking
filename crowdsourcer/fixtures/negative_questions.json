@@ -3,7 +3,7 @@
   "model": "crowdsourcer.question",
   "pk": 355,
   "fields": {
-    "number": 1,
+    "number": 20,
     "number_part": "",
     "description": "Has the council build an oil field",
     "criteria": "",
@@ -12,8 +12,12 @@
     "topic": "Council projects - oilfields",
     "how_marked": "national_data",
     "question_type": "negative",
+    "weighting": "unweighted",
     "questiongroup": [
-      1
+      1,
+      2,
+      3,
+      4
     ]
   }
 },
