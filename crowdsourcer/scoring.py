@@ -98,6 +98,15 @@ EXCEPTIONS = {
     },
 }
 
+SCORE_EXCEPTIONS = {
+    "Waste Reduction & Food": {
+        "2": {
+            "max_score": 1,
+            "points_for_max": 2,
+        }
+    }
+}
+
 
 def number_and_part(number=None, number_part=None):
     if number_part is not None:
@@ -168,9 +177,17 @@ def get_section_maxes(scoring):
                 max_score += m["highest"]
 
             for m in totals:
-                q_section_maxes[
-                    number_and_part(m["question__number"], m["question__number_part"])
-                ] = m["highest"]
+                q_number = number_and_part(
+                    m["question__number"], m["question__number_part"]
+                )
+                if (
+                    SCORE_EXCEPTIONS.get(section.title, None) is not None
+                    and SCORE_EXCEPTIONS[section.title].get(q_number, None) is not None
+                ):
+                    m["highest"] = SCORE_EXCEPTIONS[section.title][q_number][
+                        "max_score"
+                    ]
+                q_section_maxes[q_number] = m["highest"]
                 max_score += m["highest"]
 
             # this stops lookup errors later on
@@ -317,17 +334,16 @@ def get_section_scores(scoring):
             .select_related("authority")
         )
 
-        totals = options.values("authority__name").annotate(total=Sum("score"))
-
-        for total in totals:
-            raw_scores[total["authority__name"]][section.title] = total["total"]
-
-        scores = options.select_related("questions").values(
-            "score",
-            "authority__name",
-            "question__number",
-            "question__number_part",
-            "question__weighting",
+        scores = (
+            options.select_related("questions")
+            .annotate(score=Sum("score"))
+            .values(
+                "score",
+                "authority__name",
+                "question__number",
+                "question__number_part",
+                "question__weighting",
+            )
         )
 
         for score in scores:
@@ -338,6 +354,7 @@ def get_section_scores(scoring):
             q = number_and_part(
                 score["question__number"], score["question__number_part"]
             )
+            q_max = scoring["q_maxes"][section.title][q]
 
             if q_is_exception(
                 q,
@@ -348,8 +365,6 @@ def get_section_scores(scoring):
             ):
                 print(f"exception: {q}")
                 continue
-
-            q_max = scoring["q_maxes"][section.title][q]
 
             if score["score"] is None:
                 print(
@@ -374,13 +389,24 @@ def get_section_scores(scoring):
                 )
                 continue
 
+            q_score = score["score"]
+            if (
+                SCORE_EXCEPTIONS.get(section.title, None) is not None
+                and SCORE_EXCEPTIONS[section.title].get(q, None) is not None
+            ):
+                if q_score >= SCORE_EXCEPTIONS[section.title][q]["points_for_max"]:
+                    q_score = SCORE_EXCEPTIONS[section.title][q]["max_score"]
+                else:
+                    q_score = 0
+
+            raw_scores[score["authority__name"]][section.title] += q_score
+
             if scoring["negative_q"][section.title].get(q, None) is None:
                 weighted_score = get_weighted_question_score(
-                    score["score"], q_max, score["question__weighting"]
+                    q_score, q_max, score["question__weighting"]
                 )
             else:
-                weighted_score = score["score"]
-
+                weighted_score = q_score
             weighted[score["authority__name"]][section.title] += weighted_score
 
     scoring["raw_scores"] = raw_scores
