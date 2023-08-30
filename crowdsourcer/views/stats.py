@@ -65,6 +65,13 @@ class AllMarksBaseCSVView(UserPassesTestMixin, ListView):
             .order_by("section__title", "number", "number_part")
         )
 
+        authorities = PublicAuthority.objects.all()
+        authority_map = {}
+        for authority in authorities:
+            authority_map[authority.name] = {
+                "country": authority.country,
+                "type": authority.type,
+            }
         headers = {}
         for q in questions:
             q_desc = f"{q.section.title}: {q.number_and_part}"
@@ -79,6 +86,7 @@ class AllMarksBaseCSVView(UserPassesTestMixin, ListView):
             responses[response.authority.name][q_desc] = score
 
         context["headers"] = sorted(headers.keys())
+        context["map"] = authority_map
         context["marks"] = responses
 
         return context
@@ -89,12 +97,19 @@ class AllMarksBaseCSVView(UserPassesTestMixin, ListView):
             headers={"Content-Disposition": f'attachment; filename="{self.file_name}"'},
         )
         writer = csv.writer(response)
+        authority_map = context["map"]
         headers = [
             "authority",
+            "country",
+            "type",
         ] + context["headers"]
         writer.writerow(headers)
         for authority, mark in context["marks"].items():
-            row = [authority] + [mark.get(q, "-") for q in context["headers"]]
+            row = [
+                authority,
+                authority_map[authority]["country"],
+                authority_map[authority]["type"],
+            ] + [mark.get(q, "-") for q in context["headers"]]
             writer.writerow(row)
         return response
 
