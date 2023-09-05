@@ -45,7 +45,9 @@ class AllMarksBaseCSVView(UserPassesTestMixin, ListView):
     def get_response_score(self, response):
         score = 0
 
-        if response.multi_count > 0:
+        if response.question.question_type == "negative":
+            score = response.points
+        elif response.multi_count > 0:
             for opt in response.multi_option.all():
                 score += opt.score
         elif response.option is not None:
@@ -256,7 +258,10 @@ class QuestionDataCSVView(UserPassesTestMixin, ListView):
         score = 0
         answer = ""
 
-        if response.multi_count > 0:
+        if response.question.question_type == "negative":
+            answer = response.option.description
+            score = response.points
+        elif response.multi_count > 0:
             descs = []
             for opt in response.multi_option.all():
                 descs.append(opt.description)

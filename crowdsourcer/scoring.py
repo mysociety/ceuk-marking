@@ -338,6 +338,7 @@ def get_section_scores(scoring):
             options.select_related("questions")
             .annotate(score=Sum("score"))
             .values(
+                "points",
                 "score",
                 "authority__name",
                 "question__number",
@@ -390,6 +391,11 @@ def get_section_scores(scoring):
                 continue
 
             q_score = score["score"]
+            if scoring["negative_q"][section.title].get(q, None) is not None:
+                if score["points"] is not None:
+                    q_score = score["points"]
+                else:
+                    q_score = 0
             if (
                 SCORE_EXCEPTIONS.get(section.title, None) is not None
                 and SCORE_EXCEPTIONS[section.title].get(q, None) is not None
