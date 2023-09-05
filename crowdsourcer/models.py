@@ -230,6 +230,10 @@ class Response(models.Model):
     last_update = models.DateTimeField(auto_now=True)
     history = HistoricalRecords()
 
+    points = models.FloatField(
+        blank=True, null=True, help_text="overide marks for this response"
+    )
+
     def get_absolute_url(self):
         return reverse(
             "authority_question_edit",
