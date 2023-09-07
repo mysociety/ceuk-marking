@@ -464,6 +464,8 @@ class SectionScoresDataCSVView(BaseScoresView):
                 ]
 
                 rows.append(row)
+            total = self.scoring["council_totals"][council]["weighted_total"]
+            rows.append([council, "Total", "-", "-", "-", "-", "-", f"{total:.2f}"])
 
         context["rows"] = rows
 
