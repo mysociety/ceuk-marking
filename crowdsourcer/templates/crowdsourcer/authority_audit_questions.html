@@ -51,6 +51,7 @@
                 <h2 class="h4 mb-0 mw-40em">
                     {{ q_form.question_obj.number_and_part }}. {{ q_form.question_obj.description }}
                     {% if q_form.question_obj.how_marked == "foi" %}(FOI){% endif %}
+                    {% if q_form.question_obj.how_marked == "national_data" %}(National Data){% endif %}
                 </h2>
             </legend>
             <div class="d-sm-flex mx-n3 text-muted">
