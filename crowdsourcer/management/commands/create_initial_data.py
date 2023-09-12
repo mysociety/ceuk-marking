@@ -11,6 +11,7 @@ class Command(BaseCommand):
     help = "set up authorities and question groups"
 
     do_not_mark_file = settings.BASE_DIR / "data" / "do_not_mark.csv"
+    political_control_file = settings.BASE_DIR / "data" / "opencouncildata_councils.csv"
 
     groups = ["Single Tier", "District", "County", "Northern Ireland"]
 
@@ -23,6 +24,11 @@ class Command(BaseCommand):
         "Collaboration & Engagement",
         "Waste Reduction & Food",
     ]
+
+    control_name_overrides = {
+        "Shetland": "Shetland Islands Council",
+        "Highland": "Comhairle nan Eilean Siar",
+    }
 
     response_types = ["First Mark", "Right of Reply", "Audit"]
 
@@ -57,6 +63,26 @@ class Command(BaseCommand):
         g = QuestionGroup.objects.get(description=group)
         return g
 
+    def get_political_control(self):
+        df = pd.read_csv(self.political_control_file)
+        control = {}
+        for _, row in df.iterrows():
+            coalition = row["coalition"]
+            if pd.isna(coalition):
+                coalition = None
+            control[row["ons code"]] = {
+                "control": row["majority"],
+                "coalition": coalition,
+            }
+            name = self.control_name_overrides.get(
+                row["name"], row["name"] + " Council"
+            )
+            control[name] = {
+                "control": row["majority"],
+                "coalition": coalition,
+            }
+        return control
+
     def handle(self, quiet: bool = False, *args, **options):
         do_not_mark_list = self.get_do_not_mark_list()
 
@@ -74,6 +100,8 @@ class Command(BaseCommand):
             ["CTY", "LBO", "NMD", "UTA", "LGD", "CC", "DIS", "MTD"]
         )
 
+        political_control = self.get_political_control()
+
         if not quiet:
             print("Importing Areas")
         for area in areas:
@@ -81,13 +109,21 @@ class Command(BaseCommand):
             if area["codes"]["gss"] in do_not_mark_list:
                 do_not_mark = True
 
+            defaults = {
+                "name": self.name_map.get(area["name"], area["name"]),
+                "questiongroup": self.get_group(area),
+                "do_not_mark": do_not_mark,
+                "type": area["type"],
+                "country": area["country_name"].lower(),
+            }
+            control = political_control.get(
+                area["codes"]["gss"], political_control.get(defaults["name"], None)
+            )
+            if control is not None:
+                defaults["political_control"] = control["control"]
+                defaults["political_coalition"] = control["coalition"]
+
             a, created = PublicAuthority.objects.update_or_create(
                 unique_id=area["codes"]["gss"],
-                defaults={
-                    "name": self.name_map.get(area["name"], area["name"]),
-                    "questiongroup": self.get_group(area),
-                    "do_not_mark": do_not_mark,
-                    "type": area["type"],
-                    "country": area["country_name"].lower(),
-                },
+                defaults=defaults,
             )
