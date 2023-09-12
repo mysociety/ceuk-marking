@@ -87,6 +87,8 @@ class PublicAuthority(models.Model):
     do_not_mark = models.BooleanField(default=False)
     type = models.TextField(max_length=20, default="", blank=True, null=True)
     country = models.CharField(max_length=20, blank=True, null=True, choices=COUNTRIES)
+    political_control = models.CharField(max_length=100, blank=True, null=True)
+    political_coalition = models.CharField(max_length=100, blank=True, null=True)
 
     def __str__(self):
         name = self.name
