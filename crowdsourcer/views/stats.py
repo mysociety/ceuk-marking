@@ -73,6 +73,8 @@ class AllMarksBaseCSVView(UserPassesTestMixin, ListView):
             authority_map[authority.name] = {
                 "country": authority.country,
                 "type": authority.type,
+                "political_control": authority.political_control,
+                "political_coalition": authority.political_coalition,
             }
         headers = {}
         for q in questions:
@@ -104,6 +106,8 @@ class AllMarksBaseCSVView(UserPassesTestMixin, ListView):
             "authority",
             "country",
             "type",
+            "political_control",
+            "coalition",
         ] + context["headers"]
         writer.writerow(headers)
         for authority, mark in context["marks"].items():
@@ -111,6 +115,8 @@ class AllMarksBaseCSVView(UserPassesTestMixin, ListView):
                 authority,
                 authority_map[authority]["country"],
                 authority_map[authority]["type"],
+                authority_map[authority]["political_control"],
+                authority_map[authority]["political_coalition"],
             ] + [mark.get(q, "-") for q in context["headers"]]
             writer.writerow(row)
         return response
