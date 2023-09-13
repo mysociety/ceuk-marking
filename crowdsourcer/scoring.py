@@ -492,10 +492,12 @@ def calculate_council_totals(scoring):
 def get_scoring_object():
     scoring = {}
 
-    council_gss_map, groups, countries = PublicAuthority.maps()
+    council_gss_map, groups, countries, types, control = PublicAuthority.maps()
     scoring["council_gss_map"] = council_gss_map
     scoring["council_groups"] = groups
     scoring["council_countries"] = countries
+    scoring["council_type"] = types
+    scoring["council_control"] = control
     scoring["councils"] = {}
     for council in PublicAuthority.objects.all():
         scoring["councils"][council.name] = council

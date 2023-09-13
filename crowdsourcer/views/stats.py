@@ -447,6 +447,9 @@ class SectionScoresDataCSVView(BaseScoresView):
         rows.append(
             [
                 "council",
+                "country",
+                "type",
+                "political_control",
                 "section",
                 "raw score",
                 "raw max",
@@ -458,9 +461,15 @@ class SectionScoresDataCSVView(BaseScoresView):
         )
 
         for council, council_score in self.scoring["section_totals"].items():
+            country = self.scoring["council_countries"][council]
+            council_type = self.scoring["council_type"][council]
+            control = self.scoring["council_control"][council]
             for section, scores in council_score.items():
                 row = [
                     council,
+                    country,
+                    council_type,
+                    control,
                     section,
                     scores["raw"],
                     self.scoring["council_maxes"][council]["raw"][section][
@@ -476,7 +485,21 @@ class SectionScoresDataCSVView(BaseScoresView):
 
                 rows.append(row)
             total = self.scoring["council_totals"][council]["weighted_total"]
-            rows.append([council, "Total", "-", "-", "-", "-", "-", f"{total:.2f}"])
+            rows.append(
+                [
+                    council,
+                    country,
+                    council_type,
+                    control,
+                    "Total",
+                    "-",
+                    "-",
+                    "-",
+                    "-",
+                    "-",
+                    f"{total:.2f}",
+                ]
+            )
 
         context["rows"] = rows
 
