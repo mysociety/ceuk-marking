@@ -198,6 +198,14 @@ https://data.barbour-abi.com/smart-map/repd/desnz/?type=heat_network""",
                     "-2%": -0.5,
                     "-6%": -1.5,
                 },
+                "MTD": {
+                    "-2%": -0.5,
+                    "-6%": -1.5,
+                },
+                "LBO": {
+                    "-2%": -0.5,
+                    "-6%": -1.5,
+                },
                 "CTY": {
                     "-2%": -0.5,
                     "-6%": -1.5,
@@ -238,6 +246,14 @@ https://data.barbour-abi.com/smart-map/repd/desnz/?type=heat_network""",
                     "-2%": -0.5,
                     "-4%": -1,
                 },
+                "MTD": {
+                    "-2%": -0.5,
+                    "-4%": -1,
+                },
+                "LBO": {
+                    "-2%": -0.5,
+                    "-4%": -1,
+                },
                 "CTY": {
                     "-2%": -0.5,
                     "-4%": -1,
@@ -261,6 +277,18 @@ https://data.barbour-abi.com/smart-map/repd/desnz/?type=heat_network""",
             "type": "multi_select",
             "points_map": {
                 "UTA": {
+                    "-": 0,
+                    "-0.05": -1.25,
+                    "-0.15": -3.75,
+                    "-0.2": -5,
+                },
+                "LBO": {
+                    "-": 0,
+                    "-0.05": -1.25,
+                    "-0.15": -3.75,
+                    "-0.2": -5,
+                },
+                "MTD": {
                     "-": 0,
                     "-0.05": -1.25,
                     "-0.15": -3.75,
