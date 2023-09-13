@@ -619,6 +619,24 @@ https://data.barbour-abi.com/smart-map/repd/desnz/?type=heat_network""",
                 },
             },
         },
+        {
+            "sheet": "Collab & Engagement Q11",
+            "section": "Collaboration & Engagement (CA)",
+            "number": 9,
+            "header_row": 1,
+            "council_col": "Council",
+            "score_col": "Unweighted Points",
+            "evidence": "Evidence link",
+            "type": "select_one",
+            "default_if_missing": 0,
+            "options": [
+                {"desc": "None", "score": 0},
+                {
+                    "desc": "Passed a fossil advertising motion or amended existing policy",
+                    "score": 1,
+                },
+            ],
+        },
     ]
 
     def add_arguments(self, parser):
