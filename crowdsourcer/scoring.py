@@ -114,8 +114,11 @@ def number_and_part(number=None, number_part=None):
     return f"{number}"
 
 
-def weighting_to_points(weighting="low"):
+def weighting_to_points(weighting="low", max_points=0):
     weighting = weighting.lower()
+    if weighting == "unweighted" and max_points != 0:
+        return max_points
+
     points = 1
     if weighting == "medium":
         points = 2
@@ -304,9 +307,10 @@ def get_blank_section_scores():
 
 
 def get_weighted_question_score(score, max_score, weighting):
-    percentage = score / max_score
     if weighting == "unweighted":
-        return percentage
+        return score
+
+    percentage = score / max_score
 
     return percentage * weighting_to_points(weighting)
 

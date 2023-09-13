@@ -520,7 +520,9 @@ class QuestionScoresCSV(UserPassesTestMixin, ListView):
                     "how_marked": option.question.how_marked,
                     "type": option.question.question_type,
                     "raw_max": max_score,
-                    "weighted_max": weighting_to_points(option.question.weighting),
+                    "weighted_max": weighting_to_points(
+                        option.question.weighting, max_score
+                    ),
                     "options": [],
                 }
             q["options"].append(option_text)

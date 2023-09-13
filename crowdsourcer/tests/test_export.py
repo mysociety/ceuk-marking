@@ -479,7 +479,7 @@ class ExportWithMarksTestCase(BaseCommandTestCase):
         self.call_command("export_marks")
 
         expected_percent = deepcopy(self.expected_percent)
-        expected_percent[0]["weighted_total"] = 0.023333333333333334
+        expected_percent[0]["weighted_total"] = 0.03333333333333333
 
         percent, raw, linear = write_mock.call_args[0]
         self.assertEquals(raw, self.expected_raw)
