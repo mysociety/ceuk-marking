@@ -462,17 +462,18 @@ def calculate_council_totals(scoring):
                     scoring["weighted_scores"][council][section]
                     / council_weighted_max[section][council_group]
                 ) * SECTION_WEIGHTINGS[section][council_group]
+                weighted_score = round(weighted_score, 2)
 
                 unweighted_percentage = (
                     scoring["weighted_scores"][council][section]
-                    / council_weighted_max[section][council_group],
+                    / council_weighted_max[section][council_group]
                 )
 
             section_totals[council][section] = {
                 "raw": score,
-                "raw_percent": percentage_score,
-                "raw_weighted": scoring["weighted_scores"][council][section],
-                "unweighted_percentage": unweighted_percentage,
+                "raw_percent": round(percentage_score, 2),
+                "raw_weighted": round(scoring["weighted_scores"][council][section], 2),
+                "unweighted_percentage": round(unweighted_percentage, 2),
                 "weighted": weighted_score,
             }
 
@@ -480,8 +481,8 @@ def calculate_council_totals(scoring):
 
         totals[council] = {
             "raw_total": total,
-            "percent_total": total / scoring["group_maxes"][council_group],
-            "weighted_total": weighted_total,
+            "percent_total": round(total / scoring["group_maxes"][council_group], 2),
+            "weighted_total": round(weighted_total, 2),
         }
 
     scoring["council_totals"] = totals

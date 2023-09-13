@@ -346,34 +346,34 @@ class ExportWithMarksTestCase(BaseCommandTestCase):
             "Biodiversity": 0.0,
             "Collaboration & Engagement": 0.0,
             "Waste Reduction & Food": 0.0,
-            "raw_total": 0.08571428571428572,
-            "weighted_total": 0.02916666666666667,
+            "raw_total": 0.09,
+            "weighted_total": 0.03,
         },
         {
             "council": "Aberdeenshire Council",
             "gss": "S12000034",
             "Buildings & Heating": 0.0,
-            "Transport": 0.2857142857142857,
+            "Transport": 0.29,
             "Planning & Land Use": 0.0,
             "Governance & Finance": 0.0,
             "Biodiversity": 0.0,
             "Collaboration & Engagement": 0.0,
             "Waste Reduction & Food": 0.0,
-            "raw_total": 0.05714285714285714,
-            "weighted_total": 0.11666666666666668,
+            "raw_total": 0.06,
+            "weighted_total": 0.12,
         },
         {
             "council": "Adur District Council",
             "gss": "E07000223",
             "Buildings & Heating": 0.0,
-            "Transport": 0.14285714285714285,
+            "Transport": 0.14,
             "Planning & Land Use": 0.0,
             "Governance & Finance": 0.0,
             "Biodiversity": 0.0,
             "Collaboration & Engagement": 0.0,
             "Waste Reduction & Food": 0.0,
-            "raw_total": 0.029411764705882353,
-            "weighted_total": 0.004166666666666667,
+            "raw_total": 0.03,
+            "weighted_total": 0.00,
         },
     ]
 
@@ -479,7 +479,7 @@ class ExportWithMarksTestCase(BaseCommandTestCase):
         self.call_command("export_marks")
 
         expected_percent = deepcopy(self.expected_percent)
-        expected_percent[0]["weighted_total"] = 0.03333333333333333
+        expected_percent[0]["weighted_total"] = 0.03
 
         percent, raw, linear = write_mock.call_args[0]
         self.assertEquals(raw, self.expected_raw)
@@ -516,7 +516,7 @@ class ExportWithMarksTestCase(BaseCommandTestCase):
 
         expected_percent = deepcopy(self.expected_percent)
         expected_percent[1]["Transport"] = 1.0
-        expected_percent[1]["raw_total"] = 0.02857142857142857
+        expected_percent[1]["raw_total"] = 0.03
         expected_percent[1]["weighted_total"] = 0.2
 
         percent, raw, linear = write_mock.call_args[0]
@@ -564,7 +564,7 @@ class ExportWithMarksTestCase(BaseCommandTestCase):
         expected_percent = deepcopy(self.expected_percent)
         expected_percent[0]["raw_total"] = 0.1
         expected_percent[1]["Transport"] = 0.5
-        expected_percent[1]["raw_total"] = 0.033333333333333333
+        expected_percent[1]["raw_total"] = 0.03
         expected_percent[1]["weighted_total"] = 0.1
         expected_percent[2]["Transport"] = 0
         expected_percent[2]["raw_total"] = 0.0
@@ -591,7 +591,7 @@ class ExportWithMarksTestCase(BaseCommandTestCase):
         expected_raw[1]["total"] = 2
 
         expected_percent[1]["Transport"] = 1.0
-        expected_percent[1]["raw_total"] = 0.06666666666666667
+        expected_percent[1]["raw_total"] = 0.07
         expected_percent[1]["weighted_total"] = 0.2
 
         self.call_command("export_marks")
@@ -630,7 +630,7 @@ class ExportWithMarksTestCase(BaseCommandTestCase):
 
         expected_percent = deepcopy(self.expected_percent)
         expected_percent[1]["Transport"] = 1.0
-        expected_percent[1]["raw_total"] = 0.02857142857142857
+        expected_percent[1]["raw_total"] = 0.03
         expected_percent[1]["weighted_total"] = 0.2
 
         percent, raw, linear = write_mock.call_args[0]
@@ -667,8 +667,8 @@ class ExportWithMarksTestCase(BaseCommandTestCase):
         expected_raw[1]["total"] = 1
 
         expected_percent = deepcopy(self.expected_percent)
-        expected_percent[1]["Transport"] = 0.14285714285714285
-        expected_percent[1]["raw_total"] = 0.02857142857142857
+        expected_percent[1]["Transport"] = 0.14
+        expected_percent[1]["raw_total"] = 0.03
         expected_percent[1]["weighted_total"] = 0.1
 
         percent, raw, linear = write_mock.call_args[0]
@@ -790,34 +790,34 @@ class ExportWithMultiMarksTestCase(BaseCommandTestCase):
                 "Biodiversity": 0.0,
                 "Collaboration & Engagement": 0.0,
                 "Waste Reduction & Food": 0.0,
-                "raw_total": 0.08571428571428572,
-                "weighted_total": 0.02916666666666667,
+                "raw_total": 0.09,
+                "weighted_total": 0.03,
             },
             {
                 "council": "Aberdeenshire Council",
                 "gss": "S12000034",
                 "Buildings & Heating": 0.0,
-                "Transport": 0.2857142857142857,
+                "Transport": 0.29,
                 "Planning & Land Use": 0.0,
                 "Governance & Finance": 0.0,
                 "Biodiversity": 0.0,
                 "Collaboration & Engagement": 0.0,
                 "Waste Reduction & Food": 0.0,
-                "raw_total": 0.05714285714285714,
-                "weighted_total": 0.11666666666666668,
+                "raw_total": 0.06,
+                "weighted_total": 0.12,
             },
             {
                 "council": "Adur District Council",
                 "gss": "E07000223",
                 "Buildings & Heating": 0.0,
-                "Transport": 0.42857142857142855,
+                "Transport": 0.43,
                 "Planning & Land Use": 0.0,
                 "Governance & Finance": 0.0,
                 "Biodiversity": 0.0,
                 "Collaboration & Engagement": 0.0,
                 "Waste Reduction & Food": 0.0,
-                "raw_total": 0.08823529411764706,
-                "weighted_total": 0.03333333333333333,
+                "raw_total": 0.09,
+                "weighted_total": 0.03,
             },
         ]
 
@@ -892,34 +892,34 @@ class ExportWithMoreMarksTestCase(BaseCommandTestCase):
                 "Biodiversity": 0.0,
                 "Collaboration & Engagement": 0.0,
                 "Waste Reduction & Food": 0.0,
-                "raw_total": 0.08571428571428572,
-                "weighted_total": 0.02916666666666667,
+                "raw_total": 0.09,
+                "weighted_total": 0.03,
             },
             {
                 "council": "Aberdeenshire Council",
                 "gss": "S12000034",
-                "Buildings & Heating": 0.6666666666666666,
+                "Buildings & Heating": 0.67,
                 "Transport": 1.0,
                 "Planning & Land Use": 1.0,
-                "Governance & Finance": 0.6666666666666666,
+                "Governance & Finance": 0.67,
                 "Biodiversity": 0.0,
                 "Collaboration & Engagement": 0.2,
                 "Waste Reduction & Food": 0.75,
-                "raw_total": 0.6857142857142857,
-                "weighted_total": 0.6025,
+                "raw_total": 0.69,
+                "weighted_total": 0.61,
             },
             {
                 "council": "Adur District Council",
                 "gss": "E07000223",
                 "Buildings & Heating": 0.0,
-                "Transport": 0.42857142857142855,
+                "Transport": 0.43,
                 "Planning & Land Use": 0.0,
                 "Governance & Finance": 0.0,
                 "Biodiversity": 0.0,
                 "Collaboration & Engagement": 0.0,
                 "Waste Reduction & Food": 0.0,
-                "raw_total": 0.08823529411764706,
-                "weighted_total": 0.03333333333333333,
+                "raw_total": 0.09,
+                "weighted_total": 0.03,
             },
         ]
 
@@ -1218,45 +1218,45 @@ class ExportWithMoreMarksCATestCase(BaseCommandTestCase):
             "Biodiversity": 0.0,
             "Collaboration & Engagement": 0.0,
             "Waste Reduction & Food": 0.0,
-            "raw_total": 0.08571428571428572,
-            "weighted_total": 0.02916666666666667,
+            "raw_total": 0.09,
+            "weighted_total": 0.03,
         },
         {
             "council": "Aberdeenshire Council",
             "gss": "S12000034",
-            "Buildings & Heating": 0.6666666666666666,
+            "Buildings & Heating": 0.67,
             "Transport": 1.0,
             "Planning & Land Use": 1.0,
-            "Governance & Finance": 0.6666666666666666,
+            "Governance & Finance": 0.67,
             "Biodiversity": 0.0,
             "Collaboration & Engagement": 0.2,
             "Waste Reduction & Food": 0.75,
-            "raw_total": 0.6857142857142857,
-            "weighted_total": 0.6025,
+            "raw_total": 0.69,
+            "weighted_total": 0.61,
         },
         {
             "council": "Adur District Council",
             "gss": "E07000223",
             "Buildings & Heating": 0.0,
-            "Transport": 0.42857142857142855,
+            "Transport": 0.43,
             "Planning & Land Use": 0.0,
             "Governance & Finance": 0.0,
             "Biodiversity": 0.0,
             "Collaboration & Engagement": 0.0,
             "Waste Reduction & Food": 0.0,
-            "raw_total": 0.08823529411764706,
-            "weighted_total": 0.03333333333333333,
+            "raw_total": 0.09,
+            "weighted_total": 0.03,
         },
         {
-            "Buildings & Heating & Green Skills (CA)": 0.3333333333333333,
+            "Buildings & Heating & Green Skills (CA)": 0.33,
             "Transport (CA)": 0.0,
             "Planning & Biodiversity (CA)": 1.0,
             "Governance & Finance (CA)": 1.0,
             "Collaboration & Engagement (CA)": 1.0,
             "council": "A Combined Authority",
             "gss": "S12000099",
-            "raw_total": 0.5714285714285714,
-            "weighted_total": 0.5833333333333334,
+            "raw_total": 0.57,
+            "weighted_total": 0.58,
         },
     ]
 
