@@ -96,6 +96,9 @@ EXCEPTIONS = {
             "northern ireland": ["8"],
         },
     },
+    "Waste Reduction & Food": {
+        "CTY": ["1b"],
+    },
 }
 
 SCORE_EXCEPTIONS = {
