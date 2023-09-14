@@ -110,6 +110,13 @@ SCORE_EXCEPTIONS = {
     }
 }
 
+NEW_COUNCILS = [
+    "Northumberland County Council",
+    "Westmorland and Furness Council",
+    "North Yorkshire Council",
+    "Somerset Council",
+]
+
 
 def number_and_part(number=None, number_part=None):
     if number_part is not None:
@@ -358,6 +365,10 @@ def get_section_scores(scoring):
             # skip qs in sections that are not for that council
             if weighted[score["authority__name"]].get(section.title, None) is None:
                 continue
+
+            if score["authority__name"] in NEW_COUNCILS:
+                score["score"] = 0
+                score["points"] = 0
 
             q = number_and_part(
                 score["question__number"], score["question__number_part"]
