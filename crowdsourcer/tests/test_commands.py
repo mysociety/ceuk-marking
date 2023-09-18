@@ -142,3 +142,88 @@ class RemoveIdenticalDuplicatesTestCase(BaseCommandTestCase):
 
         for pk in [16, 19, 25]:
             self.assertFalse(Response.objects.filter(pk=pk).exists())
+
+
+class UpdateExMultiOptionQs(BaseCommandTestCase):
+    fixtures = [
+        "authorities.json",
+        "basics.json",
+        "users.json",
+        "questions.json",
+        "options.json",
+        "assignments.json",
+        "audit_responses.json",
+        "audit_ex_multi_option_responses.json",
+    ]
+
+    def test_nocommit(self):
+        option_count = Response.objects.filter(option__isnull=False).count()
+        self.assertEquals(option_count, 7)
+        multi_option_count = Response.objects.filter(multi_option__isnull=False).count()
+        self.assertEquals(multi_option_count, 5)
+
+        self.call_command("update_ex_multi_option_qs")
+
+        option_count = Response.objects.filter(option__isnull=False).count()
+        self.assertEquals(option_count, 7)
+        multi_option_count = Response.objects.filter(multi_option__isnull=False).count()
+        self.assertEquals(multi_option_count, 5)
+
+    def test_deduplicate(self):
+        option_count = Response.objects.filter(option__isnull=False).count()
+        self.assertEquals(option_count, 7)
+        multi_option_count = Response.objects.filter(multi_option__isnull=False).count()
+        self.assertEquals(multi_option_count, 5)
+
+        r = Response.objects.get(id=16)
+        self.assertEquals(r.option_id, None)
+        self.assertEquals(r.multi_option.count(), 1)
+
+        r = Response.objects.get(id=17)
+        self.assertEquals(r.option_id, None)
+        self.assertEquals(r.multi_option.count(), 2)
+
+        r = Response.objects.get(id=18)
+        self.assertEquals(r.option_id, None)
+        self.assertEquals(r.multi_option.count(), 1)
+
+        r = Response.objects.get(id=19)
+        self.assertEquals(r.option_id, 161)
+        self.assertEquals(r.multi_option.count(), 1)
+
+        out = self.call_command("update_ex_multi_option_qs", commit=True)
+
+        option_count = Response.objects.filter(option__isnull=False).count()
+        self.assertEquals(option_count, 9)
+        multi_option_count = Response.objects.filter(multi_option__isnull=False).count()
+        self.assertEquals(multi_option_count, 3)
+
+        r = Response.objects.get(id=16)
+        self.assertEquals(r.option_id, 161)
+        self.assertEquals(r.multi_option.count(), 0)
+
+        r = Response.objects.get(id=17)
+        self.assertEquals(r.option_id, None)
+        self.assertEquals(r.multi_option.count(), 2)
+
+        r = Response.objects.get(id=18)
+        self.assertEquals(r.option_id, 162)
+        self.assertEquals(r.multi_option.count(), 0)
+
+        r = Response.objects.get(id=19)
+        self.assertEquals(r.option_id, 161)
+        self.assertEquals(r.multi_option.count(), 1)
+
+        YELLOW = "\033[33m"
+        GREEN = "\033[32m"
+        NOBOLD = "\033[0m"
+
+        self.assertEquals(
+            out,
+            f"""examining 4 responses
+{YELLOW}multiple response 17, Aberdeenshire Council Buildings & Heating 9{NOBOLD}
+{YELLOW}existing response 19, Adur District Council Buildings & Heating 9{NOBOLD}
+updated 2 items for Buildings & Heating: 9
+{GREEN}done{NOBOLD}
+""",
+        )
