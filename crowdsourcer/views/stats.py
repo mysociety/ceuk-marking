@@ -264,10 +264,7 @@ class QuestionDataCSVView(UserPassesTestMixin, ListView):
         score = 0
         answer = ""
 
-        if response.question.question_type == "negative":
-            answer = response.option.description
-            score = response.points
-        elif response.multi_count > 0:
+        if response.multi_count > 0:
             descs = []
             for opt in response.multi_option.all():
                 descs.append(opt.description)
@@ -278,6 +275,9 @@ class QuestionDataCSVView(UserPassesTestMixin, ListView):
             answer = response.option.description
         else:
             score = "-"
+
+        if response.question.question_type == "negative":
+            score = response.points
 
         data = [
             response.authority.name,
