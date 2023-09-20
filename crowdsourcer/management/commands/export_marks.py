@@ -3,7 +3,7 @@ from django.core.management.base import BaseCommand
 
 import pandas as pd
 
-from crowdsourcer.scoring import get_scoring_object
+from crowdsourcer.scoring import get_all_question_data, get_scoring_object
 
 
 class Command(BaseCommand):
@@ -14,13 +14,18 @@ class Command(BaseCommand):
         settings.BASE_DIR / "data" / "raw_council_section_marks.csv"
     )
     total_scores_file = settings.BASE_DIR / "data" / "all_section_scores.csv"
+    question_scores_file = settings.BASE_DIR / "data" / "individual_answers.csv"
 
     def add_arguments(self, parser):
         parser.add_argument(
             "-q", "--quiet", action="store_true", help="Silence progress bars."
         )
 
-    def write_files(self, percent_marks, raw_marks, linear):
+        parser.add_argument(
+            "--output_answers", action="store_true", help="Output the all answers file"
+        )
+
+    def write_files(self, percent_marks, raw_marks, linear, answers=None):
         df = pd.DataFrame.from_records(percent_marks, index="council")
         df.to_csv(self.total_scores_file)
 
@@ -34,7 +39,13 @@ class Command(BaseCommand):
         )
         df.to_csv(self.section_scores_file)
 
-    def handle(self, quiet: bool = False, *args, **options):
+        if answers is not None:
+            df = pd.DataFrame.from_records(answers)
+            df.to_csv(self.question_scores_file)
+
+    def handle(
+        self, quiet: bool = False, output_answers: bool = False, *args, **options
+    ):
         raw = []
         percent = []
         linear = []
@@ -73,4 +84,11 @@ class Command(BaseCommand):
             raw.append(row)
             percent.append(p)
 
-        self.write_files(percent, raw, linear)
+        answer_data = None
+        if output_answers:
+            answer_data = get_all_question_data(scoring)
+
+        if output_answers:
+            self.write_files(percent, raw, linear, answer_data)
+        else:
+            self.write_files(percent, raw, linear)

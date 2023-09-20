@@ -596,3 +596,113 @@ def get_exact_duplicates(duplicates, response_type="Audit"):
                 dupes.append(responses[1:])
 
     return dupes
+
+
+def get_response_data(response, include_private=False, include_name=True):
+    score = 0
+    answer = ""
+
+    if response.multi_count > 0:
+        descs = []
+        for opt in response.multi_option.all():
+            descs.append(opt.description)
+            score += opt.score
+        answer = ",".join(descs)
+    elif response.option is not None:
+        score = response.option.score
+        answer = response.option.description
+    else:
+        score = "-"
+
+    if response.question.question_type == "negative":
+        score = response.points
+
+    if include_name:
+        data = [response.authority.name]
+    else:
+        data = []
+    data += [
+        answer,
+        score,
+        response.public_notes,
+        response.page_number,
+        response.evidence,
+    ]
+
+    if include_private:
+        data.append(response.private_notes)
+
+    return data
+
+
+def get_all_question_data(scoring, response_type="Audit"):
+    rt = ResponseType.objects.get(type=response_type)
+    responses = (
+        Response.objects.filter(response_type=rt)
+        .annotate(multi_count=Count("multi_option__pk"))
+        .order_by(
+            "authority__name",
+            "question__section__title",
+            "question__number",
+            "question__number_part",
+        )
+        .select_related("question", "question__section", "authority")
+    )
+
+    answers = [
+        [
+            "council name",
+            "local-authority-type-code",
+            "local-authority-gss-code",
+            "section",
+            "question-number",
+            "question-weighting",
+            "max_score",
+            "answer",
+            "score",
+            "evidence",
+            "page_number",
+            "public_notes",
+            "weighted_score",
+            "max_weighted_score",
+            "negatively_marked",
+        ]
+    ]
+    for response in responses:
+        q_data = get_response_data(response, include_name=False)
+
+        section = response.question.section.title
+        q_number = response.question.number_and_part
+        max_score = scoring["q_maxes"][section][q_number]
+
+        data = [
+            response.authority.name,
+            response.authority.type,
+            response.authority.unique_id,
+            response.question.section.title,
+            response.question.number_and_part,
+            response.question.weighting,
+            max_score,
+            *q_data,
+        ]
+
+        if response.question.question_type != "negative":
+            negative = "No"
+            max_weighted = scoring["q_section_weighted_maxes"][section][q_number]
+            if q_data[1] == "-":
+                weighted_score = ("-",)
+            else:
+                weighted_score = get_weighted_question_score(
+                    q_data[1], max_score, response.question.weighting
+                )
+                weighted_score = round(weighted_score, 2)
+        else:
+            negative = "Yes"
+            max_weighted = 0
+            weighted_score = q_data[1]
+
+        data += [weighted_score, max_weighted, negative]
+
+        answers.append(data)
+
+    return answers
