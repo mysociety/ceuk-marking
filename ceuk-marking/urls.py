@@ -184,6 +184,11 @@ urlpatterns = [
         name="question_data_csv",
     ),
     path(
+        "stats/scores/all_answer_data/",
+        stats.AllAnswerDataView.as_view(),
+        name="all_answers_csv",
+    ),
+    path(
         "stats/scores/question_scores/",
         stats.QuestionScoresCSV.as_view(),
         name="question_scores_csv",

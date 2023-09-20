@@ -11,8 +11,10 @@ from django.views.generic import ListView, TemplateView
 
 from crowdsourcer.models import Option, PublicAuthority, Question, Response
 from crowdsourcer.scoring import (
+    get_all_question_data,
     get_duplicate_responses,
     get_exact_duplicates,
+    get_response_data,
     get_scoring_object,
     get_section_maxes,
     weighting_to_points,
@@ -221,9 +223,9 @@ class QuestionDataCSVView(UserPassesTestMixin, ListView):
         "answer",
         "score",
         "public_notes",
-        "private_notes",
         "page_number",
         "evidence",
+        "private_notes",
     ]
 
     def test_func(self):
@@ -261,35 +263,7 @@ class QuestionDataCSVView(UserPassesTestMixin, ListView):
         return [authority, "-", "-", "-", "-", "-", "-"]
 
     def get_response_data(self, response):
-        score = 0
-        answer = ""
-
-        if response.multi_count > 0:
-            descs = []
-            for opt in response.multi_option.all():
-                descs.append(opt.description)
-                score += opt.score
-            answer = ",".join(descs)
-        elif response.option is not None:
-            score = response.option.score
-            answer = response.option.description
-        else:
-            score = "-"
-
-        if response.question.question_type == "negative":
-            score = response.points
-
-        data = [
-            response.authority.name,
-            answer,
-            score,
-            response.public_notes,
-            response.private_notes,
-            response.page_number,
-            response.evidence,
-        ]
-
-        return data
+        return get_response_data(response, include_private=True)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -380,6 +354,18 @@ class BaseScoresView(UserPassesTestMixin, TemplateView):
         for row in context["rows"]:
             writer.writerow(row)
         return response
+
+
+class AllAnswerDataView(BaseScoresView):
+    file_name = "all_answer_data.csv"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        self.get_scores()
+        context["rows"] = get_all_question_data(self.scoring)
+
+        return context
 
 
 class WeightedScoresDataCSVView(BaseScoresView):
