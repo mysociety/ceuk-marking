@@ -3,6 +3,7 @@ from django.core.management.base import BaseCommand
 
 import pandas as pd
 
+from crowdsourcer.models import Question
 from crowdsourcer.scoring import get_all_question_data, get_scoring_object
 
 
@@ -15,6 +16,7 @@ class Command(BaseCommand):
     )
     total_scores_file = settings.BASE_DIR / "data" / "all_section_scores.csv"
     question_scores_file = settings.BASE_DIR / "data" / "individual_answers.csv"
+    questions_file = settings.BASE_DIR / "data" / "questions.csv"
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -25,7 +27,9 @@ class Command(BaseCommand):
             "--output_answers", action="store_true", help="Output the all answers file"
         )
 
-    def write_files(self, percent_marks, raw_marks, linear, answers=None):
+    def write_files(
+        self, percent_marks, raw_marks, linear, answers=None, questions=None
+    ):
         df = pd.DataFrame.from_records(percent_marks, index="council")
         df.to_csv(self.total_scores_file)
 
@@ -42,6 +46,10 @@ class Command(BaseCommand):
         if answers is not None:
             df = pd.DataFrame.from_records(answers)
             df.to_csv(self.question_scores_file)
+
+        if questions is not None:
+            df = pd.DataFrame.from_records(questions)
+            df.to_csv(self.questions_file)
 
     def handle(
         self, quiet: bool = False, output_answers: bool = False, *args, **options
@@ -88,7 +96,45 @@ class Command(BaseCommand):
         if output_answers:
             answer_data = get_all_question_data(scoring)
 
+            questions = (
+                Question.objects.order_by("section__title", "number", "number_part")
+                .select_related("section")
+                .all()
+            )
+
+            question_data = [
+                [
+                    "question_number",
+                    "section",
+                    "description",
+                    "type",
+                    "max_score",
+                    "weighting",
+                    "how_marked",
+                ]
+            ]
+
+            for question in questions:
+                section = question.section.title
+                q_no = question.number_and_part
+
+                max_score = 0
+                if scoring["q_maxes"][section].get(q_no, None) is not None:
+                    max_score = scoring["q_maxes"][section][q_no]
+
+                question_data.append(
+                    [
+                        question.number_and_part,
+                        question.section.title,
+                        question.description,
+                        question.question_type,
+                        max_score,
+                        question.weighting,
+                        question.how_marked,
+                    ]
+                )
+
         if output_answers:
-            self.write_files(percent, raw, linear, answer_data)
+            self.write_files(percent, raw, linear, answer_data, question_data)
         else:
             self.write_files(percent, raw, linear)
