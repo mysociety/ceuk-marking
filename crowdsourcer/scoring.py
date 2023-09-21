@@ -598,7 +598,9 @@ def get_exact_duplicates(duplicates, response_type="Audit"):
     return dupes
 
 
-def get_response_data(response, include_private=False, include_name=True):
+def get_response_data(
+    response, include_private=False, include_name=True, process_links=False
+):
     score = 0
     answer = ""
 
@@ -617,6 +619,10 @@ def get_response_data(response, include_private=False, include_name=True):
     if response.question.question_type == "negative":
         score = response.points
 
+    links = response.public_notes
+    if process_links:
+        links = "\n".join(response.evidence_links)
+
     if include_name:
         data = [response.authority.name]
     else:
@@ -624,7 +630,7 @@ def get_response_data(response, include_private=False, include_name=True):
     data += [
         answer,
         score,
-        response.public_notes,
+        links,
         response.page_number,
         response.evidence,
     ]
@@ -669,7 +675,7 @@ def get_all_question_data(scoring, response_type="Audit"):
         ]
     ]
     for response in responses:
-        q_data = get_response_data(response, include_name=False)
+        q_data = get_response_data(response, include_name=False, process_links=True)
 
         section = response.question.section.title
         q_number = response.question.number_and_part
