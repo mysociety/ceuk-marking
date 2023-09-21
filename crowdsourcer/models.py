@@ -1,3 +1,5 @@
+import re
+
 from django.contrib.auth.models import User
 from django.db import models
 from django.db.models import Count, OuterRef, Subquery
@@ -249,6 +251,14 @@ class Response(models.Model):
                 "number": self.question.number,
             },
         )
+
+    @property
+    def evidence_links(self):
+        text = self.public_notes
+        if text is None:
+            return []
+        links = re.findall(r"((?:https?://|www\.)[^ ]*)", text)
+        return links
 
     @classmethod
     def null_responses(cls):
