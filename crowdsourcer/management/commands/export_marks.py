@@ -111,6 +111,7 @@ class Command(BaseCommand):
                     "max_score",
                     "weighting",
                     "how_marked",
+                    "criteria",
                 ]
             ]
 
@@ -131,6 +132,7 @@ class Command(BaseCommand):
                         max_score,
                         question.weighting,
                         question.how_marked,
+                        question.criteria,
                     ]
                 )
 
