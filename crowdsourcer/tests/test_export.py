@@ -196,6 +196,7 @@ class ExportNoMarksTestCase(BaseCommandTestCase):
             {
                 "council": "Aberdeen City Council",
                 "gss": "S12000033",
+                "political_control": None,
                 "Buildings & Heating": 0.0,
                 "Transport": 0.0,
                 "Planning & Land Use": 0.0,
@@ -209,6 +210,7 @@ class ExportNoMarksTestCase(BaseCommandTestCase):
             {
                 "council": "Aberdeenshire Council",
                 "gss": "S12000034",
+                "political_control": None,
                 "Buildings & Heating": 0.0,
                 "Transport": 0.0,
                 "Planning & Land Use": 0.0,
@@ -222,6 +224,7 @@ class ExportNoMarksTestCase(BaseCommandTestCase):
             {
                 "council": "Adur District Council",
                 "gss": "E07000223",
+                "political_control": None,
                 "Buildings & Heating": 0.0,
                 "Transport": 0.0,
                 "Planning & Land Use": 0.0,
@@ -339,6 +342,7 @@ class ExportWithMarksTestCase(BaseCommandTestCase):
         {
             "council": "Aberdeen City Council",
             "gss": "S12000033",
+            "political_control": None,
             "Buildings & Heating": 0.25,
             "Transport": 0.0,
             "Planning & Land Use": 0.0,
@@ -352,6 +356,7 @@ class ExportWithMarksTestCase(BaseCommandTestCase):
         {
             "council": "Aberdeenshire Council",
             "gss": "S12000034",
+            "political_control": None,
             "Buildings & Heating": 0.0,
             "Transport": 0.29,
             "Planning & Land Use": 0.0,
@@ -365,6 +370,7 @@ class ExportWithMarksTestCase(BaseCommandTestCase):
         {
             "council": "Adur District Council",
             "gss": "E07000223",
+            "political_control": None,
             "Buildings & Heating": 0.0,
             "Transport": 0.14,
             "Planning & Land Use": 0.0,
@@ -783,6 +789,7 @@ class ExportWithMultiMarksTestCase(BaseCommandTestCase):
             {
                 "council": "Aberdeen City Council",
                 "gss": "S12000033",
+                "political_control": None,
                 "Buildings & Heating": 0.25,
                 "Transport": 0.0,
                 "Planning & Land Use": 0.0,
@@ -796,6 +803,7 @@ class ExportWithMultiMarksTestCase(BaseCommandTestCase):
             {
                 "council": "Aberdeenshire Council",
                 "gss": "S12000034",
+                "political_control": None,
                 "Buildings & Heating": 0.0,
                 "Transport": 0.29,
                 "Planning & Land Use": 0.0,
@@ -809,6 +817,7 @@ class ExportWithMultiMarksTestCase(BaseCommandTestCase):
             {
                 "council": "Adur District Council",
                 "gss": "E07000223",
+                "political_control": None,
                 "Buildings & Heating": 0.0,
                 "Transport": 0.43,
                 "Planning & Land Use": 0.0,
@@ -885,6 +894,7 @@ class ExportWithMoreMarksTestCase(BaseCommandTestCase):
             {
                 "council": "Aberdeen City Council",
                 "gss": "S12000033",
+                "political_control": None,
                 "Buildings & Heating": 0.25,
                 "Transport": 0.0,
                 "Planning & Land Use": 0.0,
@@ -898,6 +908,7 @@ class ExportWithMoreMarksTestCase(BaseCommandTestCase):
             {
                 "council": "Aberdeenshire Council",
                 "gss": "S12000034",
+                "political_control": None,
                 "Buildings & Heating": 0.67,
                 "Transport": 1.0,
                 "Planning & Land Use": 1.0,
@@ -911,6 +922,7 @@ class ExportWithMoreMarksTestCase(BaseCommandTestCase):
             {
                 "council": "Adur District Council",
                 "gss": "E07000223",
+                "political_control": None,
                 "Buildings & Heating": 0.0,
                 "Transport": 0.43,
                 "Planning & Land Use": 0.0,
@@ -1042,6 +1054,7 @@ class ExportNoMarksCATestCase(BaseCommandTestCase):
             {
                 "council": "Aberdeen City Council",
                 "gss": "S12000033",
+                "political_control": None,
                 "Buildings & Heating": 0.0,
                 "Transport": 0.0,
                 "Planning & Land Use": 0.0,
@@ -1055,6 +1068,7 @@ class ExportNoMarksCATestCase(BaseCommandTestCase):
             {
                 "council": "Aberdeenshire Council",
                 "gss": "S12000034",
+                "political_control": None,
                 "Buildings & Heating": 0.0,
                 "Transport": 0.0,
                 "Planning & Land Use": 0.0,
@@ -1068,6 +1082,7 @@ class ExportNoMarksCATestCase(BaseCommandTestCase):
             {
                 "council": "Adur District Council",
                 "gss": "E07000223",
+                "political_control": None,
                 "Buildings & Heating": 0.0,
                 "Transport": 0.0,
                 "Planning & Land Use": 0.0,
@@ -1081,6 +1096,7 @@ class ExportNoMarksCATestCase(BaseCommandTestCase):
             {
                 "council": "A Combined Authority",
                 "gss": "S12000099",
+                "political_control": None,
                 "Buildings & Heating & Green Skills (CA)": 0.0,
                 "Transport (CA)": 0.0,
                 "Planning & Biodiversity (CA)": 0.0,
@@ -1211,6 +1227,7 @@ class ExportWithMoreMarksCATestCase(BaseCommandTestCase):
         {
             "council": "Aberdeen City Council",
             "gss": "S12000033",
+            "political_control": None,
             "Buildings & Heating": 0.25,
             "Transport": 0.0,
             "Planning & Land Use": 0.0,
@@ -1224,6 +1241,7 @@ class ExportWithMoreMarksCATestCase(BaseCommandTestCase):
         {
             "council": "Aberdeenshire Council",
             "gss": "S12000034",
+            "political_control": None,
             "Buildings & Heating": 0.67,
             "Transport": 1.0,
             "Planning & Land Use": 1.0,
@@ -1237,6 +1255,7 @@ class ExportWithMoreMarksCATestCase(BaseCommandTestCase):
         {
             "council": "Adur District Council",
             "gss": "E07000223",
+            "political_control": None,
             "Buildings & Heating": 0.0,
             "Transport": 0.43,
             "Planning & Land Use": 0.0,
@@ -1255,6 +1274,7 @@ class ExportWithMoreMarksCATestCase(BaseCommandTestCase):
             "Collaboration & Engagement (CA)": 1.0,
             "council": "A Combined Authority",
             "gss": "S12000099",
+            "political_control": None,
             "raw_total": 0.57,
             "weighted_total": 0.58,
         },
@@ -1347,6 +1367,7 @@ class ExportWithMoreMarksCATestCase(BaseCommandTestCase):
         expected_percent[3] = {
             "council": "A Combined Authority",
             "gss": "S12000099",
+            "political_control": None,
             "Buildings & Heating & Green Skills (CA)": 1.0,
             "Transport (CA)": 1.0,
             "Planning & Biodiversity (CA)": 1.0,

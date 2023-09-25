@@ -62,7 +62,11 @@ class Command(BaseCommand):
 
         for council, council_score in scoring["section_totals"].items():
 
-            p = {"council": council, "gss": scoring["council_gss_map"][council]}
+            p = {
+                "council": council,
+                "gss": scoring["council_gss_map"][council],
+                "political_control": scoring["council_control"][council],
+            }
             raw_sections = {}
             for section, scores in council_score.items():
                 raw_sections[section] = scores["raw"]
