@@ -44,11 +44,15 @@ class Command(BaseCommand):
         df.to_csv(self.section_scores_file)
 
         if answers is not None:
-            df = pd.DataFrame.from_records(answers)
+            df = pd.DataFrame(answers)
+            df = df.rename(columns=df.iloc[0]).drop(df.index[0])
+            df = df.set_index("council name")
             df.to_csv(self.question_scores_file)
 
         if questions is not None:
-            df = pd.DataFrame.from_records(questions)
+            df = pd.DataFrame(questions, index=None)
+            df = df.rename(columns=df.iloc[0]).drop(df.index[0])
+            df = df.set_index("question_number")
             df.to_csv(self.questions_file)
 
     def handle(
