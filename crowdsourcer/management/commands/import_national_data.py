@@ -179,6 +179,7 @@ https://data.barbour-abi.com/smart-map/repd/desnz/?type=heat_network""",
             "score_col": "Award negative points",
             "negative": True,
             "type": "select_one",
+            "evidence_link": "https://policy.friendsoftheearth.uk/insight/which-neighbourhoods-have-worst-air-pollution",
             "options": [
                 {
                     "desc": "None",
@@ -227,6 +228,7 @@ https://data.barbour-abi.com/smart-map/repd/desnz/?type=heat_network""",
             "score_col": "Award negative points",
             "negative": True,
             "type": "select_one",
+            "evidence_link": "https://policy.friendsoftheearth.uk/insight/which-neighbourhoods-have-worst-air-pollution",
             "options": [
                 {
                     "desc": "None",
@@ -626,6 +628,7 @@ https://data.barbour-abi.com/smart-map/repd/desnz/?type=heat_network""",
             "update_points_only": True,
             "skip_clear_existing": False,
             "type": "select_one",
+            "evidence": "Evidence",
             "options": [
                 {
                     "desc": "None",
