@@ -120,6 +120,9 @@ class Command(BaseCommand):
                     "weighting",
                     "how_marked",
                     "criteria",
+                    "topic",
+                    "clarifications",
+                    "groups",
                 ]
             ]
 
@@ -131,6 +134,8 @@ class Command(BaseCommand):
                 if scoring["q_maxes"][section].get(q_no, None) is not None:
                     max_score = scoring["q_maxes"][section][q_no]
 
+                groups = [g.description for g in question.questiongroup.all()]
+
                 question_data.append(
                     [
                         question.number_and_part,
@@ -141,6 +146,9 @@ class Command(BaseCommand):
                         question.weighting,
                         question.how_marked,
                         question.criteria,
+                        question.topic,
+                        question.clarifications,
+                        ",".join(groups),
                     ]
                 )
 
