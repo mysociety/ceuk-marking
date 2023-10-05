@@ -111,7 +111,7 @@ SCORE_EXCEPTIONS = {
 }
 
 NEW_COUNCILS = [
-    "Northumberland County Council",
+    "Cumberland Council",
     "Westmorland and Furness Council",
     "North Yorkshire Council",
     "Somerset Council",
