@@ -27,6 +27,10 @@ class StatusPage(TemplateView):
     template_name = "crowdsourcer/status.html"
 
 
+class PrivacyPolicyView(TemplateView):
+    template_name = "crowdsourcer/privacy.html"
+
+
 class OverviewView(CurrentStageMixin, ListView):
     template_name = "crowdsourcer/assignments.html"
     model = Assigned

@@ -25,6 +25,7 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("accounts/", include("django.contrib.auth.urls")),
     path("status/", marking.StatusPage.as_view()),
+    path("privacy/", marking.PrivacyPolicyView.as_view(), name="privacy_policy"),
     # home page
     path("", marking.OverviewView.as_view(), name="home"),
     # progess screens
