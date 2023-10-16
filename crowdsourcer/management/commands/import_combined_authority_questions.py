@@ -37,7 +37,13 @@ class Command(BaseCommand):
             "-q", "--quiet", action="store_true", help="Silence progress bars."
         )
 
-    def handle(self, quiet: bool = False, *args, **options):
+        parser.add_argument(
+            "--text_only",
+            action="store_true",
+            help="Only update question text, criteria and clarifications",
+        )
+
+    def handle(self, quiet: bool = False, *args, **kwargs):
         group = QuestionGroup.objects.get(description="Combined Authority")
 
         for section in Section.objects.filter(title__contains="(CA)"):
@@ -60,7 +66,10 @@ class Command(BaseCommand):
             df.columns = columns
 
             for index, row in df.iterrows():
-                q_no = row["question_no"]
+                if pd.isna(row["question_no"]):
+                    continue
+
+                q_no = str(row["question_no"])
                 q_part = None
                 if pd.isna(q_no):
                     continue
@@ -73,45 +82,59 @@ class Command(BaseCommand):
 
                 how_marked = "volunteer"
                 question_type = "yes_no"
-                if row["how_marked"] == "FOI":
-                    how_marked = "foi"
-                    question_type = "foi"
-                elif "National Data" in row["how_marked"]:
-                    how_marked = "national_data"
-                    question_type = "national_data"
+                if not kwargs["text_only"]:
+                    if row["how_marked"] == "FOI":
+                        how_marked = "foi"
+                        question_type = "foi"
+                    elif "National Data" in row["how_marked"]:
+                        how_marked = "national_data"
+                        question_type = "national_data"
 
-                if not pd.isna(row["question_type"]):
-                    if row["question_type"] == "Tiered answer":
-                        question_type = "tiered"
-                    elif row["question_type"] == "Tick all that apply":
-                        question_type = "multiple_choice"
-                    elif row["question_type"] in [
-                        "Multiple choice",
-                        "Multiple",
-                        "multiple",
+                    if not pd.isna(row["question_type"]):
+                        if row["question_type"] == "Tiered answer":
+                            question_type = "tiered"
+                        elif row["question_type"] == "Tick all that apply":
+                            question_type = "multiple_choice"
+                        elif row["question_type"] in [
+                            "Multiple choice",
+                            "Multiple",
+                            "multiple",
+                        ]:
+                            question_type = "select_one"
+                        elif row["question_type"] == "Y/N":
+                            pass
+                        else:
+                            print(
+                                f"missing question type: {title}, {row['question_no']} - {row['question_type']}"
+                            )
+                            continue
+
+                defaults = {
+                    "description": row["question"],
+                    "criteria": row["criteria"],
+                    "question_type": question_type,
+                    "how_marked": how_marked,
+                    "clarifications": row["clarifications"],
+                    "topic": row["topic"],
+                }
+
+                if kwargs["text_only"]:
+                    for default in [
+                        "question_type",
+                        "how_marked",
+                        "topic",
                     ]:
-                        question_type = "select_one"
-                    elif row["question_type"] == "Y/N":
-                        pass
-                    else:
-                        print(
-                            f"missing question type: {title}, {row['question_no']} - {row['question_type']}"
-                        )
-                        continue
+                        del defaults[default]
 
                 q, c = Question.objects.update_or_create(
                     number=q_no,
                     number_part=q_part,
                     section=section,
-                    defaults={
-                        "description": row["question"],
-                        "criteria": row["criteria"],
-                        "question_type": question_type,
-                        "how_marked": how_marked,
-                        "clarifications": row["clarifications"],
-                        "topic": row["topic"],
-                    },
+                    defaults=defaults,
                 )
+
+                if kwargs["text_only"]:
+                    continue
 
                 if q.question_type in ["select_one", "tiered", "multiple_choice"]:
                     is_no = False
