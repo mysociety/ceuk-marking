@@ -117,7 +117,9 @@ class Command(BaseCommand):
                     ]:
                         del defaults[default]
 
-                print(row["weighting"])
+                if kwargs["text_only"]:
+                    del defaults["weighting"]
+
                 if kwargs["weighting_only"]:
                     for default in [
                         "description",
