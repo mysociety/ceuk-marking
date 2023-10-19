@@ -343,7 +343,7 @@ class ExportWithMarksTestCase(BaseCommandTestCase):
             "council": "Aberdeen City Council",
             "gss": "S12000033",
             "political_control": None,
-            "Buildings & Heating": 0.25,
+            "Buildings & Heating": 0.15,
             "Transport": 0.0,
             "Planning & Land Use": 0.0,
             "Governance & Finance": 0.0,
@@ -358,7 +358,7 @@ class ExportWithMarksTestCase(BaseCommandTestCase):
             "gss": "S12000034",
             "political_control": None,
             "Buildings & Heating": 0.0,
-            "Transport": 0.29,
+            "Transport": 0.58,
             "Planning & Land Use": 0.0,
             "Governance & Finance": 0.0,
             "Biodiversity": 0.0,
@@ -372,7 +372,7 @@ class ExportWithMarksTestCase(BaseCommandTestCase):
             "gss": "E07000223",
             "political_control": None,
             "Buildings & Heating": 0.0,
-            "Transport": 0.14,
+            "Transport": 0.08,
             "Planning & Land Use": 0.0,
             "Governance & Finance": 0.0,
             "Biodiversity": 0.0,
@@ -485,6 +485,7 @@ class ExportWithMarksTestCase(BaseCommandTestCase):
         self.call_command("export_marks")
 
         expected_percent = deepcopy(self.expected_percent)
+        expected_percent[0]["Buildings & Heating"] = 0.17
         expected_percent[0]["weighted_total"] = 0.03
 
         percent, raw, linear = write_mock.call_args[0]
@@ -673,7 +674,7 @@ class ExportWithMarksTestCase(BaseCommandTestCase):
         expected_raw[1]["total"] = 1
 
         expected_percent = deepcopy(self.expected_percent)
-        expected_percent[1]["Transport"] = 0.14
+        expected_percent[1]["Transport"] = 0.5
         expected_percent[1]["raw_total"] = 0.03
         expected_percent[1]["weighted_total"] = 0.1
 
@@ -790,7 +791,7 @@ class ExportWithMultiMarksTestCase(BaseCommandTestCase):
                 "council": "Aberdeen City Council",
                 "gss": "S12000033",
                 "political_control": None,
-                "Buildings & Heating": 0.25,
+                "Buildings & Heating": 0.15,
                 "Transport": 0.0,
                 "Planning & Land Use": 0.0,
                 "Governance & Finance": 0.0,
@@ -805,7 +806,7 @@ class ExportWithMultiMarksTestCase(BaseCommandTestCase):
                 "gss": "S12000034",
                 "political_control": None,
                 "Buildings & Heating": 0.0,
-                "Transport": 0.29,
+                "Transport": 0.58,
                 "Planning & Land Use": 0.0,
                 "Governance & Finance": 0.0,
                 "Biodiversity": 0.0,
@@ -819,7 +820,7 @@ class ExportWithMultiMarksTestCase(BaseCommandTestCase):
                 "gss": "E07000223",
                 "political_control": None,
                 "Buildings & Heating": 0.0,
-                "Transport": 0.43,
+                "Transport": 0.67,
                 "Planning & Land Use": 0.0,
                 "Governance & Finance": 0.0,
                 "Biodiversity": 0.0,
@@ -895,7 +896,7 @@ class ExportWithMoreMarksTestCase(BaseCommandTestCase):
                 "council": "Aberdeen City Council",
                 "gss": "S12000033",
                 "political_control": None,
-                "Buildings & Heating": 0.25,
+                "Buildings & Heating": 0.15,
                 "Transport": 0.0,
                 "Planning & Land Use": 0.0,
                 "Governance & Finance": 0.0,
@@ -909,13 +910,13 @@ class ExportWithMoreMarksTestCase(BaseCommandTestCase):
                 "council": "Aberdeenshire Council",
                 "gss": "S12000034",
                 "political_control": None,
-                "Buildings & Heating": 0.67,
+                "Buildings & Heating": 0.4,
                 "Transport": 1.0,
                 "Planning & Land Use": 1.0,
                 "Governance & Finance": 0.67,
                 "Biodiversity": 0.0,
-                "Collaboration & Engagement": 0.2,
-                "Waste Reduction & Food": 0.75,
+                "Collaboration & Engagement": 0.07,
+                "Waste Reduction & Food": 0.67,
                 "raw_total": 0.69,
                 "weighted_total": 0.61,
             },
@@ -924,7 +925,7 @@ class ExportWithMoreMarksTestCase(BaseCommandTestCase):
                 "gss": "E07000223",
                 "political_control": None,
                 "Buildings & Heating": 0.0,
-                "Transport": 0.43,
+                "Transport": 0.67,
                 "Planning & Land Use": 0.0,
                 "Governance & Finance": 0.0,
                 "Biodiversity": 0.0,
@@ -1228,7 +1229,7 @@ class ExportWithMoreMarksCATestCase(BaseCommandTestCase):
             "council": "Aberdeen City Council",
             "gss": "S12000033",
             "political_control": None,
-            "Buildings & Heating": 0.25,
+            "Buildings & Heating": 0.15,
             "Transport": 0.0,
             "Planning & Land Use": 0.0,
             "Governance & Finance": 0.0,
@@ -1242,13 +1243,13 @@ class ExportWithMoreMarksCATestCase(BaseCommandTestCase):
             "council": "Aberdeenshire Council",
             "gss": "S12000034",
             "political_control": None,
-            "Buildings & Heating": 0.67,
+            "Buildings & Heating": 0.4,
             "Transport": 1.0,
             "Planning & Land Use": 1.0,
             "Governance & Finance": 0.67,
             "Biodiversity": 0.0,
-            "Collaboration & Engagement": 0.2,
-            "Waste Reduction & Food": 0.75,
+            "Collaboration & Engagement": 0.07,
+            "Waste Reduction & Food": 0.67,
             "raw_total": 0.69,
             "weighted_total": 0.61,
         },
@@ -1257,7 +1258,7 @@ class ExportWithMoreMarksCATestCase(BaseCommandTestCase):
             "gss": "E07000223",
             "political_control": None,
             "Buildings & Heating": 0.0,
-            "Transport": 0.43,
+            "Transport": 0.67,
             "Planning & Land Use": 0.0,
             "Governance & Finance": 0.0,
             "Biodiversity": 0.0,

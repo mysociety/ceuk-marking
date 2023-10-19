@@ -85,7 +85,7 @@ class Command(BaseCommand):
                         ],
                     )
                 )
-                p[section] = scores["raw_percent"]
+                p[section] = scores["unweighted_percentage"]
 
             p["raw_total"] = scoring["council_totals"][council]["percent_total"]
             p["weighted_total"] = scoring["council_totals"][council]["weighted_total"]
