@@ -616,6 +616,17 @@ def get_response_data(
     else:
         score = "-"
 
+    section = response.question.section
+    q = response.question.number_and_part
+    if (
+        SCORE_EXCEPTIONS.get(section.title, None) is not None
+        and SCORE_EXCEPTIONS[section.title].get(q, None) is not None
+    ):
+        if score >= SCORE_EXCEPTIONS[section.title][q]["points_for_max"]:
+            score = SCORE_EXCEPTIONS[section.title][q]["max_score"]
+        else:
+            score = 0
+
     if response.question.question_type == "negative":
         score = response.points
 
