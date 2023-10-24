@@ -97,7 +97,7 @@ class Command(BaseCommand):
 
         mapit_client = mapit.MapIt()
         areas = mapit_client.areas_of_type(
-            ["CTY", "LBO", "NMD", "UTA", "LGD", "CC", "DIS", "MTD"]
+            ["CTY", "LBO", "NMD", "UTA", "LGD", "CC", "DIS", "MTD", "COI"]
         )
 
         political_control = self.get_political_control()
