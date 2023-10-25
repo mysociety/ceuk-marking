@@ -133,12 +133,12 @@ class RemoveIdenticalDuplicatesTestCase(BaseCommandTestCase):
     ]
 
     def test_deduplicate(self):
-        self.assertEquals(Response.objects.count(), 20)
+        self.assertEquals(Response.objects.count(), 21)
         self.call_command("remove_identical_duplicates")
-        self.assertEquals(Response.objects.count(), 20)
+        self.assertEquals(Response.objects.count(), 21)
 
         self.call_command("remove_identical_duplicates", commit=True)
-        self.assertEquals(Response.objects.count(), 17)
+        self.assertEquals(Response.objects.count(), 18)
 
         for pk in [16, 19, 25]:
             self.assertFalse(Response.objects.filter(pk=pk).exists())
@@ -158,20 +158,20 @@ class UpdateExMultiOptionQs(BaseCommandTestCase):
 
     def test_nocommit(self):
         option_count = Response.objects.filter(option__isnull=False).count()
-        self.assertEquals(option_count, 7)
+        self.assertEquals(option_count, 8)
         multi_option_count = Response.objects.filter(multi_option__isnull=False).count()
         self.assertEquals(multi_option_count, 5)
 
         self.call_command("update_ex_multi_option_qs")
 
         option_count = Response.objects.filter(option__isnull=False).count()
-        self.assertEquals(option_count, 7)
+        self.assertEquals(option_count, 8)
         multi_option_count = Response.objects.filter(multi_option__isnull=False).count()
         self.assertEquals(multi_option_count, 5)
 
     def test_deduplicate(self):
         option_count = Response.objects.filter(option__isnull=False).count()
-        self.assertEquals(option_count, 7)
+        self.assertEquals(option_count, 8)
         multi_option_count = Response.objects.filter(multi_option__isnull=False).count()
         self.assertEquals(multi_option_count, 5)
 
@@ -194,7 +194,7 @@ class UpdateExMultiOptionQs(BaseCommandTestCase):
         out = self.call_command("update_ex_multi_option_qs", commit=True)
 
         option_count = Response.objects.filter(option__isnull=False).count()
-        self.assertEquals(option_count, 9)
+        self.assertEquals(option_count, 10)
         multi_option_count = Response.objects.filter(multi_option__isnull=False).count()
         self.assertEquals(multi_option_count, 3)
 

@@ -668,5 +668,35 @@
     "description": "Both of the above or Other",
     "ordering": 1
   }
+},
+{
+  "model": "crowdsourcer.option",
+  "pk": 205,
+  "fields": {
+    "question": 272,
+    "score": 0,
+    "description": "Council does not own or manage any council homes",
+    "ordering": 4
+  }
+},
+{
+  "model": "crowdsourcer.option",
+  "pk": 206,
+  "fields": {
+    "question": 271,
+    "score": 0,
+    "description": "Council does not own or manage any council homes",
+    "ordering": 1
+  }
+},
+{
+  "model": "crowdsourcer.option",
+  "pk": 207,
+  "fields": {
+    "question": 271,
+    "score": 0,
+    "description": "None",
+    "ordering": 3
+  }
 }
 ]

@@ -256,6 +256,21 @@ def q_is_exception(q, section, group, country, council):
     return False
 
 
+def update_with_housing_exceptions():
+    q = Question.objects.get(number=4, section__title="Buildings & Heating")
+    try:
+        o = Option.objects.get(
+            question=q, description="Council does not own or manage any council homes"
+        )
+    except Option.DoesNotExist:
+        return
+
+    exceptions = Response.objects.filter(question=q, option=o)
+
+    for e in exceptions:
+        EXCEPTIONS["Buildings & Heating"][e.authority.name] = ["3", "4"]
+
+
 def get_maxes_for_council(scoring, group, country, council):
     maxes = deepcopy(scoring["section_maxes"])
     weighted_maxes = deepcopy(scoring["section_weighted_maxes"])
@@ -327,6 +342,8 @@ def get_weighted_question_score(score, max_score, weighting):
 
 def get_section_scores(scoring):
     raw_scores, weighted = get_blank_section_scores()
+
+    update_with_housing_exceptions()
 
     for section in Section.objects.all():
         options = (

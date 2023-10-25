@@ -68,7 +68,16 @@ max_totals = {
 }
 
 max_questions = {
-    "Buildings & Heating": {"5": 1, "9": 1, "10": 1, "12": 1, "1": 2, "4": 4, "11": 2},
+    "Buildings & Heating": {
+        "1": 2,
+        "3": 0,
+        "4": 4,
+        "5": 1,
+        "9": 1,
+        "10": 1,
+        "11": 2,
+        "12": 1,
+    },
     "Transport": {"1": 1, "2": 6},
     "Planning & Land Use": {"1": 1, "2": 2},
     "Governance & Finance": {"1a": 1, "1b": 1, "2": 1},
@@ -682,6 +691,42 @@ class ExportWithMarksTestCase(BaseCommandTestCase):
         self.assertEquals(linear, expected_linear)
         self.assertEquals(raw, expected_raw)
         self.assertEquals(percent, expected_percent)
+
+    @mock.patch("crowdsourcer.management.commands.export_marks.Command.write_files")
+    @mock.patch("crowdsourcer.scoring.EXCEPTIONS", {"Buildings & Heating": {}})
+    @mock.patch("crowdsourcer.scoring.SCORE_EXCEPTIONS", {})
+    def test_export_with_housing_exception(self, write_mock):
+        r = Response.objects.get(question_id=271, authority_id=1)
+        r.option_id = 206
+        r.save()
+        r = Response.objects.get(question_id=272, authority_id=1)
+        r.option_id = 205
+        r.save()
+
+        self.call_command("export_marks")
+
+        expected_linear = deepcopy(self.expected_linear)
+
+        expected_linear[0] = (
+            "Aberdeen City Council",
+            "S12000033",
+            "Buildings & Heating",
+            2,
+            8,
+        )
+
+        expected_raw = deepcopy(self.expected_raw)
+        expected_raw[0]["Buildings & Heating"] = 2
+        expected_raw[0]["total"] = 2
+
+        expected_percent = deepcopy(self.expected_percent)
+        expected_percent[0]["raw_total"] = 0.06
+
+        percent, raw, linear = write_mock.call_args[0]
+
+        self.assertEquals(raw, expected_raw)
+        self.assertEquals(percent, expected_percent)
+        self.assertEquals(linear, expected_linear)
 
 
 class ExportWithMarksNegativeQTestCase(BaseCommandTestCase):
