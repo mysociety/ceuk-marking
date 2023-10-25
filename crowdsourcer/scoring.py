@@ -257,15 +257,21 @@ def q_is_exception(q, section, group, country, council):
 
 
 def update_with_housing_exceptions():
-    q = Question.objects.get(number=4, section__title="Buildings & Heating")
+    rt = ResponseType.objects.get(type="Audit")
+    q = Question.objects.get(number=3, section__title="Buildings & Heating")
     try:
         o = Option.objects.get(
-            question=q, description="Council does not own or manage any council homes"
+            question=q,
+            description="Council does not own or manage any council homes",
         )
     except Option.DoesNotExist:
         return
 
-    exceptions = Response.objects.filter(question=q, option=o)
+    exceptions = Response.objects.filter(
+        question=q,
+        option=o,
+        response_type=rt,
+    )
 
     for e in exceptions:
         EXCEPTIONS["Buildings & Heating"][e.authority.name] = ["3", "4"]
