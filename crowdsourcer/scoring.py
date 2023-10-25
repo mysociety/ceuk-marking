@@ -703,10 +703,24 @@ def get_all_question_data(scoring, response_type="Audit"):
         ]
     ]
     for response in responses:
-        q_data = get_response_data(response, include_name=False, process_links=True)
-
         section = response.question.section.title
         q_number = response.question.number_and_part
+        council = response.authority.name
+
+        if response.authority.do_not_mark:
+            continue
+
+        if q_is_exception(
+            q_number,
+            section,
+            scoring["council_groups"][council],
+            scoring["council_countries"][council],
+            scoring["councils"][council],
+        ):
+            continue
+
+        q_data = get_response_data(response, include_name=False, process_links=True)
+
         max_score = scoring["q_maxes"][section][q_number]
 
         data = [
