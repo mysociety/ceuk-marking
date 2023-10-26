@@ -2,7 +2,14 @@ from django.contrib.auth.models import User
 from django.test import TestCase
 from django.urls import reverse
 
-from crowdsourcer.models import Assigned, PublicAuthority, Response, Section
+from crowdsourcer.models import (
+    Assigned,
+    Marker,
+    PublicAuthority,
+    Response,
+    ResponseType,
+    Section,
+)
 
 
 class TestHomePage(TestCase):
@@ -62,6 +69,29 @@ class TestAssignmentView(BaseTestCase):
         self.assertEqual(first["complete"], 0)
         self.assertEqual(second["total"], 2)
         self.assertEqual(second["complete"], 0)
+
+    def test_non_first_mark_assigned_user(self):
+        rt = ResponseType.objects.get(type="Audit")
+        u = User.objects.get(username="marker")
+        m, _ = Marker.objects.get_or_create(user=u)
+        m.response_type = rt
+        m.save()
+
+        response = self.client.get("/")
+        self.assertEqual(response.status_code, 200)
+
+        context = response.context
+        self.assertFalse(context["show_users"])
+
+        self.assertEqual(context["section_link"], "audit_section_authorities")
+        progress = context["progress"]
+
+        self.assertEqual(len(progress), 2)
+
+        first = progress[0]
+        second = progress[1]
+        self.assertEqual(first["assignment"].section.title, "Buildings & Heating")
+        self.assertEqual(second["assignment"].section.title, "Transport")
 
 
 class TestAssignmentCompletionStats(BaseTestCase):

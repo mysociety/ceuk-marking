@@ -39,7 +39,11 @@ class OverviewView(CurrentStageMixin, ListView):
     def dispatch(self, request, *args, **kwargs):
         user = self.request.user
         if hasattr(user, "marker"):
+            url = None
             marker = user.marker
+            # if a user only handles one council then they will have a council assigned
+            # directly in the marker object directly show them the sections page as it
+            # removes a step
             if (
                 marker.response_type.type == "Right of Reply"
                 and marker.authority is not None
@@ -47,11 +51,27 @@ class OverviewView(CurrentStageMixin, ListView):
                 url = reverse(
                     "authority_ror_sections", kwargs={"name": marker.authority.name}
                 )
-                return redirect(url)
+            # some councils have shared back office staff so one person might be doing
+            # the RoR for multiple councils in which case they need to see the assignment
+            # screen
             elif marker.response_type.type == "Right of Reply":
                 if Assigned.objects.filter(user=user).exists():
-                    url = reverse("authority_ror_authorities")
-                    return redirect(url)
+                    count = Assigned.objects.filter(user=user).count()
+                    # however if they only have a single assignment still skip the
+                    # assignments screen
+                    if count == 1:
+                        assignment = Assigned.objects.filter(user=user).first()
+                        url = reverse(
+                            "authority_ror_sections",
+                            kwargs={"name": assignment.authority.name},
+                        )
+                    # if they have nothing assigned then it's fine to show then the blank
+                    # no assignments screen so handle everything else
+                    else:
+                        url = reverse("authority_ror_authorities")
+
+            if url is not None:
+                return redirect(url)
 
         return super().dispatch(request, *args, **kwargs)
 
@@ -76,7 +96,8 @@ class OverviewView(CurrentStageMixin, ListView):
             context["show_login"] = True
             return context
 
-        context["show_users"] = self.request.user.is_superuser
+        user = self.request.user
+        context["show_users"] = user.is_superuser
 
         assignments = (
             context["assignments"]
@@ -130,9 +151,14 @@ class OverviewView(CurrentStageMixin, ListView):
 
             context["progress"] = progress
 
-            if self.current_stage.type == "First Mark":
+            user_stage = self.current_stage.type
+            if hasattr(user, "marker"):
+                if user.marker.response_type:
+                    user_stage = user.marker.response_type.type
+
+            if user_stage == "First Mark":
                 section_link = "section_authorities"
-            elif self.current_stage.type == "Audit":
+            elif user_stage == "Audit":
                 section_link = "audit_section_authorities"
 
             context["page_title"] = "Assignments"

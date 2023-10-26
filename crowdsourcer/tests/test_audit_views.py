@@ -2,7 +2,7 @@ from django.contrib.auth.models import User
 from django.test import TestCase
 from django.urls import reverse
 
-from crowdsourcer.models import Assigned, Question, Response, ResponseType
+from crowdsourcer.models import Assigned, Marker, Question, Response, ResponseType
 
 
 class BaseTestCase(TestCase):
@@ -61,6 +61,55 @@ class TestAssignmentView(BaseTestCase):
         self.assertEqual(first["complete"], 0)
         self.assertEqual(second["total"], 1)
         self.assertEqual(second["complete"], 0)
+
+    def test_non_audit_assigned_user(self):
+        rt = ResponseType.objects.get(type="First Mark")
+        u = User.objects.get(username="marker")
+        m, _ = Marker.objects.get_or_create(user=u)
+        m.response_type = rt
+        m.save()
+
+        self.client.force_login(u)
+        self.user = u
+
+        response = self.client.get("/")
+        self.assertEqual(response.status_code, 200)
+
+        context = response.context
+        assignments = context["progress"]
+
+        self.assertEqual(len(assignments), 2)
+        first = assignments[0]
+
+        self.assertEqual(context["section_link"], "section_authorities")
+        self.assertEqual(first["assignment"].section.title, "Planning & Land Use")
+
+        url = reverse(
+            "authority_question_edit", args=("Aberdeenshire Council", "Transport")
+        )
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        url = reverse("authority_audit", args=("Aberdeenshire Council", "Transport"))
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 403)
+
+        rt = ResponseType.objects.get(type="Audit")
+        m.response_type = rt
+        m.save()
+
+        response = self.client.get("/")
+        self.assertEqual(response.status_code, 200)
+
+        context = response.context
+        self.assertEqual(context["section_link"], "audit_section_authorities")
+
+        rt = ResponseType.objects.get(type="Right of Reply")
+        m.response_type = rt
+        m.save()
+
+        response = self.client.get("/")
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, "/authority_ror_authorities/")
 
 
 class TestSaveView(BaseTestCase):
