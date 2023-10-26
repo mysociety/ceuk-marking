@@ -355,6 +355,7 @@ https://data.barbour-abi.com/smart-map/repd/desnz/?type=heat_network""",
             "council_col": "Council",
             "score_col": "Score",
             "evidence": "Evidence",
+            "default_if_missing": 0,
             "type": "select_one",
             "options": [
                 {"desc": "Criteria not met", "score": 0},
