@@ -85,6 +85,11 @@ class OverviewView(CurrentStageMixin, ListView):
             active=True,
         )
         if user.is_superuser is False:
+            if hasattr(user, "marker"):
+                m = user.marker
+                qs = qs.filter(response_type=m.response_type)
+            else:
+                qs = qs.filter(response_type__type="First Mark")
             qs = qs.filter(user=user)
         else:
             qs = qs.filter(user__is_active=True)
@@ -150,20 +155,20 @@ class OverviewView(CurrentStageMixin, ListView):
                 {"assignment": assignment, "complete": complete, "total": total}
             )
 
-            context["progress"] = progress
+        context["progress"] = progress
 
-            user_stage = self.current_stage.type
-            if hasattr(user, "marker"):
-                if user.marker.response_type:
-                    user_stage = user.marker.response_type.type
+        user_stage = self.current_stage.type
+        if hasattr(user, "marker"):
+            if user.marker.response_type:
+                user_stage = user.marker.response_type.type
 
-            if user_stage == "First Mark":
-                section_link = "section_authorities"
-            elif user_stage == "Audit":
-                section_link = "audit_section_authorities"
+        if user_stage == "First Mark":
+            section_link = "section_authorities"
+        elif user_stage == "Audit":
+            section_link = "audit_section_authorities"
 
-            context["page_title"] = "Assignments"
-            context["section_link"] = section_link
+        context["page_title"] = "Assignments"
+        context["section_link"] = section_link
 
         return context
 

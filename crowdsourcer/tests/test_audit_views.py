@@ -39,6 +39,11 @@ class TestAssignmentView(BaseTestCase):
 
     def test_basics(self):
         u = User.objects.get(username="marker")
+        rt = ResponseType.objects.get(type="Audit")
+        m, _ = Marker.objects.get_or_create(user=u)
+        m.response_type = rt
+        m.save()
+
         self.client.force_login(u)
         self.user = u
 
@@ -82,10 +87,11 @@ class TestAssignmentView(BaseTestCase):
         first = assignments[0]
 
         self.assertEqual(context["section_link"], "section_authorities")
-        self.assertEqual(first["assignment"].section.title, "Planning & Land Use")
+        self.assertEqual(first["assignment"].section.title, "Buildings & Heating")
 
         url = reverse(
-            "authority_question_edit", args=("Aberdeenshire Council", "Transport")
+            "authority_question_edit",
+            args=("Aberdeenshire Council", "Transport"),
         )
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)

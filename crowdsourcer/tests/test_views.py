@@ -86,6 +86,16 @@ class TestAssignmentView(BaseTestCase):
         self.assertEqual(context["section_link"], "audit_section_authorities")
         progress = context["progress"]
 
+        self.assertEqual(len(progress), 0)
+
+        # have to delete to prevent a duplicate assignment
+        Assigned.objects.filter(response_type=rt).delete()
+        Assigned.objects.filter(user=u).update(response_type=rt)
+        response = self.client.get("/")
+        self.assertEqual(response.status_code, 200)
+
+        context = response.context
+        progress = context["progress"]
         self.assertEqual(len(progress), 2)
 
         first = progress[0]
@@ -195,7 +205,7 @@ class TestSaveView(BaseTestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, 403)
 
-        Assigned.objects.create(
+        a = Assigned.objects.create(
             user=self.user,
             section=Section.objects.get(title="Biodiversity"),
             authority=PublicAuthority.objects.get(name="Aberdeenshire Council"),
@@ -203,6 +213,12 @@ class TestSaveView(BaseTestCase):
 
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
+
+        a.active = False
+        a.save()
+
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 403)
 
     def test_save(self):
         url = reverse(

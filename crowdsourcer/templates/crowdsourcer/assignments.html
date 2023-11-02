@@ -11,6 +11,7 @@
             <tr>
               {% if show_users %}
                 <th>Assessor</th>
+                <th>Stage</th>
               {% endif %}
                 <th>Section</th>
                 <th>Progress</th>
@@ -21,6 +22,7 @@
             <tr>
               {% if show_users %}
               <td><a href="{% url "volunteer_progress" assignment.assignment.user.id %}">{{ assignment.assignment.user.username }}</a></td>
+              <td>{{ assignment.assignment.response_type }}</td>
               {% endif %}
                 <td>
                     <a href="{% url section_link assignment.assignment.section.title %}">{{ assignment.assignment.section.title }}</a>
