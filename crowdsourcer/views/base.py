@@ -121,7 +121,6 @@ class BaseSectionAuthorityList(CurrentStageMixin, ListView):
         if not Assigned.is_user_assigned(
             self.request.user,
             section=self.kwargs["section_title"],
-            current_stage=self.current_stage,
         ):
             return None
 
@@ -135,8 +134,9 @@ class BaseSectionAuthorityList(CurrentStageMixin, ListView):
         if not self.request.user.is_superuser:
             assigned = Assigned.objects.filter(
                 user=self.request.user,
+                active=True,
                 section=section,
-                response_type=self.current_stage,
+                response_type=this_stage,
                 authority__isnull=False,
             ).values_list("authority__id", flat=True)
 
