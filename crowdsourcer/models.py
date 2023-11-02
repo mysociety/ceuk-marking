@@ -290,7 +290,7 @@ class Assigned(models.Model):
         if user.is_anonymous:
             return False
 
-        q = cls.objects.filter(user=user)
+        q = cls.objects.filter(user=user, active=True)
 
         if kwargs.get("section", None) is not None:
             q = q.filter(section__title=kwargs["section"])

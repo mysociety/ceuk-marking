@@ -81,7 +81,8 @@ class OverviewView(CurrentStageMixin, ListView):
             return None
 
         qs = Assigned.objects.filter(
-            section__isnull=False, response_type=self.current_stage
+            section__isnull=False,
+            active=True,
         )
         if user.is_superuser is False:
             qs = qs.filter(user=user)
