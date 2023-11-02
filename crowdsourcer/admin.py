@@ -22,7 +22,7 @@ class AssignedAdmin(admin.ModelAdmin):
         "response_type",
     )
     search_fields = ["user__username", "authority__name"]
-    list_filter = ["section", "authority__questiongroup", "response_type"]
+    list_filter = ["section", "authority__questiongroup", "response_type", "active"]
 
 
 @admin.register(Option)
