@@ -150,7 +150,7 @@ class OverviewView(CurrentStageMixin, ListView):
                 args.append(authorities)
 
             response_counts = PublicAuthority.response_counts(
-                *args, question_types=types, response_type=self.current_stage
+                *args, question_types=types, response_type=assignment.response_type
             ).distinct()
 
             total = 0
