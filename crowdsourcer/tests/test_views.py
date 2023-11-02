@@ -83,7 +83,6 @@ class TestAssignmentView(BaseTestCase):
         context = response.context
         self.assertFalse(context["show_users"])
 
-        self.assertEqual(context["section_link"], "audit_section_authorities")
         progress = context["progress"]
 
         self.assertEqual(len(progress), 0)
@@ -101,7 +100,9 @@ class TestAssignmentView(BaseTestCase):
         first = progress[0]
         second = progress[1]
         self.assertEqual(first["assignment"].section.title, "Buildings & Heating")
+        self.assertEqual(first["section_link"], "audit_section_authorities")
         self.assertEqual(second["assignment"].section.title, "Transport")
+        self.assertEqual(second["section_link"], "audit_section_authorities")
 
 
 class TestAssignmentCompletionStats(BaseTestCase):

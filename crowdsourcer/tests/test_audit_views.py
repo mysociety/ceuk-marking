@@ -86,7 +86,7 @@ class TestAssignmentView(BaseTestCase):
         self.assertEqual(len(assignments), 2)
         first = assignments[0]
 
-        self.assertEqual(context["section_link"], "section_authorities")
+        self.assertEqual(first["section_link"], "section_authorities")
         self.assertEqual(first["assignment"].section.title, "Buildings & Heating")
 
         url = reverse(
@@ -107,7 +107,9 @@ class TestAssignmentView(BaseTestCase):
         self.assertEqual(response.status_code, 200)
 
         context = response.context
-        self.assertEqual(context["section_link"], "audit_section_authorities")
+        assignments = context["progress"]
+        first = assignments[0]
+        self.assertEqual(first["section_link"], "audit_section_authorities")
 
         rt = ResponseType.objects.get(type="Right of Reply")
         m.response_type = rt

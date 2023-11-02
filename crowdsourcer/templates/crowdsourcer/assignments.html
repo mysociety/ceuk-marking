@@ -25,7 +25,7 @@
               <td>{{ assignment.assignment.response_type }}</td>
               {% endif %}
                 <td>
-                    <a href="{% url section_link assignment.assignment.section.title %}">{{ assignment.assignment.section.title }}</a>
+                    <a href="{% url assignment.section_link assignment.assignment.section.title %}">{{ assignment.assignment.section.title }}</a>
                 </td>
                 <td>
                     <div class="progress progress-thin mb-2">

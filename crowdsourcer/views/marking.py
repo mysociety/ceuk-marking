@@ -108,16 +108,24 @@ class OverviewView(CurrentStageMixin, ListView):
         assignments = (
             context["assignments"]
             .distinct("user_id", "section_id")
-            .select_related("section")
+            .select_related("section", "response_type")
         )
 
         types = Question.VOLUNTEER_TYPES
         if self.current_stage.type == "Audit":
             types = ["volunteer", "national_volunteer", "foi"]
 
+        first_mark = ResponseType.objects.get(type="First Mark")
+
         progress = []
         question_cache = {}
         for assignment in assignments:
+            assignment_user = assignment.user
+            if hasattr(assignment_user, "marker"):
+                stage = assignment_user.marker.response_type
+            else:
+                stage = first_mark
+
             if question_cache.get(assignment.section_id, None) is not None:
                 question_list = question_cache[assignment.section_id]
             else:
@@ -134,9 +142,10 @@ class OverviewView(CurrentStageMixin, ListView):
             ]
             if assignment.authority_id is not None:
                 authorities = Assigned.objects.filter(
+                    active=True,
                     user=assignment.user_id,
                     section=assignment.section_id,
-                    response_type=self.current_stage,
+                    response_type=stage,
                 ).values_list("authority_id", flat=True)
                 args.append(authorities)
 
@@ -151,24 +160,24 @@ class OverviewView(CurrentStageMixin, ListView):
                 total += 1
                 if count.num_responses == count.num_questions:
                     complete += 1
+
+            if assignment.response_type.type == "First Mark":
+                section_link = "section_authorities"
+            elif assignment.response_type.type == "Audit":
+                section_link = "audit_section_authorities"
+
             progress.append(
-                {"assignment": assignment, "complete": complete, "total": total}
+                {
+                    "assignment": assignment,
+                    "complete": complete,
+                    "total": total,
+                    "section_link": section_link,
+                }
             )
 
         context["progress"] = progress
 
-        user_stage = self.current_stage.type
-        if hasattr(user, "marker"):
-            if user.marker.response_type:
-                user_stage = user.marker.response_type.type
-
-        if user_stage == "First Mark":
-            section_link = "section_authorities"
-        elif user_stage == "Audit":
-            section_link = "audit_section_authorities"
-
         context["page_title"] = "Assignments"
-        context["section_link"] = section_link
 
         return context
 
