@@ -542,6 +542,7 @@ https://data.barbour-abi.com/smart-map/repd/desnz/?type=heat_network""",
             "score_col": "Score",
             "type": "select_one",
             "evidence": "Evidence",
+            "default_if_missing": 0,
             "options": [
                 {"desc": "Criteria not met", "score": 0},
                 {"desc": "Divestment of council's investments", "score": 1},
@@ -591,6 +592,7 @@ https://data.barbour-abi.com/smart-map/repd/desnz/?type=heat_network""",
             "score_col": "Unweighted Question scores",
             "evidence": "Evidence link",
             "type": "select_one",
+            "default_if_missing": 0,
             "options": [
                 {"desc": "Criteria not met", "score": 0},
                 {"desc": "75 journeys per head of population", "score": 1},
@@ -606,6 +608,7 @@ https://data.barbour-abi.com/smart-map/repd/desnz/?type=heat_network""",
             "score_col": "Unweighted Question Scores",
             "evidence": "Evidence link",
             "type": "select_one",
+            "default_if_missing": 0,
             "options": [
                 {"desc": "Criteria not met", "score": 0},
                 {
