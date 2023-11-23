@@ -219,6 +219,7 @@ RORResponseFormset = formset_factory(
 class AuditResponseForm(ModelForm):
     mandatory_if_no = ["private_notes"]
     mandatory_if_response = ["public_notes", "page_number", "evidence", "private_notes"]
+    mandatory_if_national = []
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -268,7 +269,9 @@ class AuditResponseForm(ModelForm):
                 self.add_error(option_field, "This field is required")
 
         else:
-            if str(response) in ["No", "None"]:
+            if self.question_obj.how_marked == "national_data":
+                mandatory = self.mandatory_if_national
+            elif str(response) in ["No", "None"]:
                 mandatory = self.mandatory_if_no
             else:
                 mandatory = self.mandatory_if_response
