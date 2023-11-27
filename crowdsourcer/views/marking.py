@@ -238,6 +238,17 @@ class AuthoritySectionQuestions(BaseQuestionView):
         ):
             raise PermissionDenied
 
+    def get_initial_obj(self):
+        if self.kwargs["name"] == "Isles of Scilly":
+            self.how_marked_in = [
+                "volunteer",
+                "national_volunteer",
+                "foi",
+                "national_data",
+            ]
+
+        return super().get_initial_obj()
+
     def process_form(self, form):
         rt = ResponseType.objects.get(type="First Mark")
         cleaned_data = form.cleaned_data
