@@ -37,3 +37,7 @@ The important models are:
  * Response - Answer for a question
  * Assigned - Volunteer assignments
  * Marker - Extra information about a user
+
+Other important modules are:
+
+ * scoring - contains the code to generate scores
