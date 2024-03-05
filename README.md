@@ -48,6 +48,8 @@ questions and assign them to the relevant councils. The questions data
 should be downloaded as an Excel sheet from the Google sheet populated
 by CEUK.
 
+Details on file strucures can be found in DATA.md
+
 ### Data structure
 
 See the separate ARCHITECTURE.md file for full details on the underlying
@@ -100,7 +102,11 @@ Once the user has been set up they can set a password by visiting the
 django password reset page.
 
 For initial volunteer setup there is an `import_volunteers` management
-command.
+command. This will take a list of volunteers and assign each of them a
+set number of councils in the section they are assigned until the
+councils have run out. If there are more volunteers than assignments
+then some volunteers will not be assigned. The number of councils to
+assign is currently hard coded in the script.
 
 ### Exporting marks
 
