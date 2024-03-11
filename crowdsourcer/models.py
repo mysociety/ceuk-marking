@@ -320,3 +320,9 @@ class Marker(models.Model):
     authority = models.ForeignKey(
         PublicAuthority, blank=True, null=True, on_delete=models.SET_NULL
     )
+
+    class Meta:
+        permissions = [
+            ("can_view_all_responses", "Can view all responses"),
+            ("can_view_stats", "Can view stats"),
+        ]
