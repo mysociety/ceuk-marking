@@ -118,20 +118,22 @@ class BaseSectionAuthorityList(CurrentStageMixin, ListView):
         if self.request.user.is_anonymous:
             return None
 
+        this_stage = ResponseType.objects.get(type=self.stage)
+
         if not Assigned.is_user_assigned(
             self.request.user,
             section=self.kwargs["section_title"],
+            current_stage=this_stage,
         ):
             return None
 
-        this_stage = ResponseType.objects.get(type=self.stage)
         section = Section.objects.get(title=self.kwargs["section_title"])
         questions = Question.objects.filter(section=section, how_marked__in=self.types)
 
         question_list = list(questions.values_list("id", flat=True))
 
         assigned = None
-        if not self.request.user.is_superuser:
+        if not self.request.user.has_perm("crowdsourcer.can_view_all_responses"):
             assigned = Assigned.objects.filter(
                 user=self.request.user,
                 active=True,

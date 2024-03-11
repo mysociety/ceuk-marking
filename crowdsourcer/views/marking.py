@@ -84,7 +84,7 @@ class OverviewView(CurrentStageMixin, ListView):
             section__isnull=False,
             active=True,
         )
-        if user.is_superuser is False:
+        if user.has_perm("crowdsourcer.can_view_all_responses") is False:
             if hasattr(user, "marker"):
                 m = user.marker
                 qs = qs.filter(response_type=m.response_type)
@@ -92,6 +92,10 @@ class OverviewView(CurrentStageMixin, ListView):
                 qs = qs.filter(response_type__type="First Mark")
             qs = qs.filter(user=user)
         else:
+            if hasattr(user, "marker"):
+                m = user.marker
+                qs = qs.filter(response_type=m.response_type)
+
             qs = qs.filter(user__is_active=True)
 
         return qs

@@ -291,6 +291,7 @@ class Assigned(models.Model):
             return False
 
         q = cls.objects.filter(user=user, active=True)
+        q_all_stage = None
 
         if kwargs.get("section", None) is not None:
             q = q.filter(section__title=kwargs["section"])
@@ -299,8 +300,19 @@ class Assigned(models.Model):
             q = q.filter(authority__name=kwargs["authority"])
         if kwargs.get("current_stage", None) is not None:
             q = q.filter(response_type=kwargs["current_stage"])
+            q_all_stage = cls.objects.filter(
+                user=user,
+                active=True,
+                section__isnull=True,
+                authority__isnull=True,
+                response_type=kwargs["current_stage"],
+            )
 
-        return q.exists() or q_section.exists()
+        return (
+            q.exists()
+            or q_section.exists()
+            or (q_all_stage is not None and q_all_stage.exists())
+        )
 
     class Meta:
         verbose_name = "assignment"

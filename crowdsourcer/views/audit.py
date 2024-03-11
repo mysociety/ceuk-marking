@@ -60,7 +60,7 @@ class AuthorityAuditSectionQuestions(BaseQuestionView):
 
         rt = ResponseType.objects.get(type=self.response_type)
         user = self.request.user
-        if user.is_superuser is False:
+        if user.has_perm("crowdsourcer.can_view_all_responses") is False:
             if hasattr(user, "marker"):
                 marker = user.marker
                 if marker.response_type.type == "Audit":
