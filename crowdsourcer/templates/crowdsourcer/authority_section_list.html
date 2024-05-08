@@ -1,5 +1,7 @@
 {% extends 'crowdsourcer/base.html' %}
 
+{% load crowdsourcer_tags %}
+
 {% block content %}
 {% if show_login %}
     <h1 class="mb-4">Sign in</h1>
@@ -17,7 +19,7 @@
           {% for section in sections %}
             <tr>
                 <td>
-                    <a href="{% url 'authority_ror' authority_name section.title %}">{{ section.title }}</a>
+                    <a href="{% session_url 'authority_ror' authority_name section.title %}">{{ section.title }}</a>
                 </td>
                 <td>
                     <div class="progress progress-thin mb-2">

@@ -1,5 +1,7 @@
 {% extends 'crowdsourcer/base.html' %}
 
+{% load crowdsourcer_tags %}
+
 {% block content %}
 {% if show_login %}
     <h1 class="mb-4">Sign in</h1>
@@ -17,7 +19,7 @@
           {% for authority in authorities %}
             <tr>
                 <td>
-                    <a href="{% url 'authority_ror_progress' authority.name %}">{{ authority.name }}{% if authority.do_not_mark %} (DO NOT MARK){% endif %}</a>
+                    <a href="{% session_url 'authority_ror_progress' authority.name %}">{{ authority.name }}{% if authority.do_not_mark %} (DO NOT MARK){% endif %}</a>
                 </td>
                 <td>
                     {% if authority.has_logged_in or authority.multi_has_logged_in %}Yes{% else %}No{% endif %}

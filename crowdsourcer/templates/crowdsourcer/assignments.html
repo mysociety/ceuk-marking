@@ -1,5 +1,7 @@
 {% extends 'crowdsourcer/base.html' %}
 
+{% load crowdsourcer_tags %}
+
 {% block content %}
 {% if show_login %}
     <h1 class="mb-4">Sign in</h1>
@@ -21,11 +23,11 @@
           {% for assignment in progress %}
             <tr>
               {% if show_users %}
-              <td><a href="{% url "volunteer_progress" assignment.assignment.user.id %}">{{ assignment.assignment.user.username }}</a></td>
+              <td><a href="{% session_url "volunteer_progress" assignment.assignment.user.id %}">{{ assignment.assignment.user.username }}</a></td>
               <td>{{ assignment.assignment.response_type }}</td>
               {% endif %}
                 <td>
-                    <a href="{% url assignment.section_link assignment.assignment.section.title %}">{{ assignment.assignment.section.title }}</a>
+                    <a href="{% session_url assignment.section_link assignment.assignment.section.title %}">{{ assignment.assignment.section.title }}</a>
                 </td>
                 <td>
                     <div class="progress progress-thin mb-2">

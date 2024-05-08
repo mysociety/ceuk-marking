@@ -1,5 +1,7 @@
 {% extends 'crowdsourcer/base.html' %}
 
+{% load crowdsourcer_tags %}
+
 {% block content %}
     <h1 class="mb-4">{{ section_title }} authorities</h1>
     <table class="table">
@@ -13,7 +15,7 @@
           {% for authority in authorities %}
             <tr>
                 <td>
-                    <a href="{% url question_page authority.name section_title %}">{{ authority.name }}</a>
+                    <a href="{% session_url question_page authority.name section_title %}">{{ authority.name }}</a>
                 </td>
                 <td>
                     <div class="progress progress-thin mb-2">

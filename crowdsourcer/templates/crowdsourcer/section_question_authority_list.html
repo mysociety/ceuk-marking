@@ -1,7 +1,0 @@
-{% extends 'crowdsourcer/base.html' %}
-
-{% block content %}
-    {% for authority in authorities %}
-    <a href="{% url 'authority_question' authority.name question.section.title question.number %}">{{ authority.name }}</a><br>
-    {% endfor %}
-{% endblock %}

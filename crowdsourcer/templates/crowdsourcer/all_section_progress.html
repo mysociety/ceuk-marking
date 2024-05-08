@@ -1,5 +1,7 @@
 {% extends 'crowdsourcer/base.html' %}
 
+{% load crowdsourcer_tags %}
+
 {% block content %}
 {% if show_login %}
     <h1 class="mb-4">Sign in</h1>
@@ -17,7 +19,7 @@
           {% for section, counts in progress.items %}
             <tr>
                 <td>
-                    <a href="{% url url_pattern section %}">{{ section }}</a>
+                    <a href="{% session_url url_pattern section %}">{{ section }}</a>
                 </td>
                 <td>
                     <div class="progress progress-thin mb-2">

@@ -1,4 +1,4 @@
-{% load static compress %}
+{% load static compress crowdsourcer_tags %}
 <!DOCTYPE html>
 <html lang="en">
     <head>
@@ -26,20 +26,34 @@
                         <li class="nav-item">
                           <div class="dropdown">
                           <button class="btn dropdown-toggle" id="navbarDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            {{ marking_session.label }}
+                          </button>
+                          <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                            {% for session in sessions %}
+                            <li>
+                              <a class="dropdown-item d-flex" href="/{{ session.label }}/">{{ session.label }}</a>
+                            </li>
+                            {% endfor %}
+                          </ul>
+                          </div>
+                        </li>
+                        <li class="nav-item">
+                          <div class="dropdown">
+                          <button class="btn dropdown-toggle" id="navbarDropdown" data-bs-toggle="dropdown" aria-expanded="false">
                             Volunteer progress
                           </button>
                           <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
                             <li>
-                              <a class="dropdown-item d-flex" href="{% url 'authority_assignments' %}">Authorities assigned</a>
+                              <a class="dropdown-item d-flex" href="{% session_url 'authority_assignments' %}">Authorities assigned</a>
                             </li>
                             <li>
-                                <a class="dropdown-item d-flex" href="{% url 'all_authority_progress' %}">Authority Progress</a>
+                                <a class="dropdown-item d-flex" href="{% session_url 'all_authority_progress' %}">Authority Progress</a>
                             </li>
                             <li>
-                                <a class="dropdown-item d-flex" href="{% url 'all_section_progress' %}">Section Progress</a>
+                                <a class="dropdown-item d-flex" href="{% session_url 'all_section_progress' %}">Section Progress</a>
                             </li>
                             <li>
-                                <a class="dropdown-item d-flex" href="{% url 'volunteer_csv_progress' %}">Volunteer CSV</a>
+                                <a class="dropdown-item d-flex" href="{% session_url 'volunteer_csv_progress' %}">Volunteer CSV</a>
                             </li>
                           </ul>
                           </div>
@@ -51,16 +65,16 @@
                           </button>
                           <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
                             <li>
-                                <a class="dropdown-item d-flex" href="{% url 'all_authority_ror_progress' %}">Authority Progress</a>
+                                <a class="dropdown-item d-flex" href="{% session_url 'all_authority_ror_progress' %}">Authority Progress</a>
                             </li>
                             <li>
-                                <a class="dropdown-item d-flex" href="{% url 'authority_login_report' %}">Authority Login Report</a>
+                                <a class="dropdown-item d-flex" href="{% session_url 'authority_login_report' %}">Authority Login Report</a>
                             </li>
                             <li>
-                                <a class="dropdown-item d-flex" href="{% url 'section_ror_progress' %}">Section Progress</a>
+                                <a class="dropdown-item d-flex" href="{% session_url 'section_ror_progress' %}">Section Progress</a>
                             </li>
                             <li>
-                                <a class="dropdown-item d-flex" href="{% url 'authority_contacts_report' %}">Authority Contacts</a>
+                                <a class="dropdown-item d-flex" href="{% session_url 'authority_contacts_report' %}">Authority Contacts</a>
                             </li>
                           </ul>
                           </div>
@@ -72,37 +86,37 @@
                           </button>
                           <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
                             <li>
-                                <a class="dropdown-item d-flex" href="{% url 'all_first_marks_csv' %}">First Mark Scores</a>
+                                <a class="dropdown-item d-flex" href="{% session_url 'all_first_marks_csv' %}">First Mark Scores</a>
                             </li>
                             <li>
-                                <a class="dropdown-item d-flex" href="{% url 'all_ror_marks_csv' %}">Right of Reply Responses</a>
+                                <a class="dropdown-item d-flex" href="{% session_url 'all_ror_marks_csv' %}">Right of Reply Responses</a>
                             </li>
                             <li>
-                                <a class="dropdown-item d-flex" href="{% url 'all_audit_marks_csv' %}">Audit Mark Scores</a>
+                                <a class="dropdown-item d-flex" href="{% session_url 'all_audit_marks_csv' %}">Audit Mark Scores</a>
                             </li>
                             <li>
-                                <a class="dropdown-item d-flex" href="{% url 'council_disagree_mark_csv' %}">Council disagree with positive mark</a>
+                                <a class="dropdown-item d-flex" href="{% session_url 'council_disagree_mark_csv' %}">Council disagree with positive mark</a>
                             </li>
                             <li>
-                                <a class="dropdown-item d-flex" href="{% url 'stats_select_question' %}">Per question data</a>
+                                <a class="dropdown-item d-flex" href="{% session_url 'stats_select_question' %}">Per question data</a>
                             </li>
                             <li>
-                                <a class="dropdown-item d-flex" href="{% url 'bad_responses' %}">Responses with no answer</a>
+                                <a class="dropdown-item d-flex" href="{% session_url 'bad_responses' %}">Responses with no answer</a>
                             </li>
                             <li>
-                                <a class="dropdown-item d-flex" href="{% url 'duplicate_responses' %}">Responses with duplicate answers</a>
+                                <a class="dropdown-item d-flex" href="{% session_url 'duplicate_responses' %}">Responses with duplicate answers</a>
                             </li>
                             <li>
-                                <a class="dropdown-item d-flex" href="{% url 'raw_and_weighted_totals_csv' %}">Raw and weighted scores and totals (CSV)</a>
+                                <a class="dropdown-item d-flex" href="{% session_url 'raw_and_weighted_totals_csv' %}">Raw and weighted scores and totals (CSV)</a>
                             </li>
                             <li>
-                                <a class="dropdown-item d-flex" href="{% url 'weighted_totals_csv' %}">Weighted section totals (CSV)</a>
+                                <a class="dropdown-item d-flex" href="{% session_url 'weighted_totals_csv' %}">Weighted section totals (CSV)</a>
                             </li>
                             <li>
-                                <a class="dropdown-item d-flex" href="{% url 'question_scores_csv' %}">Question scores and answers (CSV)</a>
+                                <a class="dropdown-item d-flex" href="{% session_url 'question_scores_csv' %}">Question scores and answers (CSV)</a>
                             </li>
                             <li>
-                                <a class="dropdown-item d-flex" href="{% url 'all_answers_csv' %}">All answer data (CSV)</a>
+                                <a class="dropdown-item d-flex" href="{% session_url 'all_answers_csv' %}">All answer data (CSV)</a>
                             </li>
                           </ul>
                         </li>
@@ -113,13 +127,13 @@
                           </button>
                           <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
                             <li>
-                              <a class="dropdown-item d-flex" href="{% url 'audit_authority_assignments' %}">Authorities assigned</a>
+                              <a class="dropdown-item d-flex" href="{% session_url 'audit_authority_assignments' %}">Authorities assigned</a>
                             </li>
                             <li>
-                                <a class="dropdown-item d-flex" href="{% url 'audit_all_authority_progress' %}">Authority Progress</a>
+                                <a class="dropdown-item d-flex" href="{% session_url 'audit_all_authority_progress' %}">Authority Progress</a>
                             </li>
                             <li>
-                                <a class="dropdown-item d-flex" href="{% url 'audit_all_section_progress' %}">Section Progress</a>
+                                <a class="dropdown-item d-flex" href="{% session_url 'audit_all_section_progress' %}">Section Progress</a>
                             </li>
                           </ul>
                           </div>
@@ -157,6 +171,7 @@
                 <a href="{% url 'privacy_policy' %}" style="color: inherit">Privacy Policy</a>
             </div>
         </div>
+        <script src="{% static 'jquery/jquery.min.js' %}"></script>
         <script src="{% static 'bootstrap/bootstrap.bundle.min.js' %}"></script>
     </body>
 </html>

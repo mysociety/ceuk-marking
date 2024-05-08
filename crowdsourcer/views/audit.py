@@ -1,9 +1,7 @@
 import logging
 
-from django.core.exceptions import PermissionDenied
-
 from crowdsourcer.forms import AuditResponseFormset
-from crowdsourcer.models import Assigned, Response, ResponseType
+from crowdsourcer.models import Response, ResponseType
 from crowdsourcer.views.base import BaseQuestionView, BaseSectionAuthorityList
 
 logger = logging.getLogger(__name__)
@@ -54,38 +52,25 @@ class AuthorityAuditSectionQuestions(BaseQuestionView):
 
         return initial
 
-    def check_permissions(self):
-        if self.request.user.is_anonymous:
-            raise PermissionDenied
+    def check_local_permissions(self):
+        permitted = False
 
-        rt = ResponseType.objects.get(type=self.response_type)
         user = self.request.user
-        if user.has_perm("crowdsourcer.can_view_all_responses") is False:
-            if hasattr(user, "marker"):
-                marker = user.marker
-                if marker.response_type.type == "Audit":
-                    if not Assigned.is_user_assigned(
-                        user=user,
-                        authority=self.kwargs["name"],
-                        section=self.kwargs["section_title"],
-                        current_stage=rt,
-                    ):
-                        raise PermissionDenied
-                else:
-                    raise PermissionDenied
+        if user.has_perm("crowdsourcer.can_view_all_responses"):
+            permitted = True
+        elif hasattr(user, "marker") and user.marker.response_type.type == "Audit":
+            permitted = True
 
-            else:
-                raise PermissionDenied
+        return permitted
 
     def process_form(self, form):
-        rt = ResponseType.objects.get(type=self.response_type)
         cleaned_data = form.cleaned_data
         # XXX work out what the field is
         if (
             cleaned_data.get("option", None) is not None
             or len(list(cleaned_data.get("multi_option", None))) > 0
         ):
-            form.instance.response_type = rt
+            form.instance.response_type = self.rt
             form.instance.user = self.request.user
             form.save()
             logger.debug(f"saved form {form.prefix}")

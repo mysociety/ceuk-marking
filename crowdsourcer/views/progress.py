@@ -8,7 +8,6 @@ from django.db.models.functions import Cast
 from django.http import HttpResponse
 from django.views.generic import ListView
 
-from crowdsourcer.mixins import CurrentStageMixin
 from crowdsourcer.models import (
     Assigned,
     Marker,
@@ -143,6 +142,9 @@ class BaseAuthorityProgressView(UserPassesTestMixin, ListView):
     def test_func(self):
         return self.request.user.is_superuser
 
+    def get_queryset(self):
+        return Section.objects.filter(marking_session=self.request.current_session)
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
@@ -206,7 +208,7 @@ class AuthorityProgressView(BaseAuthorityProgressView):
     pass
 
 
-class VolunteerProgressView(UserPassesTestMixin, CurrentStageMixin, ListView):
+class VolunteerProgressView(UserPassesTestMixin, ListView):
     template_name = "crowdsourcer/volunteer_progress.html"
     model = Section
     context_object_name = "sections"
@@ -218,9 +220,10 @@ class VolunteerProgressView(UserPassesTestMixin, CurrentStageMixin, ListView):
         user = User.objects.get(id=self.kwargs["id"])
 
         sections = Section.objects.filter(
+            marking_session=self.request.current_session,
             id__in=Assigned.objects.filter(
-                user=user, response_type=self.current_stage
-            ).values_list("section", flat=True)
+                user=user, response_type=self.request.current_stage
+            ).values_list("section", flat=True),
         )
 
         return sections
@@ -234,12 +237,12 @@ class VolunteerProgressView(UserPassesTestMixin, CurrentStageMixin, ListView):
 
         types = Question.VOLUNTEER_TYPES
 
-        if self.current_stage.type == "Audit":
+        if self.request.current_stage.type == "Audit":
             types = ["volunteer", "national_volunteer", "foi"]
 
         for section in sections:
             assigned = Assigned.objects.filter(
-                user=user, section=section, response_type=self.current_stage
+                user=user, section=section, response_type=self.request.current_stage
             ).values_list("authority", flat=True)
 
             authorities = (
@@ -261,7 +264,7 @@ class VolunteerProgressView(UserPassesTestMixin, CurrentStageMixin, ListView):
                         Response.objects.filter(
                             question__section=section,
                             authority=OuterRef("pk"),
-                            response_type=self.current_stage,
+                            response_type=self.request.current_stage,
                         )
                         .exclude(id__in=Response.null_responses())
                         .values("authority")
@@ -301,9 +304,9 @@ class VolunteerProgressView(UserPassesTestMixin, CurrentStageMixin, ListView):
                 }
             )
 
-        if self.current_stage.type == "First Mark":
+        if self.request.current_stage.type == "First Mark":
             authority_url_name = "authority_question_edit"
-        elif self.current_stage.type == "Audit":
+        elif self.request.current_stage.type == "Audit":
             authority_url_name = "authority_audit"
 
         context["user"] = user
@@ -319,7 +322,7 @@ class VolunteerProgressCSVView(UserPassesTestMixin, OverviewView):
         return self.request.user.is_superuser
 
     def get_queryset(self):
-        return Assigned.objects.all()
+        return Assigned.objects.filter(marking_session=self.request.current_session)
 
     def render_to_response(self, context, **response_kwargs):
         response = HttpResponse(content_type="text/csv")
@@ -377,7 +380,9 @@ class AuthorityLoginReport(UserPassesTestMixin, ListView):
             .annotate(
                 has_logged_in=Subquery(
                     Marker.objects.filter(
-                        authority=OuterRef("pk"), response_type__type="Right of Reply"
+                        authority=OuterRef("pk"),
+                        response_type__type="Right of Reply",
+                        marking_session=self.request.current_session,
                     )
                     .order_by("-user__last_login")
                     .values("user__last_login")[:1]
@@ -385,6 +390,7 @@ class AuthorityLoginReport(UserPassesTestMixin, ListView):
                 multi_has_logged_in=Subquery(
                     Assigned.objects.filter(
                         authority=OuterRef("pk"),
+                        marking_session=self.request.current_session,
                         user__marker__response_type__type="Right of Reply",
                     )
                     .order_by("-user__last_login")
@@ -405,6 +411,9 @@ class AllSectionChallengeView(UserPassesTestMixin, ListView):
     def test_func(self):
         return self.request.user.is_superuser
 
+    def get_queryset(self):
+        return Section.objects.filter(marking_session=self.request.current_session)
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
@@ -420,6 +429,7 @@ class AllSectionChallengeView(UserPassesTestMixin, ListView):
                     question_list,
                     section.title,
                     self.request.user,
+                    self.request.current_session,
                     response_type=response_types,
                     question_types=types,
                 )
@@ -473,7 +483,8 @@ class AuthorityContactCSVView(UserPassesTestMixin, ListView):
 
     def get_queryset(self):
         return Marker.objects.filter(
-            response_type__type="Right of Reply"
+            response_type__type="Right of Reply",
+            marking_session=self.request.current_session,
         ).select_related("user")
 
     def get_context_data(self, **kwargs):
@@ -490,7 +501,9 @@ class AuthorityContactCSVView(UserPassesTestMixin, ListView):
                         "name": f"{marker.user.first_name} {marker.user.last_name}",
                     }
                 )
-            assigned = Assigned.objects.filter(user=marker.user).all()
+            assigned = Assigned.objects.filter(
+                user=marker.user, marking_session=self.request.current_session
+            ).all()
             if assigned:
                 for assignment in assigned:
                     contacts.append(

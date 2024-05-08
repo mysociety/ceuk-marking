@@ -1,12 +1,12 @@
 import logging
 
 from django.contrib.auth.mixins import UserPassesTestMixin
+from django.core.exceptions import PermissionDenied
 from django.db.models import Count, F, FloatField, OuterRef, Subquery
 from django.db.models.functions import Cast
 from django.views.generic import ListView, TemplateView
 
 from crowdsourcer.forms import ResponseFormset
-from crowdsourcer.mixins import CurrentStageMixin
 from crowdsourcer.models import (
     Assigned,
     PublicAuthority,
@@ -27,16 +27,42 @@ class BaseQuestionView(TemplateView):
     title_start = ""
     how_marked_in = ["volunteer", "national_volunteer"]
 
+    def setup(self, request, *args, **kwargs):
+        super().setup(request, *args, **kwargs)
+        try:
+            self.rt = ResponseType.objects.get(type=self.response_type)
+        except ResponseType.DoesNotExist:
+            self.rt = None
+
+    def check_local_permissions(self):
+        return True
+
+    def check_permissions(self):
+        if self.request.user.is_anonymous:
+            raise PermissionDenied
+
+        if self.check_local_permissions() is False:
+            raise PermissionDenied
+
+        if not Assigned.is_user_assigned(
+            self.request.user,
+            authority=self.kwargs["name"],
+            section=self.kwargs["section_title"],
+            marking_session=self.request.current_session,
+            current_stage=self.rt,
+        ):
+            raise PermissionDenied
+
     def get_initial_obj(self):
-        rt = ResponseType.objects.get(type=self.response_type)
         self.authority = PublicAuthority.objects.get(name=self.kwargs["name"])
         self.questions = Question.objects.filter(
+            section__marking_session=self.request.current_session,
             section__title=self.kwargs["section_title"],
             questiongroup=self.authority.questiongroup,
             how_marked__in=self.how_marked_in,
         ).order_by("number", "number_part")
         responses = Response.objects.filter(
-            authority=self.authority, question__in=self.questions, response_type=rt
+            authority=self.authority, question__in=self.questions, response_type=self.rt
         ).select_related("question")
 
         initial = {}
@@ -106,7 +132,7 @@ class BaseQuestionView(TemplateView):
         return context
 
 
-class BaseSectionAuthorityList(CurrentStageMixin, ListView):
+class BaseSectionAuthorityList(ListView):
     template_name = "crowdsourcer/section_authority_list.html"
     model = Section
     context_object_name = "authorities"
@@ -127,7 +153,10 @@ class BaseSectionAuthorityList(CurrentStageMixin, ListView):
         ):
             return None
 
-        section = Section.objects.get(title=self.kwargs["section_title"])
+        section = Section.objects.get(
+            title=self.kwargs["section_title"],
+            marking_session=self.request.current_session,
+        )
         questions = Question.objects.filter(section=section, how_marked__in=self.types)
 
         question_list = list(questions.values_list("id", flat=True))
@@ -146,6 +175,7 @@ class BaseSectionAuthorityList(CurrentStageMixin, ListView):
             question_list,
             self.kwargs["section_title"],
             self.request.user,
+            self.request.current_session,
             assigned=assigned,
             question_types=self.types,
             response_type=this_stage,
@@ -173,6 +203,9 @@ class BaseAllSectionProgressView(UserPassesTestMixin, ListView):
     def test_func(self):
         return self.request.user.is_superuser
 
+    def get_queryset(self):
+        return Section.objects.filter(marking_session=self.request.current_session)
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
@@ -188,6 +221,7 @@ class BaseAllSectionProgressView(UserPassesTestMixin, ListView):
                 question_list,
                 section.title,
                 self.request.user,
+                self.request.current_session,
                 question_types=self.types,
                 response_type=rt,
             ).distinct()
@@ -211,7 +245,9 @@ class BaseAllSectionProgressView(UserPassesTestMixin, ListView):
                 "started": started,
             }
 
-        assigned = Section.objects.all().annotate(
+        assigned = Section.objects.filter(
+            marking_session=self.request.current_session
+        ).annotate(
             num_authorities=Subquery(
                 Assigned.objects.filter(section=OuterRef("pk"), response_type=rt)
                 .values("section")
@@ -255,6 +291,7 @@ class BaseSectionProgressView(UserPassesTestMixin, ListView):
                 question_list,
                 section.title,
                 self.request.user,
+                self.request.current_session,
                 question_types=self.types,
                 response_type=rt,
             )

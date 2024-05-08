@@ -8,6 +8,7 @@ from django.views.generic import ListView
 from crowdsourcer.forms import RORResponseFormset
 from crowdsourcer.models import (
     Assigned,
+    Marker,
     PublicAuthority,
     Question,
     Response,
@@ -79,9 +80,13 @@ class AuthorityRORSectionList(ListView):
                 raise PermissionDenied
 
         if authority.type == "COMB":
-            sections = Section.objects.filter(title__contains="(CA)")
+            sections = Section.objects.filter(
+                title__contains="(CA)", marking_session=self.request.current_session
+            )
         else:
-            sections = Section.objects.exclude(title__contains="(CA)")
+            sections = Section.objects.exclude(title__contains="(CA)").filter(
+                marking_session=self.request.current_session
+            )
 
         return sections
 
@@ -105,6 +110,7 @@ class AuthorityRORSectionList(ListView):
                 question_list,
                 section.title,
                 self.request.user,
+                self.request.current_session,
                 [authority.id],
             ]
 
@@ -150,27 +156,30 @@ class AuthorityRORSectionQuestions(BaseQuestionView):
         return initial
 
     def check_permissions(self):
-        if self.request.user.is_anonymous:
-            raise PermissionDenied
-
+        denied = True
         authority = PublicAuthority.objects.get(name=self.kwargs["name"])
         user = self.request.user
-        if user.is_superuser is False:
-            if hasattr(user, "marker"):
-                marker = user.marker
-                if marker.response_type.type == "Right of Reply":
-                    if (
-                        marker.authority != authority
-                        and not Assigned.objects.filter(
-                            user=user, authority=authority, section__isnull=True
-                        ).exists()
-                    ):
-                        raise PermissionDenied
-                else:
-                    raise PermissionDenied
 
-            else:
-                raise PermissionDenied
+        if (
+            user.is_superuser
+            or Marker.objects.filter(
+                user=user,
+                response_type=self.rt,
+                marking_session=self.request.current_session,
+                authority=authority,
+            ).exists()
+            or Assigned.objects.filter(
+                user=user,
+                response_type=self.rt,
+                authority=authority,
+                section__isnull=True,
+                marking_session=self.request.current_session,
+            ).exists()
+        ):
+            denied = False
+
+        if denied:
+            raise PermissionDenied
 
     def process_form(self, form):
         rt = ResponseType.objects.get(type="Right of Reply")

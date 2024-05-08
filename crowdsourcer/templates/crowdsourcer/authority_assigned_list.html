@@ -1,5 +1,7 @@
 {% extends 'crowdsourcer/base.html' %}
 
+{% load crowdsourcer_tags %}
+
 {% block content %}
 {% if show_login %}
     <h1 class="mb-4">Sign in</h1>
@@ -11,7 +13,7 @@
           {% for assignment in assignments %}
             <tr>
                 <td>
-                    <a href="{% url 'authority_ror_sections' assignment.authority.name %}">{{ assignment.authority.name }}</a>
+                    <a href="{% session_url 'authority_ror_sections' assignment.authority.name %}">{{ assignment.authority.name }}</a>
                 </td>
             </tr>
           {% empty %}

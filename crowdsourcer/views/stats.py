@@ -33,7 +33,10 @@ class AllMarksBaseCSVView(UserPassesTestMixin, ListView):
 
     def get_queryset(self):
         return (
-            Response.objects.filter(response_type__type=self.response_type)
+            Response.objects.filter(
+                response_type__type=self.response_type,
+                question__section__marking_session=self.request.current_session,
+            )
             .select_related("question", "authority", "question__section", "option")
             .order_by(
                 "authority",
@@ -64,8 +67,10 @@ class AllMarksBaseCSVView(UserPassesTestMixin, ListView):
 
         responses = defaultdict(dict)
         questions = (
-            Question.objects.select_related("section")
-            .all()
+            Question.objects.filter(
+                section__marking_session=self.request.current_session
+            )
+            .select_related("section")
             .order_by("section__title", "number", "number_part")
         )
 
@@ -197,8 +202,12 @@ class SelectQuestionView(UserPassesTestMixin, ListView):
         return self.request.user.is_superuser
 
     def get_queryset(self):
-        return Question.objects.select_related("section").order_by(
-            "section__title", "number", "number_part"
+        return (
+            Question.objects.filter(
+                section__marking_session=self.request.current_session
+            )
+            .select_related("section")
+            .order_by("section__title", "number", "number_part")
         )
 
     def get_context_data(self, **kwargs):
@@ -245,6 +254,7 @@ class QuestionDataCSVView(UserPassesTestMixin, ListView):
         q_number, q_part = re.search(r"(\d+)(\w*)", q).groups()
         responses = (
             Response.objects.filter(
+                question__section__marking_session=self.request.current_session,
                 question__section__title=section,
                 question__number=q_number,
                 response_type__type=self.response_type,
@@ -343,7 +353,7 @@ class BaseScoresView(UserPassesTestMixin, TemplateView):
         return self.request.user.is_superuser
 
     def get_scores(self):
-        self.scoring = get_scoring_object()
+        self.scoring = get_scoring_object(self.request.current_session)
 
     def render_to_response(self, context, **response_kwargs):
         response = HttpResponse(
@@ -500,18 +510,24 @@ class QuestionScoresCSV(UserPassesTestMixin, ListView):
         return self.request.user.is_superuser
 
     def get_queryset(self):
-        return Option.objects.select_related("question", "question__section").order_by(
-            "question__section__title",
-            "question__number",
-            "question__number_part",
-            "score",
+        return (
+            Option.objects.filter(
+                question__section__marking_session=self.request.current_session
+            )
+            .select_related("question", "question__section")
+            .order_by(
+                "question__section__title",
+                "question__number",
+                "question__number_part",
+                "score",
+            )
         )
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
         scoring = {}
-        get_section_maxes(scoring)
+        get_section_maxes(scoring, self.request.current_session)
 
         sections = defaultdict(dict)
         for option in context["options"]:
@@ -603,6 +619,7 @@ class BadResponsesView(UserPassesTestMixin, ListView):
                 response_type__type="Audit",
                 option__isnull=True,
                 multi_option__isnull=True,
+                question__section__marking_session=self.request.current_session,
             )
             .select_related("authority", "question", "question__section")
             .order_by("authority", "question__section")
@@ -619,7 +636,7 @@ class DuplicateResponsesView(UserPassesTestMixin, ListView):
         return self.request.user.is_superuser
 
     def get_queryset(self):
-        return get_duplicate_responses()
+        return get_duplicate_responses(self.request.current_session)
 
     def get_context_data(self, **kwargs):
         ignore_exacts = self.request.GET.get("ignore_exacts", 0)
@@ -627,7 +644,9 @@ class DuplicateResponsesView(UserPassesTestMixin, ListView):
 
         duplicates = context["responses"]
 
-        exact_duplicates = get_exact_duplicates(duplicates)
+        exact_duplicates = get_exact_duplicates(
+            duplicates, self.request.current_session
+        )
 
         exact_ids = []
         for exact in exact_duplicates:

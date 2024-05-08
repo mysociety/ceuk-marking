@@ -1,5 +1,7 @@
 {% extends 'crowdsourcer/base.html' %}
 
+{% load crowdsourcer_tags %}
+
 {% block content %}
 {% if show_login %}
     <h1 class="mb-4">Sign in</h1>
@@ -10,7 +12,7 @@
         <thead>
             <tr>
                 <th></th>
-                <th>Progress <a href="{% url 'all_authority_progress' %}?sort=asc">&#9650;</a>/<a href="{% url 'all_authority_progress' %}?sort=desc">&#9660;</a></th>
+                <th>Progress <a href="{% session_url 'all_authority_progress' %}?sort=asc">&#9650;</a>/<a href="{% session_url 'all_authority_progress' %}?sort=desc">&#9660;</a></th>
             </tr>
         </thead>
         <tbody>
@@ -33,7 +35,7 @@
           {% for authority in section.authorities %}
             <tr>
                 <td>
-                    <a href="{% url authority_url_name authority.name section.section.title %}">{{ authority.name }}</a>
+                    <a href="{% session_url authority_url_name authority.name section.section.title %}">{{ authority.name }}</a>
                 </td>
                 <td>
                     <div class="progress progress-thin mb-2">

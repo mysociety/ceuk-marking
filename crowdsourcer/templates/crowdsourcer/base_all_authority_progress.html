@@ -1,5 +1,7 @@
 {% extends 'crowdsourcer/base.html' %}
 
+{% load crowdsourcer_tags %}
+
 {% block content %}
 {% if show_login %}
     <h1 class="mb-4">Sign in</h1>
@@ -30,7 +32,7 @@
             <tr>
                 <td>
                     {% block authority_link %}
-                    <a href="{% url url_pattern authority.name %}">{{ authority.name }}{% if authority.do_not_mark %} (DO NOT MARK){% endif %}</a>
+                    <a href="{% session_url url_pattern authority.name %}">{{ authority.name }}{% if authority.do_not_mark %} (DO NOT MARK){% endif %}</a>
                     {% endblock %}
                 </td>
                 <td>

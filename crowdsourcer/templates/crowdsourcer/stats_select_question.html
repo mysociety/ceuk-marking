@@ -1,5 +1,7 @@
 {% extends 'crowdsourcer/base.html' %}
 
+{% load crowdsourcer_tags %}
+
 {% block content %}
 {% if show_login %}
     <h1 class="mb-4">Sign in</h1>
@@ -24,13 +26,13 @@
                     {{ q.number_and_part }} - {{ q.description }}
                 </td>
                 <td>
-                    <a href="{% url 'question_data_csv' 'first_mark' section q.number %}">First</a>
+                    <a href="{% session_url 'question_data_csv' 'first_mark' section q.number %}">First</a>
                 </td>
                 <td>
-                    <a href="{% url 'ror_question_data_csv' section q.number %}">RoR</a>
+                    <a href="{% session_url 'ror_question_data_csv' section q.number %}">RoR</a>
                 </td>
                 <td>
-                    <a href="{% url 'question_data_csv' 'audit' section q.number_and_part %}">Audit</a>
+                    <a href="{% session_url 'question_data_csv' 'audit' section q.number_and_part %}">Audit</a>
                 </td>
             </tr>
           {% endfor %}
