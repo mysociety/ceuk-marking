@@ -8,14 +8,39 @@ from django.urls import reverse
 from simple_history.models import HistoricalRecords
 
 
+class MarkingSession(models.Model):
+    """Used to group questions and answers into sets
+
+    To enable more than one set of questions to be stored at once.
+    start_date for including/excluding authories based on their start/end date
+    """
+
+    label = models.CharField(max_length=200, unique=True)
+    start_date = models.DateField()
+    active = models.BooleanField(default=False)
+    stage = models.ForeignKey("ResponseType", null=True, on_delete=models.SET_NULL)
+
+    def __str__(self):
+        return self.label
+
+
 class Section(models.Model):
+    """Used to group questions with a similar theme"""
+
     title = models.CharField(max_length=200)
+    marking_session = models.ForeignKey(MarkingSession, on_delete=models.CASCADE)
 
     def __str__(self):
         return self.title
 
 
 class QuestionGroup(models.Model):
+    """Determines which questions are relevant for an authority
+
+    Not all questions in a section are relevant to all authorities so questions
+    and authorities belong to QuestionGroups
+    """
+
     description = models.TextField(max_length=200)
 
     def __str__(self):
@@ -122,6 +147,7 @@ class PublicAuthority(models.Model):
         questions,
         section,
         user,
+        marking_session,
         assigned=None,
         response_type=None,
         question_types=None,
@@ -139,6 +165,7 @@ class PublicAuthority(models.Model):
                 Question.objects.filter(
                     questiongroup=OuterRef("questiongroup"),
                     section__title=section,
+                    section__marking_session=marking_session,
                     how_marked__in=question_types,
                 )
                 .values("questiongroup")
@@ -280,6 +307,7 @@ class Assigned(models.Model):
     response_type = models.ForeignKey(
         ResponseType, on_delete=models.CASCADE, null=True, blank=True
     )
+    marking_session = models.ForeignKey(MarkingSession, on_delete=models.CASCADE)
     history = HistoricalRecords()
 
     @classmethod
@@ -298,6 +326,8 @@ class Assigned(models.Model):
             q_section = q.filter(section__title=kwargs["section"], authority=None)
         if kwargs.get("authority", None) is not None:
             q = q.filter(authority__name=kwargs["authority"])
+        if kwargs.get("marking_session", None) is not None:
+            q = q.filter(marking_session=kwargs["marking_session"])
         if kwargs.get("current_stage", None) is not None:
             q = q.filter(response_type=kwargs["current_stage"])
             q_all_stage = cls.objects.filter(
@@ -321,6 +351,12 @@ class Assigned(models.Model):
 
 
 class Marker(models.Model):
+    """Addition user properties
+
+    One to One for a users. Stores details that control access to questions
+    and authorities.
+    """
+
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     response_type = models.ForeignKey(
         ResponseType,
@@ -332,6 +368,7 @@ class Marker(models.Model):
     authority = models.ForeignKey(
         PublicAuthority, blank=True, null=True, on_delete=models.SET_NULL
     )
+    marking_session = models.ManyToManyField(MarkingSession, null=True)
 
     class Meta:
         permissions = [
