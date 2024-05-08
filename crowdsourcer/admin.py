@@ -3,6 +3,7 @@ from django.contrib import admin
 from crowdsourcer.models import (
     Assigned,
     Marker,
+    MarkingSession,
     Option,
     PublicAuthority,
     Question,
@@ -22,7 +23,13 @@ class AssignedAdmin(admin.ModelAdmin):
         "response_type",
     )
     search_fields = ["user__username", "authority__name"]
-    list_filter = ["section", "authority__questiongroup", "response_type", "active"]
+    list_filter = [
+        "section__marking_session",
+        "section",
+        "authority__questiongroup",
+        "response_type",
+        "active",
+    ]
 
 
 @admin.register(Option)
@@ -59,7 +66,7 @@ class QuestionAdmin(admin.ModelAdmin):
         "description",
         "weighting",
     )
-    list_filter = ["section", "how_marked", "questiongroup"]
+    list_filter = ["section__marking_session", "section", "how_marked", "questiongroup"]
     ordering = ("section", "number", "number_part")
 
 
@@ -95,4 +102,14 @@ class ResponseTypeAdmin(admin.ModelAdmin):
 
 @admin.register(Section)
 class SectionAdmin(admin.ModelAdmin):
+    list_display = (
+        "title",
+        "marking_session",
+    )
+
+    list_filter = ["marking_session"]
+
+
+@admin.register(MarkingSession)
+class MarkingSessionAdmin(admin.ModelAdmin):
     pass
