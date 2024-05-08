@@ -138,7 +138,7 @@ def weighting_to_points(weighting="low", max_points=0):
     return points
 
 
-def get_section_maxes(scoring):
+def get_section_maxes(scoring, session):
     section_maxes = defaultdict(dict)
     section_weighted_maxes = defaultdict(dict)
     group_totals = defaultdict(int)
@@ -146,7 +146,7 @@ def get_section_maxes(scoring):
     q_weighted_maxes = defaultdict(int)
     negative_q = defaultdict(int)
 
-    for section in Section.objects.all():
+    for section in Section.objects.filter(marking_session=session):
         q_section_maxes = {}
         q_section_weighted_maxes = {}
         q_section_negatives = {}
@@ -256,9 +256,17 @@ def q_is_exception(q, section, group, country, council):
     return False
 
 
-def update_with_housing_exceptions():
+def update_with_housing_exceptions(session):
     rt = ResponseType.objects.get(type="Audit")
-    q = Question.objects.get(number=3, section__title="Buildings & Heating")
+    try:
+        q = Question.objects.get(
+            number=3,
+            section__title="Buildings & Heating",
+            section__marking_session=session,
+        )
+    except Question.DoesNotExist:
+        return
+
     try:
         o = Option.objects.get(
             question=q,
@@ -301,29 +309,32 @@ def get_maxes_for_council(scoring, group, country, council):
             pass
 
         for q in all_exceptions:
-            maxes[section][group] -= scoring["q_maxes"][section][q]
-            weighted_maxes[section][group] -= scoring["q_section_weighted_maxes"][
-                section
-            ][q]
+            try:
+                maxes[section][group] -= scoring["q_maxes"][section][q]
+                weighted_maxes[section][group] -= scoring["q_section_weighted_maxes"][
+                    section
+                ][q]
+            except KeyError:
+                print(f"no question found for exception {section}, {q}")
 
     return maxes, weighted_maxes
 
 
-def get_blank_section_scores():
+def get_blank_section_scores(session):
     raw_scores = defaultdict(dict)
     weighted = defaultdict(dict)
 
     non_ca_sections = {
         x: 0
-        for x in Section.objects.exclude(title__contains="(CA)").values_list(
-            "title", flat=True
-        )
+        for x in Section.objects.exclude(title__contains="(CA)")
+        .filter(marking_session=session)
+        .values_list("title", flat=True)
     }
     ca_sections = {
         x: 0
-        for x in Section.objects.filter(title__contains="(CA)").values_list(
-            "title", flat=True
-        )
+        for x in Section.objects.filter(
+            title__contains="(CA)", marking_session=session
+        ).values_list("title", flat=True)
     }
 
     for council in PublicAuthority.objects.filter(do_not_mark=False).all():
@@ -346,12 +357,12 @@ def get_weighted_question_score(score, max_score, weighting):
     return percentage * weighting_to_points(weighting)
 
 
-def get_section_scores(scoring):
-    raw_scores, weighted = get_blank_section_scores()
+def get_section_scores(scoring, session):
+    raw_scores, weighted = get_blank_section_scores(session)
 
-    update_with_housing_exceptions()
+    update_with_housing_exceptions(session)
 
-    for section in Section.objects.all():
+    for section in Section.objects.filter(marking_session=session):
         options = (
             Response.objects.filter(
                 response_type__type="Audit",
@@ -460,6 +471,17 @@ def get_section_scores(scoring):
     scoring["weighted_scores"] = weighted
 
 
+def get_section_weighting(section, council_group):
+    if (
+        SECTION_WEIGHTINGS.get(section, None) is not None
+        and SECTION_WEIGHTINGS[section].get(council_group, None) is not None
+    ):
+        return SECTION_WEIGHTINGS[section][council_group]
+
+    print(f"No weighting for {section} and {council_group}")
+    return 0
+
+
 def calculate_council_totals(scoring):
     section_totals = defaultdict(dict)
     totals = {}
@@ -498,7 +520,7 @@ def calculate_council_totals(scoring):
                 weighted_score = (
                     scoring["weighted_scores"][council][section]
                     / council_weighted_max[section][council_group]
-                ) * SECTION_WEIGHTINGS[section][council_group]
+                ) * get_section_weighting(section, council_group)
                 weighted_score = round(weighted_score, 2)
 
                 unweighted_percentage = (
@@ -516,9 +538,12 @@ def calculate_council_totals(scoring):
 
             weighted_total += weighted_score
 
+        percent_total = 0
+        if scoring["group_maxes"][council_group] > 0:
+            percent_total = round(total / scoring["group_maxes"][council_group], 2)
         totals[council] = {
             "raw_total": total,
-            "percent_total": round(total / scoring["group_maxes"][council_group], 2),
+            "percent_total": percent_total,
             "weighted_total": round(weighted_total, 2),
         }
 
@@ -526,7 +551,7 @@ def calculate_council_totals(scoring):
     scoring["section_totals"] = section_totals
 
 
-def get_scoring_object():
+def get_scoring_object(session):
     scoring = {}
 
     council_gss_map, groups, countries, types, control = PublicAuthority.maps()
@@ -539,17 +564,18 @@ def get_scoring_object():
     for council in PublicAuthority.objects.all():
         scoring["councils"][council.name] = council
 
-    get_section_maxes(scoring)
-    get_section_scores(scoring)
+    get_section_maxes(scoring, session)
+    get_section_scores(scoring, session)
     calculate_council_totals(scoring)
 
     return scoring
 
 
-def get_duplicate_responses(response_type="Audit"):
+def get_duplicate_responses(session, response_type="Audit"):
     responses = (
         Response.objects.filter(
             response_type__type=response_type,
+            question__section__marking_session=session,
         )
         .values("question_id", "authority_id")
         .annotate(answer_count=Count("id"))
@@ -559,8 +585,8 @@ def get_duplicate_responses(response_type="Audit"):
     return responses
 
 
-def get_exact_duplicates(duplicates, response_type="Audit"):
-    rt = ResponseType.objects.get(type="Audit")
+def get_exact_duplicates(duplicates, session, response_type="Audit"):
+    rt = ResponseType.objects.get(type=response_type)
 
     potentials = {}
     for d in duplicates:
@@ -727,7 +753,11 @@ def get_all_question_data(scoring, response_type="Audit"):
 
         q_data = get_response_data(response, include_name=False, process_links=True)
 
-        max_score = scoring["q_maxes"][section][q_number]
+        try:
+            max_score = scoring["q_maxes"][section][q_number]
+        except (KeyError, TypeError):
+            print(f"No max score found for {section}, {q_number}, setting to 0")
+            max_score = 0
 
         data = [
             response.authority.name,
@@ -742,14 +772,22 @@ def get_all_question_data(scoring, response_type="Audit"):
 
         if response.question.question_type != "negative":
             negative = "No"
-            max_weighted = scoring["q_section_weighted_maxes"][section][q_number]
+            try:
+                max_weighted = scoring["q_section_weighted_maxes"][section][q_number]
+            except (KeyError, TypeError):
+                print(f"No section max weighted for {section}, {q_number}")
+                max_weighted = 0
+
             if q_data[1] == "-":
                 weighted_score = ("-",)
             else:
-                weighted_score = get_weighted_question_score(
-                    q_data[1], max_score, response.question.weighting
-                )
-                weighted_score = round(weighted_score, 2)
+                if max_score > 0:
+                    weighted_score = get_weighted_question_score(
+                        q_data[1], max_score, response.question.weighting
+                    )
+                    weighted_score = round(weighted_score, 2)
+                else:
+                    weighted_score = 0
         else:
             negative = "Yes"
             max_weighted = 0
