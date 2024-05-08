@@ -83,6 +83,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "crowdsourcer.middleware.AddStateMiddleware",
 ]
 
 ROOT_URLCONF = "ceuk-marking.urls"
@@ -159,6 +160,7 @@ STATICFILES_DIRS = [
     BASE_DIR / "crowdsourcer" / "static",
     ("bootstrap", BASE_DIR / "vendor" / "bootstrap" / "scss"),
     ("bootstrap", BASE_DIR / "vendor" / "bootstrap" / "js"),
+    ("jquery", BASE_DIR / "vendor" / "jquery" / "js"),
 ]
 
 # only want to do this for live really
