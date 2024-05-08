@@ -20,12 +20,7 @@ from django.urls import include, path
 
 from crowdsourcer.views import audit, marking, progress, rightofreply, stats
 
-urlpatterns = [
-    # admin/utility screens
-    path("admin/", admin.site.urls),
-    path("accounts/", include("django.contrib.auth.urls")),
-    path("status/", marking.StatusPage.as_view()),
-    path("privacy/", marking.PrivacyPolicyView.as_view(), name="privacy_policy"),
+session_patterns = [
     # home page
     path("", marking.OverviewView.as_view(), name="home"),
     # progess screens
@@ -67,44 +62,14 @@ urlpatterns = [
     ),
     # marking screens
     path(
-        "section/<section_title>/questions/",
-        marking.SectionQuestionList.as_view(),
-        name="section_questions",
-    ),
-    path(
         "section/<section_title>/authorities/",
         marking.SectionAuthorityList.as_view(),
         name="section_authorities",
     ),
     path(
-        "section/<section_title>/question/<slug:number>/",
-        marking.SectionQuestionAuthorityList.as_view(),
-        name="section_question_authorities",
-    ),
-    path(
-        "authorities/<name>/section/<section_title>/question/<number>/",
-        marking.AuthorityQuestion.as_view(),
-        name="authority_question",
-    ),
-    path(
         "authorities/<name>/section/<section_title>/questions/",
         marking.AuthoritySectionQuestions.as_view(),
         name="authority_question_edit",
-    ),
-    path(
-        "authorities/<name>/section/<section_title>/question/<number>/answer/",
-        marking.AuthorityQuestionAnswer.as_view(),
-        name="authority_question_answer",
-    ),
-    path(
-        "authorities/<name>/section/<section_title>/question/<number>/edit/",
-        marking.AuthorityQuestionEdit.as_view(),
-        name="authority_question_edit",
-    ),
-    path(
-        "authorities/<name>/section/<section_title>/question/<number>/view/",
-        marking.AuthorityQuestionView.as_view(),
-        name="authority_question_view",
     ),
     # right of reply screens
     path(
@@ -251,6 +216,16 @@ urlpatterns = [
         progress.AuditSectionProgressView.as_view(),
         name="audit_section_progress",
     ),
+]
+
+urlpatterns = [
+    # admin/utility screens
+    path("admin/", admin.site.urls),
+    path("accounts/", include("django.contrib.auth.urls")),
+    path("status/", marking.StatusPage.as_view()),
+    path("privacy/", marking.PrivacyPolicyView.as_view(), name="privacy_policy"),
+    path("", include(session_patterns)),
+    path("<marking_session>/", include((session_patterns, "session_urls"))),
 ]
 
 if settings.DEBUG:  # pragma: no cover
