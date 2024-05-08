@@ -5,7 +5,7 @@ from django.core.management.base import BaseCommand
 
 import pandas as pd
 
-from crowdsourcer.models import Option, Question, QuestionGroup, Section
+from crowdsourcer.models import MarkingSession, Option, Question, QuestionGroup, Section
 
 
 class Command(BaseCommand):
@@ -47,13 +47,65 @@ class Command(BaseCommand):
             help="Only update question weighting",
         )
 
+        parser.add_argument(
+            "--session", action="store", help="Marking session to use questions with"
+        )
+
+        parser.add_argument(
+            "--file", action="store", help="Excel file containing the questions"
+        )
+
+        parser.add_argument(
+            "--column_list", action="store", help="file with list of column names"
+        )
+
+    def get_column_names(self, **kwargs):
+        column_list = kwargs.get("column_list", None)
+        column_list = settings.BASE_DIR / "data" / column_list
+        if not column_list.exists():
+            self.stderr.write(
+                f"file does not exist: {column_list}, using standard columns"
+            )
+            return
+
+        if column_list is not None:
+            df = pd.read_csv(settings.BASE_DIR / "data" / column_list)
+            columns = []
+            for _, row in df.iterrows():
+                columns.append(row["Column"])
+            self.column_names = columns
+
     def handle(self, quiet: bool = False, *args, **kwargs):
+        file = kwargs.get("file", None)
+
+        if file is None:
+            self.stderr.write("please supply a file name")
+            return
+
+        self.question_file = settings.BASE_DIR / "data" / file
+
+        if not self.question_file.exists():
+            self.stderr.write(f"file does not exist: {self.question_file}")
+            return
+
         q_groups = {}
-        for q in QuestionGroup.objects.all():
+
+        session_label = kwargs.get("session", None)
+        try:
+            session = MarkingSession.objects.get(label=session_label)
+        except MarkingSession.DoesNotExist:
+            self.stderr.write(f"No session with that name: {session_label}")
+            return
+
+        for q in QuestionGroup.objects.exclude(description="Combined Authority"):
             key = q.description.lower().replace(" ", "_")
             q_groups[key] = q
 
-        for section in Section.objects.exclude(title__contains="(CA)"):
+        self.get_column_names(**kwargs)
+
+        for section in Section.objects.exclude(title__contains="(CA)").filter(
+            marking_session=session
+        ):
             df = pd.read_excel(
                 self.question_file,
                 sheet_name=section.title,
@@ -61,7 +113,11 @@ class Command(BaseCommand):
                 usecols=lambda name: "Unnamed" not in name,
             )
 
+            print(section.title)
             df = df.dropna(axis="index", how="all")
+            if "Climate Justice/Adaptation Tag" in df.columns:
+                df = df.drop("Climate Justice/Adaptation Tag", axis=1)
+            df = df.iloc[:, :14]
 
             columns = list(self.column_names)
             options = len(df.columns) - len(self.column_names) + 1
@@ -91,7 +147,9 @@ class Command(BaseCommand):
                     how_marked = "national_data"
                     question_type = "national_data"
 
-                if not pd.isna(row["question_type"]):
+                if row.get("question_type", None) is not None and not pd.isna(
+                    row["question_type"]
+                ):
                     if row["question_type"] == "Tiered answer":
                         question_type = "tiered"
                     elif row["question_type"] == "Tick all that apply":

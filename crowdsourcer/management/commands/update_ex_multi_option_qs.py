@@ -2,7 +2,7 @@ from collections import defaultdict
 
 from django.core.management.base import BaseCommand
 
-from crowdsourcer.models import Question, Response, ResponseType
+from crowdsourcer.models import MarkingSession, Question, Response, ResponseType
 
 YELLOW = "\033[33m"
 RED = "\033[31m"
@@ -20,9 +20,20 @@ class Command(BaseCommand):
             "--commit", action="store_true", help="commit changes to database"
         )
 
-    def convert_to_single_response(self):
+        parser.add_argument("--session", action="store", help="Marking session to use")
+
+    def convert_to_single_response(self, **kwargs):
+        session_label = kwargs.get("session", None)
+        try:
+            session = MarkingSession.objects.get(label=session_label)
+        except MarkingSession.DoesNotExist:
+            self.stderr.write(f"No session with that name: {session_label}")
+            return
+
         rt = ResponseType.objects.get(type="Audit")
-        valid_questions = Question.objects.exclude(question_type="multiple_choice")
+        valid_questions = Question.objects.exclude(
+            question_type="multiple_choice"
+        ).filter(section__marking_session=session)
         responses = (
             Response.objects.filter(question__in=valid_questions, response_type=rt)
             .exclude(multi_option__isnull=True)
@@ -73,6 +84,6 @@ class Command(BaseCommand):
                 f"{YELLOW}Not updating database, call with --commit to do so{NOBOLD}",
                 True,
             )
-        self.convert_to_single_response()
+        self.convert_to_single_response(**kwargs)
 
         self.print_msg(f"{GREEN}done{NOBOLD}")

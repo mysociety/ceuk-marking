@@ -4,6 +4,7 @@ from django.db.models import F, Q
 
 from crowdsourcer.models import (
     Assigned,
+    MarkingSession,
     PublicAuthority,
     Question,
     ResponseType,
@@ -26,13 +27,26 @@ class Command(BaseCommand):
             "--stage", required=True, help="which stage of assignments to remove"
         )
 
+        parser.add_argument(
+            "--session",
+            action="store",
+            help="Marking session to remove assignments from",
+        )
+
     def handle(self, *args, **kwargs):
+        session_label = kwargs.get("session", None)
+        try:
+            session = MarkingSession.objects.get(label=session_label)
+        except MarkingSession.DoesNotExist:
+            self.stderr.write(f"No session with that name: {session_label}")
+            return
+
         stage = kwargs["stage"]
         stage = ResponseType.objects.get(type=stage)
 
         users = User.objects.filter(is_active=False)
 
-        sections = Section.objects.all()
+        sections = Section.objects.filter(marking_session=session)
 
         if kwargs["confirm_changes"] is False:
             self.stdout.write(
@@ -43,7 +57,7 @@ class Command(BaseCommand):
             questions = Question.objects.filter(section=section)
 
             responses = PublicAuthority.response_counts(
-                questions, section.title, None
+                questions, section.title, None, session
             ).filter(
                 Q(num_questions__gt=F("num_responses")) | Q(num_responses__isnull=True)
             )
@@ -53,6 +67,7 @@ class Command(BaseCommand):
                 user__in=users,
                 authority__in=responses,
                 response_type=stage,
+                marking_session=session,
             ).order_by("authority__name")
 
             if to_unassign.count() > 0:
