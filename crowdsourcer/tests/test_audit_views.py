@@ -2,7 +2,14 @@ from django.contrib.auth.models import User
 from django.test import TestCase
 from django.urls import reverse
 
-from crowdsourcer.models import Assigned, Marker, Question, Response, ResponseType
+from crowdsourcer.models import (
+    Assigned,
+    Marker,
+    MarkingSession,
+    Question,
+    Response,
+    ResponseType,
+)
 
 
 class BaseTestCase(TestCase):
@@ -156,6 +163,81 @@ class TestSaveView(BaseTestCase):
         url = reverse("authority_audit", args=("Aberdeenshire Council", "Transport"))
         response = self.client.get(url)
         self.assertEqual(response.status_code, 403)
+
+    def test_no_access_if_wrong_stage_assigned(self):
+        url = reverse("authority_audit", args=("Aberdeenshire Council", "Transport"))
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+
+        # delete this to avoid duplicate error
+        Assigned.objects.filter(response_type__type="First Mark").delete()
+        a = Assigned.objects.get(
+            user=self.user,
+            response_type=ResponseType.objects.get(type="Audit"),
+            section__title="Transport",
+            authority__name="Aberdeenshire Council",
+        )
+        a.response_type = ResponseType.objects.get(type="First Mark")
+        a.save()
+
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 403)
+
+    def test_no_access_if_wrong_session(self):
+        url = reverse("authority_audit", args=("Aberdeenshire Council", "Transport"))
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+
+        session = MarkingSession.objects.get(label="Second Session")
+        a = Assigned.objects.get(
+            user=self.user,
+            response_type=ResponseType.objects.get(type="Audit"),
+            section__title="Transport",
+            authority__name="Aberdeenshire Council",
+        )
+        a.marking_session = session
+        a.save()
+
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 403)
+
+        session = MarkingSession.objects.get(label="Default")
+        a.marking_session = session
+        a.save()
+
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+
+    def test_questions(self):
+        url = reverse("authority_audit", args=("Aberdeenshire Council", "Transport"))
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+
+        self.assertRegex(response.content, rb"vehicle fleet")
+        self.assertNotRegex(response.content, rb"Second Session")
+
+    def test_questions_alt_session(self):
+        u = User.objects.get(username="other_marker")
+        rt = ResponseType.objects.get(type="Audit")
+
+        a = Assigned.objects.get(user=u)
+        a.response_type = rt
+        a.save()
+
+        u.marker.response_type = rt
+        u.marker.save()
+
+        self.client.force_login(u)
+
+        url = reverse(
+            "session_urls:authority_audit",
+            args=("Second Session", "Aberdeenshire Council", "Transport"),
+        )
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+
+        self.assertRegex(response.content, rb"Second Session")
+        self.assertNotRegex(response.content, rb"vehicle fleet")
 
     def test_save(self):
         url = reverse("authority_audit", args=("Aberdeenshire Council", "Transport"))

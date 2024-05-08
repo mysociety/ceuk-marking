@@ -2,7 +2,13 @@ from django.contrib.auth.models import User
 from django.test import TestCase
 from django.urls import reverse
 
-from crowdsourcer.models import Assigned, PublicAuthority, Response
+from crowdsourcer.models import (
+    Assigned,
+    MarkingSession,
+    PublicAuthority,
+    Response,
+    ResponseType,
+)
 
 
 class BaseTestCase(TestCase):
@@ -28,7 +34,20 @@ class TestAssignmentView(BaseTestCase):
         response = self.client.get("/")
         self.assertEqual(response.status_code, 302)
         self.assertEqual(
-            response.url, "/authorities/Aberdeenshire%20Council/ror/sections/"
+            response.url, "/Default/authorities/Aberdeenshire%20Council/ror/sections/"
+        )
+
+    def test_homepage_redirect_with_marking_session(self):
+        self.user.marker.marking_session.clear()
+        self.user.marker.marking_session.add(
+            MarkingSession.objects.get(label="Second Session")
+        )
+
+        response = self.client.get("/")
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(
+            response.url,
+            "/Second%20Session/authorities/Aberdeenshire%20Council/ror/sections/",
         )
 
     def test_council_homepage(self):
@@ -97,9 +116,20 @@ class TestTwoCouncilsAssignmentView(BaseTestCase):
         u.marker.save()
 
         auth2 = PublicAuthority.objects.get(name="Aberdeen City Council")
+        rt = ResponseType.objects.get(type="Right of Reply")
 
-        Assigned.objects.create(user=u, authority=auth1)
-        Assigned.objects.create(user=u, authority=auth2)
+        Assigned.objects.create(
+            marking_session=MarkingSession.objects.get(label="Default"),
+            user=u,
+            authority=auth1,
+            response_type=rt,
+        )
+        Assigned.objects.create(
+            marking_session=MarkingSession.objects.get(label="Default"),
+            user=u,
+            authority=auth2,
+            response_type=rt,
+        )
 
     def test_homepage_redirect(self):
         response = self.client.get("/")
@@ -156,6 +186,88 @@ class TestSaveView(BaseTestCase):
         self.assertEqual(response.status_code, 403)
 
         url = reverse("authority_ror", args=("Aberdeenshire Council", "Transport"))
+
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+
+    def test_no_access_if_wrong_stage_single_council(self):
+        url = reverse("authority_ror", args=("Aberdeenshire Council", "Transport"))
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+
+        rt = ResponseType.objects.get(type="Audit")
+        m = self.user.marker
+        m.response_type = rt
+        m.save()
+
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 403)
+
+    def test_no_access_if_wrong_stage_multi_council(self):
+        auth2 = PublicAuthority.objects.get(name="Aberdeen City Council")
+
+        a = Assigned.objects.create(
+            marking_session=MarkingSession.objects.get(label="Default"),
+            response_type=ResponseType.objects.get(type="Right of Reply"),
+            user=self.user,
+            authority=auth2,
+        )
+
+        url = reverse("authority_ror", args=("Aberdeen City Council", "Transport"))
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+
+        rt = ResponseType.objects.get(type="Audit")
+        a.response_type = rt
+        a.save()
+
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 403)
+
+    def test_no_access_if_wrong_marking_session_single_council(self):
+        url = reverse("authority_ror", args=("Aberdeenshire Council", "Transport"))
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+
+        session = MarkingSession.objects.get(label="Second Session")
+        m = self.user.marker
+        m.marking_session.clear()
+        m.marking_session.add(session)
+
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 403)
+
+        session = MarkingSession.objects.get(label="Default")
+        m.marking_session.clear()
+        m.marking_session.add(session)
+
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+
+    def test_no_access_if_wrong_marking_session_multi_council(self):
+        auth2 = PublicAuthority.objects.get(name="Aberdeen City Council")
+
+        a = Assigned.objects.create(
+            marking_session=MarkingSession.objects.get(label="Default"),
+            response_type=ResponseType.objects.get(type="Right of Reply"),
+            user=self.user,
+            authority=auth2,
+        )
+
+        url = reverse("authority_ror", args=("Aberdeen City Council", "Transport"))
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+
+        session = MarkingSession.objects.get(label="Second Session")
+        a.marking_session = session
+        a.save()
+
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 403)
+
+        session = MarkingSession.objects.get(label="Default")
+        a.marking_session = session
+        a.save()
 
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
@@ -239,6 +351,36 @@ class TestSaveView(BaseTestCase):
 
         content = response.content
         self.assertRegex(content, rb"<div[^>]*>[\s\n]*<p>\(none\)</p>[\s\n]*</div>")
+
+    def test_questions(self):
+        url = reverse("authority_ror", args=("Aberdeenshire Council", "Transport"))
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+
+        self.assertRegex(response.content, rb"vehicle fleet")
+        self.assertNotRegex(response.content, rb"Second Session")
+
+    def test_questions_alt_session(self):
+        u = User.objects.get(username="other_marker")
+        rt = ResponseType.objects.get(type="Right of Reply")
+
+        Assigned.objects.filter(user=u).delete()
+
+        u.marker.response_type = rt
+        u.marker.authority = PublicAuthority.objects.get(name="Aberdeenshire Council")
+        u.marker.save()
+
+        self.client.force_login(u)
+
+        url = reverse(
+            "session_urls:authority_ror",
+            args=("Second Session", "Aberdeenshire Council", "Transport"),
+        )
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+
+        self.assertRegex(response.content, rb"Second Session")
+        self.assertNotRegex(response.content, rb"vehicle fleet")
 
     def test_save(self):
         url = reverse("authority_ror", args=("Aberdeenshire Council", "Transport"))
@@ -348,3 +490,67 @@ class TestSaveView(BaseTestCase):
         self.assertEquals(first.agree_with_response, True)
         self.assertEquals(second.agree_with_response, None)
         self.assertEquals(second.private_notes, "")
+
+
+class TestChallengeView(BaseTestCase):
+    fixtures = [
+        "authorities.json",
+        "basics.json",
+        "users.json",
+        "questions.json",
+        "options.json",
+        "assignments.json",
+        "responses.json",
+        "ror_responses.json",
+    ]
+
+    def test_permissions(self):
+        url = reverse("section_ror_progress")
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 403)
+
+        u = User.objects.get(username="marker")
+        self.client.force_login(u)
+
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 403)
+
+        u = User.objects.get(username="admin")
+        self.client.force_login(u)
+
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+
+    def test_view(self):
+        u = User.objects.get(username="admin")
+        self.client.force_login(u)
+        url = reverse("section_ror_progress")
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+
+        progress = response.context["progress"]
+
+        self.assertEqual(len(progress.keys()), 7)
+
+        tran = progress["Transport"]
+        self.assertEqual(tran["total"], 4)
+        self.assertEqual(tran["complete"], 0)
+        self.assertEqual(tran["started"], 0)
+        self.assertEqual(tran["challenges"], 0)
+
+        b_and_h = progress["Buildings & Heating"]
+        self.assertEqual(b_and_h["total"], 4)
+        self.assertEqual(b_and_h["complete"], 0)
+        self.assertEqual(b_and_h["started"], 1)
+        self.assertEqual(b_and_h["challenges"], 1)
+
+    def test_view_other_session(self):
+        u = User.objects.get(username="admin")
+        self.client.force_login(u)
+        url = reverse("session_urls:section_ror_progress", args=("Second Session",))
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+
+        progress = response.context["progress"]
+
+        self.assertEqual(len(progress.keys()), 2)

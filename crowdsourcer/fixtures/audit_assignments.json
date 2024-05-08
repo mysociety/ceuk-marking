@@ -3,6 +3,7 @@
   "model": "crowdsourcer.assigned",
   "pk": 1,
   "fields": {
+    "marking_session": 1,
     "user": 2,
     "section": 1,
     "authority": 1,
@@ -15,6 +16,7 @@
   "model": "crowdsourcer.assigned",
   "pk": 2,
   "fields": {
+    "marking_session": 1,
     "user": 2,
     "section": 2,
     "authority": 2,
@@ -27,6 +29,7 @@
   "model": "crowdsourcer.assigned",
   "pk": 3,
   "fields": {
+    "marking_session": 1,
     "user": 2,
     "section": 2,
     "authority": 3,
@@ -39,6 +42,7 @@
   "model": "crowdsourcer.assigned",
   "pk": 4,
   "fields": {
+    "marking_session": 1,
     "user": 2,
     "section": 3,
     "authority": 4,
@@ -50,6 +54,7 @@
   "model": "crowdsourcer.assigned",
   "pk": 5,
   "fields": {
+    "marking_session": 1,
     "user": 2,
     "section": 3,
     "authority": 3,
@@ -61,6 +66,7 @@
   "model": "crowdsourcer.assigned",
   "pk": 6,
   "fields": {
+    "marking_session": 1,
     "user": 2,
     "section": 4,
     "authority": 3,

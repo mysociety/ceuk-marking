@@ -557,5 +557,49 @@
       4
     ]
   }
+},
+{
+  "model": "crowdsourcer.question",
+  "pk": 2001,
+  "fields": {
+    "number": 1,
+    "number_part": null,
+    "description": "Second Session Section One Q1",
+    "criteria": "Second Session Criteria",
+    "section": 21,
+    "clarifications": "Second Session clarification",
+    "topic": "",
+    "weighting": "low",
+    "how_marked": "volunteer",
+    "question_type": "select_one",
+    "questiongroup": [
+      1,
+      2,
+      3,
+      4
+    ]
+  }
+},
+{
+  "model": "crowdsourcer.question",
+  "pk": 2002,
+  "fields": {
+    "number": 1,
+    "number_part": null,
+    "description": "Second Session Transport Q1",
+    "criteria": "Second Session Criteria",
+    "section": 22,
+    "clarifications": "Second Session clarification",
+    "topic": "",
+    "weighting": "low",
+    "how_marked": "volunteer",
+    "question_type": "select_one",
+    "questiongroup": [
+      1,
+      2,
+      3,
+      4
+    ]
+  }
 }
 ]

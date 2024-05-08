@@ -21,6 +21,7 @@ jobs:
         with:
           use_dev_image: false
           run: |
+            mkdir -p data
             mkdir -p applogs
             script/bootstrap
             script/test --coverage

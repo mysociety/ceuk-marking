@@ -5,7 +5,7 @@ from unittest import mock
 from django.core.management import call_command
 from django.test import TestCase
 
-from crowdsourcer.models import Question, Response
+from crowdsourcer.models import MarkingSession, Question, Response
 from crowdsourcer.scoring import get_section_maxes
 
 max_section = {
@@ -161,9 +161,12 @@ class ExportNoMarksTestCase(BaseCommandTestCase):
         "options.json",
     ]
 
+    def setUp(self):
+        self.session = MarkingSession.objects.get(label="Default")
+
     def test_max_calculation(self):
         scoring = {}
-        get_section_maxes(scoring)
+        get_section_maxes(scoring, self.session)
 
         self.assertEquals(scoring["section_maxes"], max_section)
         self.assertEquals(scoring["group_maxes"], max_totals)
@@ -174,7 +177,7 @@ class ExportNoMarksTestCase(BaseCommandTestCase):
         Question.objects.filter(pk=272).update(weighting="unweighted")
 
         scoring = {}
-        get_section_maxes(scoring)
+        get_section_maxes(scoring, self.session)
 
         local_max_w = max_weighted.copy()
         local_max_w["Buildings & Heating"] = {
@@ -197,9 +200,7 @@ class ExportNoMarksTestCase(BaseCommandTestCase):
     @mock.patch("crowdsourcer.scoring.EXCEPTIONS", {})
     @mock.patch("crowdsourcer.scoring.SCORE_EXCEPTIONS", {})
     def test_export_with_no_marks(self, write_mock):
-        self.call_command(
-            "export_marks",
-        )
+        self.call_command("export_marks", session="Default")
 
         expected_percent = [
             {
@@ -329,7 +330,7 @@ class ExportNoMarksNegativeQTestCase(BaseCommandTestCase):
         scoring = {}
         expected_max_q = deepcopy(max_questions)
         expected_max_q["Buildings & Heating"]["20"] = 0
-        get_section_maxes(scoring)
+        get_section_maxes(scoring, MarkingSession.objects.get(label="Default"))
 
         self.assertEquals(scoring["section_maxes"], max_section)
         self.assertEquals(scoring["group_maxes"], max_totals)
@@ -478,7 +479,7 @@ class ExportWithMarksTestCase(BaseCommandTestCase):
     @mock.patch("crowdsourcer.scoring.EXCEPTIONS", {})
     @mock.patch("crowdsourcer.scoring.SCORE_EXCEPTIONS", {})
     def test_export(self, write_mock):
-        self.call_command("export_marks")
+        self.call_command("export_marks", session="Default")
 
         percent, raw, linear = write_mock.call_args[0]
         self.assertEquals(raw, self.expected_raw)
@@ -491,7 +492,7 @@ class ExportWithMarksTestCase(BaseCommandTestCase):
     def test_export_with_unweighted_q(self, write_mock):
         Question.objects.filter(pk=272).update(weighting="unweighted")
 
-        self.call_command("export_marks")
+        self.call_command("export_marks", session="Default")
 
         expected_percent = deepcopy(self.expected_percent)
         expected_percent[0]["Buildings & Heating"] = 0.17
@@ -508,7 +509,7 @@ class ExportWithMarksTestCase(BaseCommandTestCase):
     def test_export_with_exceptions(self, write_mock):
         Response.objects.filter(question_id=282, authority_id=2).delete()
 
-        self.call_command("export_marks")
+        self.call_command("export_marks", session="Default")
         expected_linear = deepcopy(self.expected_linear)
 
         expected_linear[1] = (
@@ -552,7 +553,7 @@ class ExportWithMarksTestCase(BaseCommandTestCase):
         r.multi_option.add(161)
         r.save()
 
-        self.call_command("export_marks")
+        self.call_command("export_marks", session="Default")
         expected_linear = deepcopy(self.expected_linear)
 
         expected_linear[1] = (
@@ -610,7 +611,7 @@ class ExportWithMarksTestCase(BaseCommandTestCase):
         expected_percent[1]["raw_total"] = 0.07
         expected_percent[1]["weighted_total"] = 0.2
 
-        self.call_command("export_marks")
+        self.call_command("export_marks", session="Default")
         percent, raw, linear = write_mock.call_args[0]
         self.assertEquals(linear, expected_linear)
         self.assertEquals(raw, expected_raw)
@@ -622,7 +623,7 @@ class ExportWithMarksTestCase(BaseCommandTestCase):
     def test_export_with_council_type_exceptions(self, write_mock):
         Response.objects.filter(question_id=282, authority_id=2).delete()
 
-        self.call_command("export_marks")
+        self.call_command("export_marks", session="Default")
         expected_linear = deepcopy(self.expected_linear)
 
         expected_linear[1] = (
@@ -660,7 +661,7 @@ class ExportWithMarksTestCase(BaseCommandTestCase):
     def test_export_with_council_name_exceptions(self, write_mock):
         Response.objects.filter(question_id=282, authority_id=2).delete()
 
-        self.call_command("export_marks")
+        self.call_command("export_marks", session="Default")
         expected_linear = deepcopy(self.expected_linear)
 
         expected_linear[1] = (
@@ -703,7 +704,7 @@ class ExportWithMarksTestCase(BaseCommandTestCase):
         r.option_id = 205
         r.save()
 
-        self.call_command("export_marks")
+        self.call_command("export_marks", session="Default")
 
         expected_linear = deepcopy(self.expected_linear)
 
@@ -808,7 +809,7 @@ class ExportWithMarksNegativeQTestCase(BaseCommandTestCase):
     @mock.patch("crowdsourcer.scoring.EXCEPTIONS", {})
     @mock.patch("crowdsourcer.scoring.SCORE_EXCEPTIONS", {})
     def test_export(self, write_mock):
-        self.call_command("export_marks")
+        self.call_command("export_marks", session="Default")
 
         percent, raw, linear = write_mock.call_args[0]
         self.assertEquals(raw, self.expected_raw)
@@ -829,7 +830,7 @@ class ExportWithMultiMarksTestCase(BaseCommandTestCase):
     @mock.patch("crowdsourcer.scoring.EXCEPTIONS", {})
     @mock.patch("crowdsourcer.scoring.SCORE_EXCEPTIONS", {})
     def test_export(self, write_mock):
-        self.call_command("export_marks")
+        self.call_command("export_marks", session="Default")
 
         expected_percent = [
             {
@@ -934,7 +935,7 @@ class ExportWithMoreMarksTestCase(BaseCommandTestCase):
     @mock.patch("crowdsourcer.scoring.EXCEPTIONS", {})
     @mock.patch("crowdsourcer.scoring.SCORE_EXCEPTIONS", {})
     def test_export(self, write_mock):
-        self.call_command("export_marks")
+        self.call_command("export_marks", session="Default")
 
         expected_percent = [
             {
@@ -1039,7 +1040,7 @@ class ExportNoMarksCATestCase(BaseCommandTestCase):
 
     def test_max_calculation(self):
         scoring = {}
-        get_section_maxes(scoring)
+        get_section_maxes(scoring, MarkingSession.objects.get(label="Default"))
 
         ca_max_section = {
             **max_section,
@@ -1092,9 +1093,7 @@ class ExportNoMarksCATestCase(BaseCommandTestCase):
     @mock.patch("crowdsourcer.scoring.EXCEPTIONS", {})
     @mock.patch("crowdsourcer.scoring.SCORE_EXCEPTIONS", {})
     def test_export_with_no_marks(self, write_mock):
-        self.call_command(
-            "export_marks",
-        )
+        self.call_command("export_marks", session="Default")
 
         expected_percent = [
             {
@@ -1379,7 +1378,7 @@ class ExportWithMoreMarksCATestCase(BaseCommandTestCase):
     @mock.patch("crowdsourcer.scoring.EXCEPTIONS", {})
     @mock.patch("crowdsourcer.scoring.SCORE_EXCEPTIONS", {})
     def test_export(self, write_mock):
-        self.call_command("export_marks")
+        self.call_command("export_marks", session="Default")
 
         percent, raw, linear = write_mock.call_args[0]
 
@@ -1394,7 +1393,7 @@ class ExportWithMoreMarksCATestCase(BaseCommandTestCase):
         Response.objects.filter(pk=37).update(option_id=196)
         Response.objects.get(pk=36).multi_option.add(195)
 
-        self.call_command("export_marks")
+        self.call_command("export_marks", session="Default")
 
         expected_raw = self.expected_raw.copy()
         expected_percent = self.expected_percent.copy()
@@ -1426,3 +1425,137 @@ class ExportWithMoreMarksCATestCase(BaseCommandTestCase):
 
         self.assertEquals(raw, expected_raw)
         self.assertEquals(percent, expected_percent)
+
+
+class ExportSecondSessionTestCase(BaseCommandTestCase):
+    fixtures = [
+        "authorities.json",
+        "basics.json",
+        "users.json",
+        "questions.json",
+        "options.json",
+        "audit_marking_many_marks.json",
+        "audit_second_session_marks.json",
+    ]
+
+    max_section = {
+        "Second Session Section": {
+            "Single Tier": 1,
+            "District": 1,
+            "County": 1,
+            "Northern Ireland": 1,
+            "Combined Authority": 0,
+        },
+        "Transport": {
+            "Single Tier": 2,
+            "District": 2,
+            "County": 2,
+            "Northern Ireland": 2,
+            "Combined Authority": 0,
+        },
+    }
+    max_totals = {
+        "Single Tier": 3,
+        "District": 3,
+        "County": 3,
+        "Northern Ireland": 3,
+        "Combined Authority": 0,
+    }
+
+    max_questions = {
+        "Second Session Section": {
+            "1": 1,
+        },
+        "Transport": {"1": 2},
+    }
+
+    max_weighted = {
+        "Second Session Section": {
+            "Single Tier": 1,
+            "District": 1,
+            "County": 1,
+            "Northern Ireland": 1,
+            "Combined Authority": 0,
+        },
+        "Transport": {
+            "Single Tier": 1,
+            "District": 1,
+            "County": 1,
+            "Northern Ireland": 1,
+            "Combined Authority": 0,
+        },
+    }
+
+    expected_percent = [
+        {
+            "council": "Aberdeen City Council",
+            "gss": "S12000033",
+            "political_control": None,
+            "Second Session Section": 0.0,
+            "Transport": 0.5,
+            "raw_total": 0.33,
+            "weighted_total": 0.1,
+        },
+        {
+            "council": "Aberdeenshire Council",
+            "gss": "S12000034",
+            "political_control": None,
+            "Second Session Section": 0.0,
+            "Transport": 0.0,
+            "raw_total": 0.0,
+            "weighted_total": 0.0,
+        },
+        {
+            "council": "Adur District Council",
+            "gss": "E07000223",
+            "political_control": None,
+            "Second Session Section": 0.0,
+            "Transport": 0.0,
+            "raw_total": 0.0,
+            "weighted_total": 0.0,
+        },
+    ]
+
+    expected_raw = [
+        {
+            "Second Session Section": 0,
+            "Transport": 1,
+            "council": "Aberdeen City Council",
+            "gss": "S12000033",
+            "total": 1,
+        },
+        {
+            "Second Session Section": 0,
+            "Transport": 0,
+            "council": "Aberdeenshire Council",
+            "gss": "S12000034",
+            "total": 0,
+        },
+        {
+            "Second Session Section": 0,
+            "Transport": 0,
+            "council": "Adur District Council",
+            "gss": "E07000223",
+            "total": 0,
+        },
+    ]
+
+    def test_max_calculation(self):
+        scoring = {}
+        get_section_maxes(scoring, MarkingSession.objects.get(label="Second Session"))
+
+        self.assertEquals(scoring["section_maxes"], self.max_section)
+        self.assertEquals(scoring["group_maxes"], self.max_totals)
+        self.assertEquals(scoring["q_maxes"], self.max_questions)
+        self.assertEquals(scoring["section_weighted_maxes"], self.max_weighted)
+
+    @mock.patch("crowdsourcer.management.commands.export_marks.Command.write_files")
+    @mock.patch("crowdsourcer.scoring.EXCEPTIONS", {})
+    @mock.patch("crowdsourcer.scoring.SCORE_EXCEPTIONS", {})
+    def test_export(self, write_mock):
+        self.call_command("export_marks", session="Second Session")
+
+        percent, raw, linear = write_mock.call_args[0]
+
+        self.assertEquals(raw, self.expected_raw)
+        self.assertEquals(percent, self.expected_percent)

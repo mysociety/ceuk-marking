@@ -698,5 +698,45 @@
     "description": "None",
     "ordering": 3
   }
+},
+{
+  "model": "crowdsourcer.option",
+  "pk": 20011,
+  "fields": {
+    "question": 2001,
+    "score": 1,
+    "description": "Section Session Section Q1 Opt 1",
+    "ordering": 1
+  }
+},
+{
+  "model": "crowdsourcer.option",
+  "pk": 20012,
+  "fields": {
+    "question": 2001,
+    "score": 1,
+    "description": "Section Session Section Q1 Opt 2",
+    "ordering": 2
+  }
+},
+{
+  "model": "crowdsourcer.option",
+  "pk": 20021,
+  "fields": {
+    "question": 2002,
+    "score": 1,
+    "description": "Section Session Transport Q1 Opt 1",
+    "ordering": 1
+  }
+},
+{
+  "model": "crowdsourcer.option",
+  "pk": 20022,
+  "fields": {
+    "question": 2002,
+    "score": 2,
+    "description": "Section Session Transport Q1 Opt 2",
+    "ordering": 2
+  }
 }
 ]

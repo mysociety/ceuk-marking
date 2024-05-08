@@ -5,6 +5,7 @@ from django.urls import reverse
 from crowdsourcer.models import (
     Assigned,
     Marker,
+    MarkingSession,
     PublicAuthority,
     Response,
     ResponseType,
@@ -103,6 +104,38 @@ class TestAssignmentView(BaseTestCase):
         self.assertEqual(first["section_link"], "audit_section_authorities")
         self.assertEqual(second["assignment"].section.title, "Transport")
         self.assertEqual(second["section_link"], "audit_section_authorities")
+
+    def test_assigned_other_marking_session(self):
+        u = User.objects.get(username="other_marker")
+        self.client.force_login(u)
+        self.user = u
+
+        response = self.client.get("/")
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, "/Second%20Session/")
+        response = self.client.get(response.url)
+        context = response.context
+        progress = context["progress"]
+        self.assertEqual(len(progress), 1)
+        first = progress[0]
+
+        self.assertEqual(first["assignment"].section.title, "Transport")
+        self.assertEqual(first["total"], 1)
+        self.assertEqual(first["complete"], 0)
+
+    def test_assigned_inactive_marking_session(self):
+        u = User.objects.get(username="other_marker")
+        self.client.force_login(u)
+        self.user = u
+
+        session = MarkingSession.objects.get(label="Second Session")
+        session.active = False
+        session.save()
+
+        response = self.client.get("/")
+        context = response.context
+        progress = context["progress"]
+        self.assertEqual(len(progress), 0)
 
 
 class TestAssignmentCompletionStats(BaseTestCase):
@@ -207,9 +240,11 @@ class TestSaveView(BaseTestCase):
         self.assertEqual(response.status_code, 403)
 
         a = Assigned.objects.create(
+            marking_session=MarkingSession.objects.get(label="Default"),
             user=self.user,
             section=Section.objects.get(title="Biodiversity"),
             authority=PublicAuthority.objects.get(name="Aberdeenshire Council"),
+            response_type=ResponseType.objects.get(type="First Mark"),
         )
 
         response = self.client.get(url)
@@ -220,6 +255,72 @@ class TestSaveView(BaseTestCase):
 
         response = self.client.get(url)
         self.assertEqual(response.status_code, 403)
+
+    def test_no_access_if_wrong_stage_assigned(self):
+        url = reverse(
+            "authority_question_edit", args=("Aberdeenshire Council", "Biodiversity")
+        )
+
+        Assigned.objects.create(
+            marking_session=MarkingSession.objects.get(label="Default"),
+            user=self.user,
+            response_type=ResponseType.objects.get(type="Audit"),
+            section=Section.objects.get(title="Biodiversity"),
+            authority=PublicAuthority.objects.get(name="Aberdeenshire Council"),
+        )
+
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 403)
+
+    def test_no_access_if_wrong_session(self):
+        url = reverse(
+            "authority_question_edit", args=("Aberdeenshire Council", "Biodiversity")
+        )
+        response = self.client.get(url)
+
+        session = MarkingSession.objects.get(label="Second Session")
+
+        a = Assigned.objects.create(
+            marking_session=session,
+            user=self.user,
+            section=Section.objects.get(title="Biodiversity"),
+            authority=PublicAuthority.objects.get(name="Aberdeenshire Council"),
+            response_type=ResponseType.objects.get(type="First Mark"),
+        )
+
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 403)
+
+        session = MarkingSession.objects.get(label="Default")
+        a.marking_session = session
+        a.save()
+
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+
+    def test_questions(self):
+        url = reverse(
+            "authority_question_edit", args=("Aberdeenshire Council", "Transport")
+        )
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+
+        self.assertRegex(response.content, rb"vehicle fleet")
+        self.assertNotRegex(response.content, rb"Second Session")
+
+    def test_questions_alt_session(self):
+        u = User.objects.get(username="other_marker")
+        self.client.force_login(u)
+
+        url = reverse(
+            "session_urls:authority_question_edit",
+            args=("Second Session", "Aberdeenshire Council", "Transport"),
+        )
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+
+        self.assertRegex(response.content, rb"Second Session")
+        self.assertNotRegex(response.content, rb"vehicle fleet")
 
     def test_save(self):
         url = reverse(
@@ -554,6 +655,69 @@ class TestAllSectionProgressView(BaseTestCase):
         self.assertEquals(context["Transport"]["total"], 4)
 
 
+class TestVolunteerProgressView(BaseTestCase):
+    def test_non_admin_denied(self):
+        response = self.client.get(reverse("volunteer_progress", args=(2,)))
+        self.assertEquals(response.status_code, 403)
+
+    def test_view(self):
+        u = User.objects.get(username="admin")
+        self.client.force_login(u)
+        response = self.client.get(reverse("volunteer_progress", args=(2,)))
+        self.assertEquals(response.status_code, 200)
+        context = response.context["sections"]
+
+        self.assertEquals(len(context), 2)
+        b_and_h = context[0]
+        tran = context[1]
+
+        self.assertEqual(b_and_h["section"].title, "Buildings & Heating")
+        self.assertEqual(b_and_h["totals"]["total"], 1)
+        self.assertEqual(b_and_h["totals"]["complete"], 0)
+        self.assertEqual(tran["section"].title, "Transport")
+        self.assertEqual(tran["totals"]["total"], 2)
+        self.assertEqual(tran["totals"]["complete"], 1)
+
+    def test_view_other_session(self):
+        u = User.objects.get(username="admin")
+        self.client.force_login(u)
+        response = self.client.get(
+            reverse(
+                "session_urls:volunteer_progress",
+                args=(
+                    "Second Session",
+                    2,
+                ),
+            )
+        )
+        self.assertEquals(response.status_code, 200)
+        context = response.context["sections"]
+
+        self.assertEquals(len(context), 0)
+
+
+class TestAuthorityProgressView(BaseTestCase):
+    def test_non_admin_denied(self):
+        response = self.client.get(reverse("authority_progress", args=(2,)))
+        self.assertEquals(response.status_code, 403)
+
+    def test_view(self):
+        u = User.objects.get(username="admin")
+        self.client.force_login(u)
+
+        response = self.client.get(
+            reverse("authority_progress", args=("Aberdeen City Council",))
+        )
+        self.assertEquals(response.status_code, 200)
+        context = response.context["sections"]
+
+        self.assertEqual(len(context.keys()), 7)
+        self.assertEquals(context["Buildings & Heating"]["responses"], 3)
+        self.assertEquals(context["Buildings & Heating"]["total"], 7)
+        self.assertEquals(context["Transport"]["responses"], 0)
+        self.assertEquals(context["Transport"]["total"], 2)
+
+
 class TestAuthorityLoginView(BaseTestCase):
     def test_view(self):
         u = User.objects.get(username="admin")
@@ -595,10 +759,18 @@ class TestAuthorityLoginView(BaseTestCase):
         marker.authority = None
         marker.save()
 
-        Assigned.objects.create(user=u, authority=a1)
+        Assigned.objects.create(
+            marking_session=MarkingSession.objects.get(label="Default"),
+            user=u,
+            authority=a1,
+        )
 
         a2 = PublicAuthority.objects.get(name="Aberdeen City Council")
-        Assigned.objects.create(user=u, authority=a2)
+        Assigned.objects.create(
+            marking_session=MarkingSession.objects.get(label="Default"),
+            user=u,
+            authority=a2,
+        )
 
         self.client.force_login(u)
         last_login = u.last_login

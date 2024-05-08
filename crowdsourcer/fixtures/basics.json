@@ -1,8 +1,27 @@
 [
 {
+  "model": "crowdsourcer.markingsession",
+  "pk": 1,
+  "fields": {
+    "label": "Default",
+    "start_date": "2023-03-01",
+    "active": true
+  }
+},
+{
+  "model": "crowdsourcer.markingsession",
+  "pk": 2,
+  "fields": {
+    "label": "Second Session",
+    "start_date": "2023-03-01",
+    "active": true
+  }
+},
+{
   "model": "crowdsourcer.section",
   "pk": 1,
   "fields": {
+    "marking_session": 1,
     "title": "Buildings & Heating"
   }
 },
@@ -10,6 +29,7 @@
   "model": "crowdsourcer.section",
   "pk": 2,
   "fields": {
+    "marking_session": 1,
     "title": "Transport"
   }
 },
@@ -17,6 +37,7 @@
   "model": "crowdsourcer.section",
   "pk": 3,
   "fields": {
+    "marking_session": 1,
     "title": "Planning & Land Use"
   }
 },
@@ -24,6 +45,7 @@
   "model": "crowdsourcer.section",
   "pk": 4,
   "fields": {
+    "marking_session": 1,
     "title": "Governance & Finance"
   }
 },
@@ -31,6 +53,7 @@
   "model": "crowdsourcer.section",
   "pk": 5,
   "fields": {
+    "marking_session": 1,
     "title": "Biodiversity"
   }
 },
@@ -38,6 +61,7 @@
   "model": "crowdsourcer.section",
   "pk": 6,
   "fields": {
+    "marking_session": 1,
     "title": "Collaboration & Engagement"
   }
 },
@@ -45,7 +69,24 @@
   "model": "crowdsourcer.section",
   "pk": 7,
   "fields": {
+    "marking_session": 1,
     "title": "Waste Reduction & Food"
+  }
+},
+{
+  "model": "crowdsourcer.section",
+  "pk": 21,
+  "fields": {
+    "marking_session": 2,
+    "title": "Second Session Section"
+  }
+},
+{
+  "model": "crowdsourcer.section",
+  "pk": 22,
+  "fields": {
+    "marking_session": 2,
+    "title": "Transport"
   }
 },
 {

@@ -72,12 +72,31 @@
   }
 },
 {
+  "model": "auth.user",
+  "pk": 5,
+  "fields": {
+    "password": "",
+    "last_login": null,
+    "is_superuser": false,
+    "username": "other_marker",
+    "first_name": "Another",
+    "last_name": "Marker",
+    "email": "other_marker@example.org",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2022-12-19T13:40:36.075Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
   "model": "crowdsourcer.marker",
   "pk": 1,
   "fields": {
     "user_id": 3,
     "response_type_id": 2,
-    "authority_id": 2
+    "authority_id": 2,
+    "marking_session": [1]
   }
 },
 {
@@ -85,7 +104,17 @@
   "pk": 2,
   "fields": {
     "user_id": 4,
-    "response_type_id": 3
+    "response_type_id": 3,
+    "marking_session": [1]
+  }
+},
+{
+  "model": "crowdsourcer.marker",
+  "pk": 3,
+  "fields": {
+    "user_id": 5,
+    "response_type_id": 1,
+    "marking_session": [2]
   }
 }
 ]
