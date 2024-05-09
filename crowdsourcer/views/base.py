@@ -380,6 +380,9 @@ class BaseAuthorityAssignmentView(UserPassesTestMixin, ListView):
                 F("num_sections").asc(nulls_first=True), "name"
             )
 
+        context["total_sections"] = Section.objects.filter(
+            marking_session=self.request.current_session
+        ).count()
         context["authorities"] = authorities
         context["do_not_mark_only"] = do_not_mark_only
 
