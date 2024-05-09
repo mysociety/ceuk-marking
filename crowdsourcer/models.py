@@ -19,6 +19,7 @@ class MarkingSession(models.Model):
     start_date = models.DateField()
     active = models.BooleanField(default=False)
     stage = models.ForeignKey("ResponseType", null=True, on_delete=models.SET_NULL)
+    entity_name = models.TextField(max_length=200, null=True, blank=True)
 
     def __str__(self):
         return self.label
