@@ -93,35 +93,40 @@
   "model": "crowdsourcer.questiongroup",
   "pk": 1,
   "fields": {
-    "description": "Single Tier"
+    "description": "Single Tier",
+    "marking_session": [1,2]
   }
 },
 {
   "model": "crowdsourcer.questiongroup",
   "pk": 2,
   "fields": {
-    "description": "District"
+    "description": "District",
+    "marking_session": [1,2]
   }
 },
 {
   "model": "crowdsourcer.questiongroup",
   "pk": 3,
   "fields": {
-    "description": "County"
+    "description": "County",
+    "marking_session": [1,2]
   }
 },
 {
   "model": "crowdsourcer.questiongroup",
   "pk": 4,
   "fields": {
-    "description": "Northern Ireland"
+    "description": "Northern Ireland",
+    "marking_session": [1,2]
   }
 },
 {
   "model": "crowdsourcer.questiongroup",
   "pk": 5,
   "fields": {
-    "description": "Combined Authority"
+    "description": "Combined Authority",
+    "marking_session": [1,2]
   }
 },
 {

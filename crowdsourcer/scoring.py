@@ -337,7 +337,9 @@ def get_blank_section_scores(session):
         ).values_list("title", flat=True)
     }
 
-    for council in PublicAuthority.objects.filter(do_not_mark=False).all():
+    for council in PublicAuthority.objects.filter(
+        questiongroup__marking_session=session, do_not_mark=False
+    ).all():
         if council.type == "COMB":
             weighted[council.name] = ca_sections.copy()
             raw_scores[council.name] = ca_sections.copy()
@@ -561,7 +563,9 @@ def get_scoring_object(session):
     scoring["council_type"] = types
     scoring["council_control"] = control
     scoring["councils"] = {}
-    for council in PublicAuthority.objects.all():
+    for council in PublicAuthority.objects.filter(
+        questiongroup__marking_session=session
+    ):
         scoring["councils"][council.name] = council
 
     get_section_maxes(scoring, session)

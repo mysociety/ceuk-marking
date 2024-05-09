@@ -74,7 +74,9 @@ class AllMarksBaseCSVView(UserPassesTestMixin, ListView):
             .order_by("section__title", "number", "number_part")
         )
 
-        authorities = PublicAuthority.objects.all()
+        authorities = PublicAuthority.objects.filter(
+            questiongroup__marking_session=self.request.current_session
+        )
         authority_map = {}
         for authority in authorities:
             authority_map[authority.name] = {
@@ -285,7 +287,9 @@ class QuestionDataCSVView(UserPassesTestMixin, ListView):
             answers[response.authority.name] = data
 
         authorities = []
-        for authority in PublicAuthority.objects.all().order_by("name"):
+        for authority in PublicAuthority.objects.filter(
+            questiongroup__marking_session=self.request.current_session
+        ).order_by("name"):
             if answers.get(authority.name, None) is not None:
                 authorities.append(answers[authority.name])
             else:

@@ -343,9 +343,15 @@ class BaseAuthorityAssignmentView(UserPassesTestMixin, ListView):
 
     def get_queryset(self):
         rt = ResponseType.objects.get(type=self.stage)
-        qs = PublicAuthority.objects.all().annotate(
+        qs = PublicAuthority.objects.filter(
+            questiongroup__marking_session=self.request.current_session
+        ).annotate(
             num_sections=Subquery(
-                Assigned.objects.filter(authority=OuterRef("pk"), response_type=rt)
+                Assigned.objects.filter(
+                    authority=OuterRef("pk"),
+                    response_type=rt,
+                    section__marking_session=self.request.current_session,
+                )
                 .values("authority")
                 .annotate(num_sections=Count("pk"))
                 .values("num_sections")
