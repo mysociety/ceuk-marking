@@ -42,6 +42,7 @@ class QuestionGroup(models.Model):
     """
 
     description = models.TextField(max_length=200)
+    marking_session = models.ManyToManyField(MarkingSession)
 
     def __str__(self):
         return self.description
