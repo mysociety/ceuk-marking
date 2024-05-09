@@ -44,10 +44,10 @@
                           </button>
                           <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
                             <li>
-                              <a class="dropdown-item d-flex" href="{% session_url 'authority_assignments' %}">Authorities assigned</a>
+                              <a class="dropdown-item d-flex" href="{% session_url 'authority_assignments' %}">{{ marking_session.entity_name|default:"Council" }}s assigned</a>
                             </li>
                             <li>
-                                <a class="dropdown-item d-flex" href="{% session_url 'all_authority_progress' %}">Authority Progress</a>
+                                <a class="dropdown-item d-flex" href="{% session_url 'all_authority_progress' %}">{{ marking_session.entity_name|default:"Council" }} Progress</a>
                             </li>
                             <li>
                                 <a class="dropdown-item d-flex" href="{% session_url 'all_section_progress' %}">Section Progress</a>
@@ -65,16 +65,16 @@
                           </button>
                           <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
                             <li>
-                                <a class="dropdown-item d-flex" href="{% session_url 'all_authority_ror_progress' %}">Authority Progress</a>
+                                <a class="dropdown-item d-flex" href="{% session_url 'all_authority_ror_progress' %}">{{ marking_session.entity_name|default:"Council" }} Progress</a>
                             </li>
                             <li>
-                                <a class="dropdown-item d-flex" href="{% session_url 'authority_login_report' %}">Authority Login Report</a>
+                                <a class="dropdown-item d-flex" href="{% session_url 'authority_login_report' %}">{{ marking_session.entity_name|default:"Council" }} Login Report</a>
                             </li>
                             <li>
                                 <a class="dropdown-item d-flex" href="{% session_url 'section_ror_progress' %}">Section Progress</a>
                             </li>
                             <li>
-                                <a class="dropdown-item d-flex" href="{% session_url 'authority_contacts_report' %}">Authority Contacts</a>
+                                <a class="dropdown-item d-flex" href="{% session_url 'authority_contacts_report' %}">{{ marking_session.entity_name|default:"Council" }} Contacts</a>
                             </li>
                           </ul>
                           </div>
@@ -95,7 +95,7 @@
                                 <a class="dropdown-item d-flex" href="{% session_url 'all_audit_marks_csv' %}">Audit Mark Scores</a>
                             </li>
                             <li>
-                                <a class="dropdown-item d-flex" href="{% session_url 'council_disagree_mark_csv' %}">Council disagree with positive mark</a>
+                              <a class="dropdown-item d-flex" href="{% session_url 'council_disagree_mark_csv' %}">{{ marking_session.entity_name|default:"Council" }} disagree with positive mark</a>
                             </li>
                             <li>
                                 <a class="dropdown-item d-flex" href="{% session_url 'stats_select_question' %}">Per question data</a>
@@ -127,10 +127,10 @@
                           </button>
                           <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
                             <li>
-                              <a class="dropdown-item d-flex" href="{% session_url 'audit_authority_assignments' %}">Authorities assigned</a>
+                              <a class="dropdown-item d-flex" href="{% session_url 'audit_authority_assignments' %}">{{ marking_session.entity_name|default:"Council" }}s assigned</a>
                             </li>
                             <li>
-                                <a class="dropdown-item d-flex" href="{% session_url 'audit_all_authority_progress' %}">Authority Progress</a>
+                                <a class="dropdown-item d-flex" href="{% session_url 'audit_all_authority_progress' %}">{{ marking_session.entity_name|default:"Council" }} Progress</a>
                             </li>
                             <li>
                                 <a class="dropdown-item d-flex" href="{% session_url 'audit_all_section_progress' %}">Section Progress</a>

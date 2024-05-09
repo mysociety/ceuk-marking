@@ -56,7 +56,7 @@ class BaseAllAuthorityProgressView(UserPassesTestMixin, ListView):
     context_object_name = "authorities"
     types = ["volunteer", "national_volunteer"]
     stage = "First Mark"
-    page_title = "Authorities Progress"
+    page_title = "Progress"
     url_pattern = "authority_progress"
 
     def test_func(self):
@@ -120,6 +120,13 @@ class BaseAllAuthorityProgressView(UserPassesTestMixin, ListView):
             council_totals["total"] = council_totals["total"] + 1
             if a.num_questions == a.num_responses:
                 council_totals["complete"] = council_totals["complete"] + 1
+
+        if self.request.current_session.entity_name is not None:
+            self.page_title = (
+                f"{self.request.current_session.entity_name}s {self.page_title }"
+            )
+        else:
+            self.page_title = f"Councils {self.page_title }"
 
         context["councils"] = council_totals
         context["authorities"] = authorities
@@ -365,7 +372,7 @@ class AllAuthorityRoRProgressView(BaseAllAuthorityProgressView):
     template_name = "crowdsourcer/all_authority_ror_progress.html"
     types = ["volunteer", "national_volunteer", "foi"]
     stage = "Right of Reply"
-    page_title = "Authorities Right of Reply Progress"
+    page_title = "Right of Reply Progress"
 
 
 class AuthorityLoginReport(UserPassesTestMixin, ListView):

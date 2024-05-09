@@ -5,11 +5,11 @@
     <h1 class="mb-4">Sign in</h1>
     <a href="{% url 'login' %}">Sign in</a>
 {% else %}
-    <h1 class="mb-4">Authority Assigned</h1>
+    <h1 class="mb-4">{{ marking_session.entity_name }} Assigned</h1>
     <table class="table">
         <thead>
             <tr>
-                <th>Authority {% if do_not_mark_only %}<a href="./">ALL</a>{% else %}<a href="?do_not_mark_only=1">DNM</a>{% endif %}</th>
+                <th>{{ marking_session.entity_name }} {% if do_not_mark_only %}<a href="./">ALL</a>{% else %}<a href="?do_not_mark_only=1">DNM</a>{% endif %}</th>
                 <th>Sections Assigned <a href="?sort=asc">&#9650;</a>/<a href="?sort=desc">&#9660;</a></th>
             </tr>
         </thead>

@@ -3,7 +3,7 @@
 {% load crowdsourcer_tags %}
 
 {% block content %}
-    <h1 class="mb-4">{{ section_title }} authorities</h1>
+<h1 class="mb-4">{{ section_title }} {{ marking_session.entity_name|default:"Council" }}s</h1>
     <table class="table">
         <thead>
             <tr>
