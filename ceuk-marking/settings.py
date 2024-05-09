@@ -30,6 +30,7 @@ env = environ.Env(
     ALLOWED_HOSTS=(list, []),
     HIDE_DEBUG_TOOLBAR=(bool, False),
     LOG_LEVEL=(str, "WARNING"),
+    BRAND=(str, "default"),
 )
 environ.Env.read_env(BASE_DIR / ".env")
 
@@ -41,6 +42,7 @@ HIDE_DEBUG_TOOLBAR = env("HIDE_DEBUG_TOOLBAR")
 MAPIT_URL = env("MAPIT_URL")
 MAPIT_API_KEY = env("MAPIT_API_KEY")
 LOG_LEVEL = env("LOG_LEVEL")
+BRAND = env("BRAND")
 
 # make sure CSRF checking still works behind load balancers
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
