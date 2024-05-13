@@ -1,0 +1,40 @@
+{% extends 'crowdsourcer/base.html' %}
+
+{% load crowdsourcer_tags %}
+
+{% block content %}
+{% if show_login %}
+    <h1 class="mb-4">Sign in</h1>
+    <a href="{% url 'login' %}">Sign in</a>
+{% else %}
+    <h1 class="mb-4">Volunteers</h1>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Name/Email</th>
+                <th>Stage</th>
+                <th>Assignments</th>
+                <th>Active</th>
+            </tr>
+        </thead>
+        <tbody>
+          {% for volunteer in volunteers %}
+            <tr>
+                <td>
+                    <a href="{% session_url 'edit_volunteer' volunteer.pk %}">{{ volunteer.name }} {{ volunteer.email }}</a>
+                </td>
+                <td>
+                    {{ volunteer.marker.response_type|default:"First Mark" }}
+                </td>
+                <td>
+                    <a href="{% session_url 'volunteer_progress' volunteer.pk %}">{{ volunteer.num_assignments }}</a>
+                </td>
+                <td>
+                    {{ volunteer.is_active }}
+                </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+    </table>
+{% endif %}
+{% endblock %}

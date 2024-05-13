@@ -376,4 +376,5 @@ class Marker(models.Model):
         permissions = [
             ("can_view_all_responses", "Can view all responses"),
             ("can_view_stats", "Can view stats"),
+            ("can_manage_users", "Can manage users"),
         ]
