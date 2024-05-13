@@ -228,11 +228,10 @@ class VolunteerProgressView(UserPassesTestMixin, ListView):
     def get_queryset(self):
         user = User.objects.get(id=self.kwargs["id"])
 
+        # XXX need to show stage on list
         sections = Section.objects.filter(
             marking_session=self.request.current_session,
-            id__in=Assigned.objects.filter(
-                user=user, response_type=self.request.current_stage
-            ).values_list("section", flat=True),
+            id__in=Assigned.objects.filter(user=user).values_list("section", flat=True),
         )
 
         return sections
@@ -250,68 +249,79 @@ class VolunteerProgressView(UserPassesTestMixin, ListView):
             types = ["volunteer", "national_volunteer", "foi"]
 
         for section in sections:
-            assigned = Assigned.objects.filter(
-                user=user, section=section, response_type=self.request.current_stage
-            ).values_list("authority", flat=True)
+            section_details = {
+                "section": section,
+                "totals": {"total": 0, "complete": 0},
+                "responses": {},
+            }
+            for rt in ResponseType.objects.all():
+                assigned = Assigned.objects.filter(
+                    user=user,
+                    section=section,
+                    response_type=rt,
+                ).values_list("authority", flat=True)
 
-            authorities = (
-                PublicAuthority.objects.filter(id__in=assigned)
-                .annotate(
-                    num_questions=Subquery(
-                        Question.objects.filter(
-                            section=section,
-                            questiongroup=OuterRef("questiongroup"),
-                            how_marked__in=types,
+                authorities = (
+                    PublicAuthority.objects.filter(id__in=assigned)
+                    .annotate(
+                        num_questions=Subquery(
+                            Question.objects.filter(
+                                section=section,
+                                questiongroup=OuterRef("questiongroup"),
+                                how_marked__in=types,
+                            )
+                            .values("questiongroup")
+                            .annotate(num_questions=Count("pk"))
+                            .values("num_questions")
+                        ),
+                    )
+                    .annotate(
+                        num_responses=Subquery(
+                            Response.objects.filter(
+                                question__section=section,
+                                authority=OuterRef("pk"),
+                                response_type=rt,
+                            )
+                            .exclude(id__in=Response.null_responses())
+                            .values("authority")
+                            .annotate(
+                                response_count=Count("question_id", distinct=True)
+                            )
+                            .values("response_count")
                         )
-                        .values("questiongroup")
-                        .annotate(num_questions=Count("pk"))
-                        .values("num_questions")
-                    ),
-                )
-                .annotate(
-                    num_responses=Subquery(
-                        Response.objects.filter(
-                            question__section=section,
-                            authority=OuterRef("pk"),
-                            response_type=self.request.current_stage,
-                        )
-                        .exclude(id__in=Response.null_responses())
-                        .values("authority")
-                        .annotate(response_count=Count("question_id", distinct=True))
-                        .values("response_count")
+                    )
+                    .annotate(
+                        qs_left=Cast(F("num_responses"), FloatField())
+                        / Cast(F("num_questions"), FloatField())
                     )
                 )
-                .annotate(
-                    qs_left=Cast(F("num_responses"), FloatField())
-                    / Cast(F("num_questions"), FloatField())
-                )
-            )
 
-            sort_order = self.request.GET.get("sort", None)
-            if sort_order is None or sort_order != "asc":
-                authorities = authorities.order_by(
-                    F("qs_left").desc(nulls_last=True), "name"
-                )
+                sort_order = self.request.GET.get("sort", None)
+                if sort_order is None or sort_order != "asc":
+                    authorities = authorities.order_by(
+                        F("qs_left").desc(nulls_last=True), "name"
+                    )
 
-            else:
-                authorities = authorities.order_by(
-                    F("qs_left").asc(nulls_first=True), "name"
-                )
+                else:
+                    authorities = authorities.order_by(
+                        F("qs_left").asc(nulls_first=True), "name"
+                    )
 
-            council_totals = {"total": 0, "complete": 0}
+                council_totals = {"total": 0, "complete": 0}
 
-            for a in authorities:
-                council_totals["total"] = council_totals["total"] + 1
-                if a.num_questions == a.num_responses:
-                    council_totals["complete"] = council_totals["complete"] + 1
+                for a in authorities:
+                    council_totals["total"] = council_totals["total"] + 1
+                    if a.num_questions == a.num_responses:
+                        council_totals["complete"] = council_totals["complete"] + 1
 
-            progress.append(
-                {
-                    "section": section,
+                section_details["responses"][rt.type] = {
                     "authorities": authorities,
                     "totals": council_totals,
                 }
-            )
+                section_details["totals"]["total"] += council_totals["total"]
+                section_details["totals"]["complete"] += council_totals["complete"]
+
+            progress.append(section_details)
 
         if self.request.current_stage.type == "First Mark":
             authority_url_name = "authority_question_edit"
