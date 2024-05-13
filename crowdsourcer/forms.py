@@ -1,3 +1,4 @@
+from django.contrib.auth.models import User
 from django.core.validators import validate_comma_separated_integer_list
 from django.db.models.query import QuerySet
 from django.forms import (
@@ -9,9 +10,10 @@ from django.forms import (
     Textarea,
     TextInput,
     formset_factory,
+    inlineformset_factory,
 )
 
-from crowdsourcer.models import Option, Response
+from crowdsourcer.models import Marker, Option, PublicAuthority, Response
 
 
 class ResponseFormSet(BaseFormSet):
@@ -341,3 +343,31 @@ class AuditResponseForm(ModelForm):
 AuditResponseFormset = formset_factory(
     formset=ResponseFormSet, form=AuditResponseForm, extra=0
 )
+
+
+class UserForm(ModelForm):
+    class Meta:
+        model = User
+        fields = [
+            "first_name",
+            "last_name",
+            "email",
+            "username",
+            "is_active",
+        ]
+
+
+class MarkerForm(ModelForm):
+    def __init__(self, session=None, **kwargs):
+        super().__init__(**kwargs)
+        if session is not None:
+            self.fields["authority"].queryset = PublicAuthority.objects.filter(
+                questiongroup__marking_session=session
+            )
+
+    class Meta:
+        model = Marker
+        fields = ["response_type", "authority"]
+
+
+MarkerFormset = inlineformset_factory(User, Marker, form=MarkerForm, can_delete=False)
