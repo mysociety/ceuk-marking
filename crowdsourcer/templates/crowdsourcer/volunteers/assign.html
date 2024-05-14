@@ -1,13 +1,17 @@
 {% extends 'crowdsourcer/base.html' %}
 
-{% load crowdsourcer_tags django_bootstrap5 %}
+{% load crowdsourcer_tags django_bootstrap5 static %}
+
+{% block script %}
+<script type="module" src="{% static 'js/volunteer.esm.js' %}"></script>
+{% endblock %}
 
 {% block content %}
 {% if show_login %}
     <h1 class="mb-4">Sign in</h1>
     <a href="{% url 'login' %}">Sign in</a>
 {% else %}
-    <h1 class="mb-4">Assign to Volunteer</h1>
+    <h3 class="mb-4">Assign to {{ user.username }}</h3>
 
 
     <form action="" method="post">
@@ -22,7 +26,7 @@
           {% bootstrap_formset_errors formset %}
         {{ formset.management_form }}
         <div class="container">
-            <div class="row">
+            <div class="row border-bottom">
                 <div class="col-sm">
                     Section
                 </div>
@@ -51,19 +55,21 @@
                       </div>
                   </div>
                 {% endif %}
-                <fieldset class="py-4 py-md-5 border-top">
+                <fieldset class="pt-1">
                     {% bootstrap_form_errors form %}
-                    <div class="row">
+                    <div class="row py-0">
                         <div class="col-sm">
-                            {% bootstrap_field form.section show_label="skip" %}
+                            <div class="mb-dd-4">
+                                {{ form.section }}
+                            </div>
                         </div>
 
                         <div class="col-sm">
-                            {% bootstrap_field form.response_type show_label="skip" %}
+                            {{ form.response_type }}
                         </div>
 
                         <div class="col-sm">
-                            {% bootstrap_field form.authority show_label="skip" %}
+                            {{ form.authority }}
                         </div>
 
                         <div class="col-sm">

@@ -394,11 +394,30 @@ class VolunteerAssignentForm(ModelForm):
             if self.fields["marking_session"].initial is None:
                 self.fields["marking_session"].initial = session
 
+        if self.instance.section is not None:
+            assigned_authorities = (
+                Assigned.objects.filter(
+                    response_type=self.instance.response_type,
+                    marking_session=session,
+                    section=self.instance.section,
+                )
+                .exclude(id=self.instance.id)
+                .values_list("authority_id", flat=True)
+            )
+            self.fields["authority"].queryset = PublicAuthority.objects.exclude(
+                id__in=assigned_authorities
+            ).order_by("name")
+
     class Meta:
         model = Assigned
         fields = ["section", "response_type", "authority", "marking_session", "active"]
         widgets = {
-            "marking_session": HiddenInput(),
+            "marking_session": HiddenInput(
+                attrs={"class": "form-select field_session"}
+            ),
+            "section": Select(attrs={"class": "form-select field_section"}),
+            "response_type": Select(attrs={"class": "form-select field_rt"}),
+            "authority": Select(attrs={"class": "form-select field_authority"}),
         }
 
 
