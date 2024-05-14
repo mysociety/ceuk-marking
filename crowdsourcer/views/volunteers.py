@@ -3,12 +3,13 @@ import logging
 from django.contrib.auth.mixins import UserPassesTestMixin
 from django.contrib.auth.models import User
 from django.db.models import Count, OuterRef, Subquery
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from django.views.generic import FormView, ListView
 
 from crowdsourcer.forms import MarkerFormset, UserForm, VolunteerAssignmentFormset
-from crowdsourcer.models import Assigned
+from crowdsourcer.models import Assigned, PublicAuthority
 
 logger = logging.getLogger(__name__)
 
@@ -120,6 +121,7 @@ class VolunteerAssignentView(VolunteerAccessMixin, FormView):
             **self.get_form_kwargs()
         )
 
+        context["user"] = self.user
         context["formset"] = formset
 
         return context
@@ -133,3 +135,26 @@ class VolunteerAssignentView(VolunteerAccessMixin, FormView):
     def form_invalid(self, form):
         print(form.errors)
         return super().form_invalid(form)
+
+
+class AvailableAssignmentAuthorities(VolunteerAccessMixin, ListView):
+    context_object_name = "authorities"
+
+    def get_queryset(self):
+        return PublicAuthority.objects.filter(
+            questiongroup__marking_session__id=self.request.GET["ms"]
+        ).exclude(
+            id__in=Assigned.objects.filter(
+                response_type=self.request.GET["rt"],
+                marking_session=self.request.GET["ms"],
+                section=self.request.GET["s"],
+            ).values_list("authority_id", flat=True)
+        )
+
+    def render_to_response(self, context, **response_kwargs):
+        data = []
+
+        for a in context["authorities"]:
+            data.append({"name": a.name, "id": a.id})
+
+        return JsonResponse({"results": data})
