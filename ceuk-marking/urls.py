@@ -228,6 +228,11 @@ session_patterns = [
         name="list_volunteers",
     ),
     path(
+        "volunteers/<user_id>/assign/",
+        volunteers.VolunteerAssignentView.as_view(),
+        name="assign_volunteer",
+    ),
+    path(
         "volunteers/<pk>/",
         volunteers.VolunteerEditView.as_view(),
         name="edit_volunteer",

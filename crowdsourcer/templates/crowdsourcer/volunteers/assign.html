@@ -1,0 +1,87 @@
+{% extends 'crowdsourcer/base.html' %}
+
+{% load crowdsourcer_tags django_bootstrap5 %}
+
+{% block content %}
+{% if show_login %}
+    <h1 class="mb-4">Sign in</h1>
+    <a href="{% url 'login' %}">Sign in</a>
+{% else %}
+    <h1 class="mb-4">Assign to Volunteer</h1>
+
+
+    <form action="" method="post">
+        {% csrf_token %}
+        {% if formset.total_error_count > 0 %}
+          <div class="mb-4">
+              <div class="col-md-7 text-danger">
+                There were some errors which are highlighted in red below.
+              </div>
+          </div>
+        {% endif %}
+          {% bootstrap_formset_errors formset %}
+        {{ formset.management_form }}
+        <div class="container">
+            <div class="row">
+                <div class="col-sm">
+                    Section
+                </div>
+
+                <div class="col-sm">
+                    Stage
+                </div>
+
+                <div class="col-sm">
+                    {{ marking_section.entity_name|default:"Council" }}
+                </div>
+
+                <div class="col-sm">
+                    Active
+                </div>
+
+                <div class="col-sm">
+                    Delete
+                </div>
+            </div>
+            {% for form in formset %}
+                {% if form.total_error_count > 0 %}
+                  <div class="mb-4">
+                      <div class="col-md-7 text-danger">
+                        There were some errors which are highlighted in red below.
+                      </div>
+                  </div>
+                {% endif %}
+                <fieldset class="py-4 py-md-5 border-top">
+                    {% bootstrap_form_errors form %}
+                    <div class="row">
+                        <div class="col-sm">
+                            {% bootstrap_field form.section show_label="skip" %}
+                        </div>
+
+                        <div class="col-sm">
+                            {% bootstrap_field form.response_type show_label="skip" %}
+                        </div>
+
+                        <div class="col-sm">
+                            {% bootstrap_field form.authority show_label="skip" %}
+                        </div>
+
+                        <div class="col-sm">
+                            {% bootstrap_field form.active %}
+                        </div>
+
+                        <div class="col-sm">
+                            {% bootstrap_field form.DELETE %}
+                        </div>
+                    </div>
+                    {{ form.id }}
+                    {{ form.user }}
+                    {{ form.marking_session }}
+                </fieldset>
+            {% endfor %}
+        </div>
+        <input type="submit" value="Update">
+    </form>
+
+{% endif %}
+{% endblock %}

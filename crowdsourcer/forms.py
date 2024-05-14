@@ -13,7 +13,14 @@ from django.forms import (
     inlineformset_factory,
 )
 
-from crowdsourcer.models import Marker, Option, PublicAuthority, Response
+from crowdsourcer.models import (
+    Assigned,
+    Marker,
+    Option,
+    PublicAuthority,
+    Response,
+    Section,
+)
 
 
 class ResponseFormSet(BaseFormSet):
@@ -371,3 +378,30 @@ class MarkerForm(ModelForm):
 
 
 MarkerFormset = inlineformset_factory(User, Marker, form=MarkerForm, can_delete=False)
+
+
+class VolunteerAssignentForm(ModelForm):
+    def __init__(self, session=None, **kwargs):
+        super().__init__(**kwargs)
+        if session is not None:
+            self.fields["authority"].queryset = PublicAuthority.objects.filter(
+                questiongroup__marking_session=session,
+            ).order_by("name")
+            self.fields["section"].queryset = Section.objects.filter(
+                marking_session=session
+            )
+
+            if self.fields["marking_session"].initial is None:
+                self.fields["marking_session"].initial = session
+
+    class Meta:
+        model = Assigned
+        fields = ["section", "response_type", "authority", "marking_session", "active"]
+        widgets = {
+            "marking_session": HiddenInput(),
+        }
+
+
+VolunteerAssignmentFormset = inlineformset_factory(
+    User, Assigned, form=VolunteerAssignentForm, extra=1
+)
