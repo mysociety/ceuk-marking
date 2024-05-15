@@ -8,8 +8,13 @@ from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from django.views.generic import FormView, ListView
 
-from crowdsourcer.forms import MarkerFormset, UserForm, VolunteerAssignmentFormset
-from crowdsourcer.models import Assigned, PublicAuthority
+from crowdsourcer.forms import (
+    MarkerFormset,
+    UserForm,
+    VolunteerAssignmentFormset,
+    VolunteerBulkAssignForm,
+)
+from crowdsourcer.models import Assigned, Marker, PublicAuthority, ResponseType, Section
 
 logger = logging.getLogger(__name__)
 
@@ -158,3 +163,70 @@ class AvailableAssignmentAuthorities(VolunteerAccessMixin, ListView):
             data.append({"name": a.name, "id": a.id})
 
         return JsonResponse({"results": data})
+
+
+class BulkAssignVolunteer(VolunteerAccessMixin, FormView):
+    template_name = "crowdsourcer/volunteers/bulk_assign.html"
+    form_class = VolunteerBulkAssignForm
+
+    def get_initial(self):
+        kwargs = super().get_initial()
+        kwargs["session"] = self.request.current_session.label
+        return kwargs
+
+    def get_success_url(self):
+        return reverse(
+            "session_urls:list_volunteers",
+            kwargs={"marking_session": self.request.current_session.label},
+        )
+
+    def form_valid(self, form):
+        ms = self.request.current_session
+        rt = ResponseType.objects.get(type=form.cleaned_data.get("response_type"))
+
+        for _, row in form.volunteer_df.iterrows():
+            u, c = User.objects.update_or_create(
+                username=row["Email"],
+                defaults={
+                    "email": row["Email"],
+                    "first_name": row["First Name"],
+                    "last_name": row["Last Name"],
+                },
+            )
+            u.save()
+
+            m, c = Marker.objects.update_or_create(user=u, response_type=rt)
+            m.marking_session.add(ms)
+
+            max_assignments = form.cleaned_data["num_assignments"]
+            num_assignments = max_assignments
+            existing_assignments = Assigned.objects.filter(
+                user=u, marking_session=ms, response_type=rt
+            ).count()
+
+            if existing_assignments >= max_assignments:
+                continue
+
+            num_assignments = max_assignments - existing_assignments
+
+            section = Section.objects.get(title=row["Assigned Section"])
+            assigned = Assigned.objects.filter(
+                marking_session=ms,
+                section=section,
+                response_type=rt,
+            ).values("authority")
+
+            to_assign = PublicAuthority.objects.filter(
+                questiongroup__marking_session=ms
+            ).exclude(id__in=assigned)[:num_assignments]
+
+            for a in to_assign:
+                a, c = Assigned.objects.update_or_create(
+                    user=u,
+                    marking_session=ms,
+                    response_type=rt,
+                    section=section,
+                    authority=a,
+                )
+
+        return super().form_valid(form)

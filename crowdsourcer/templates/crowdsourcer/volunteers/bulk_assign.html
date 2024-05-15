@@ -1,0 +1,20 @@
+{% extends 'crowdsourcer/base.html' %}
+
+{% load crowdsourcer_tags django_bootstrap5 %}
+
+{% block content %}
+{% if show_login %}
+    <h1 class="mb-4">Sign in</h1>
+    <a href="{% url 'login' %}">Sign in</a>
+{% else %}
+    <h1 class="mb-4">Bulk Volunteer Assignment</h1>
+
+
+    <form enctype="multipart/form-data" action="" method="post">
+        {% csrf_token %}
+        {% bootstrap_form form %}
+        <input type="submit" value="Assign">
+    </form>
+
+{% endif %}
+{% endblock %}

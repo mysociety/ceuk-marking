@@ -7,6 +7,9 @@
     <h1 class="mb-4">Sign in</h1>
     <a href="{% url 'login' %}">Sign in</a>
 {% else %}
+    <div class="float-end">
+        <a href="{% session_url 'bulk_assign_volunteer' %}">Bulk assignment</a>
+    </div>
     <h1 class="mb-4">Volunteers</h1>
     <table class="table">
         <thead>
@@ -21,13 +24,14 @@
           {% for volunteer in volunteers %}
             <tr>
                 <td>
-                    <a href="{% session_url 'edit_volunteer' volunteer.pk %}">{{ volunteer.name }} {{ volunteer.email }}</a>
+                    <a title="edit user" href="{% session_url 'edit_volunteer' volunteer.pk %}">{{ volunteer.name }} {{ volunteer.email }}</a>
                 </td>
                 <td>
                     {{ volunteer.marker.response_type|default:"First Mark" }}
                 </td>
                 <td>
-                    <a href="{% session_url 'volunteer_progress' volunteer.pk %}">{{ volunteer.num_assignments }}</a>
+                    <a title="show progress" href="{% session_url 'volunteer_progress' volunteer.pk %}">{{ volunteer.num_assignments }}</a>
+                    <a title="assign to volunteer" href="{% session_url 'assign_volunteer' volunteer.pk %}">edit</a>
                 </td>
                 <td>
                     {{ volunteer.is_active }}
