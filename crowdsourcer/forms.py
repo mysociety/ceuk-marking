@@ -1,10 +1,19 @@
+from collections import defaultdict
+
 from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
 from django.core.validators import validate_comma_separated_integer_list
 from django.db.models.query import QuerySet
 from django.forms import (
     BaseFormSet,
+    BooleanField,
+    CharField,
     CheckboxSelectMultiple,
+    ChoiceField,
+    FileField,
+    Form,
     HiddenInput,
+    IntegerField,
     ModelForm,
     Select,
     Textarea,
@@ -13,12 +22,16 @@ from django.forms import (
     inlineformset_factory,
 )
 
+import pandas as pd
+
 from crowdsourcer.models import (
     Assigned,
     Marker,
+    MarkingSession,
     Option,
     PublicAuthority,
     Response,
+    ResponseType,
     Section,
 )
 
@@ -424,3 +437,126 @@ class VolunteerAssignentForm(ModelForm):
 VolunteerAssignmentFormset = inlineformset_factory(
     User, Assigned, form=VolunteerAssignentForm, extra=1
 )
+
+
+class VolunteerBulkAssignForm(Form):
+    volunteer_list = FileField(
+        required=True,
+        label="Volunteer list (Excel file)",
+        help_text="Volunteers will be loaded from sheet 'Volunteers' using column headers 'First Name', 'Last Name', 'Email', 'Assigned Section'",
+    )
+    num_assignments = IntegerField(
+        required=True,
+        label="Number of assignments per volunteer",
+    )
+    response_type = ChoiceField(required=True, choices=[])
+    session = CharField(required=True, widget=HiddenInput)
+    always_assign = BooleanField(
+        required=False, help_text="Override checks and assign as much as possible"
+    )
+
+    def __init__(self, response_choices, **kwargs):
+        super().__init__(**kwargs)
+        self.fields["response_type"].choices = response_choices
+
+    def clean(self):
+        data = self.cleaned_data.get("volunteer_list")
+
+        try:
+            df = pd.read_excel(
+                data,
+                usecols=[
+                    "First Name",
+                    "Last Name",
+                    "Email",
+                    "Council Area",
+                    "Assigned Section",
+                ],
+                sheet_name="Volunteers",
+            )
+        except ValueError as v:
+            raise ValidationError(f"Problem processing excel file: {v}")
+
+        errors = []
+        section_names = pd.unique(df["Assigned Section"])
+        for section in section_names:
+            try:
+                s = Section.objects.get(title=section)
+            except s.DoesNotExist:
+                errors.append(
+                    ValidationError(
+                        f"Cannot assign to section '{section}', it does not exist"
+                    )
+                )
+
+        # need to correct this before we can do any further processing because otherwise
+        # the assigment maths will be off
+        if errors:
+            raise ValidationError(errors)
+
+        if not self.cleaned_data["always_assign"]:
+            rt = ResponseType.objects.get(type=self.cleaned_data["response_type"])
+            ms = MarkingSession.objects.get(label=self.cleaned_data["session"])
+            num_assignments = self.cleaned_data.get("num_assignments")
+
+            max_assignments = {}
+            sections = Section.objects.filter(marking_session=ms)
+            for section in sections:
+                assigned = Assigned.objects.filter(
+                    marking_session=ms,
+                    section=section,
+                    response_type=rt,
+                ).values("authority")
+                max_assignments[section.title] = (
+                    PublicAuthority.objects.exclude(id__in=assigned)
+                    .filter(questiongroup__marking_session=ms)
+                    .count()
+                )
+
+            section_assignments = defaultdict(list)
+            users_assigned = Assigned.objects.filter(
+                marking_session=ms, response_type=rt
+            ).values_list("user__email", flat=True)
+            for _, row in df.iterrows():
+                if row["Email"] in users_assigned:
+                    continue
+
+                section_assignments[row["Assigned Section"]].append(
+                    {
+                        "first_name": row["First Name"],
+                        "last_name": row["Last Name"],
+                        "email": row["Email"],
+                    }
+                )
+
+            if not section_assignments.keys():
+                errors.append(
+                    "No assignments will be made, all volunteers must already have assignements"
+                )
+
+            for section, volunteers in section_assignments.items():
+                required_volunteer_assignments = len(volunteers) * num_assignments
+
+                if required_volunteer_assignments > max_assignments[section]:
+                    assignments_required = max_assignments[section] / len(volunteers)
+                    errors.append(
+                        ValidationError(
+                            f"Too many volunteers for {section}, not all will volunteers will get assignments. Need {assignments_required} per volunteer"
+                        )
+                    )
+
+                num_assignments_required = max_assignments[section] / num_assignments
+                if num_assignments_required > len(volunteers):
+                    volunteers_required = (
+                        max_assignments[section] - len(volunteers)
+                    ) / num_assignments
+                    errors.append(
+                        ValidationError(
+                            f"Not enough volunteers for {section}, not all entities will have volunteers - {volunteers_required} more volunteers needed"
+                        )
+                    )
+
+        if errors:
+            raise ValidationError(errors)
+
+        self.volunteer_df = df
