@@ -174,6 +174,12 @@ class BulkAssignVolunteer(VolunteerAccessMixin, FormView):
         kwargs["session"] = self.request.current_session.label
         return kwargs
 
+    def get_form(self, form_class=None):
+        if form_class is None:
+            form_class = self.form_class
+
+        return form_class([(rt.type, rt.type) for rt in ResponseType.objects.all()])
+
     def get_success_url(self):
         return reverse(
             "session_urls:list_volunteers",

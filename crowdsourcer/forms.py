@@ -449,13 +449,15 @@ class VolunteerBulkAssignForm(Form):
         required=True,
         label="Number of assignments per volunteer",
     )
-    response_type = ChoiceField(
-        required=True, choices=[(rt.type, rt.type) for rt in ResponseType.objects.all()]
-    )
+    response_type = ChoiceField(required=True, choices=[])
     session = CharField(required=True, widget=HiddenInput)
     always_assign = BooleanField(
         required=False, help_text="Override checks and assign as much as possible"
     )
+
+    def __init__(self, response_choices, **kwargs):
+        super().__init__(**kwargs)
+        self.fields["response_type"].choices = response_choices
 
     def clean(self):
         data = self.cleaned_data.get("volunteer_list")
