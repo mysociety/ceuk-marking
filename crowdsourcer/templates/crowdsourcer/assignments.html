@@ -6,6 +6,12 @@
 {% if show_login %}
     <h1 class="mb-4">Sign in</h1>
     <a href="{% url 'login' %}">Sign in</a>
+{% elif setup_required %}
+    <h1 class="mb-4">🏗️ Under construction 🏗️</h1>
+
+    <div>
+      {{ setup_required }}
+    </div>
 {% else %}
     <h1 class="mb-4">{% if show_users %}All{% else %}Your{% endif %} assignments</h1>
     <table class="table">
