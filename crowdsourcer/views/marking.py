@@ -31,7 +31,7 @@ class OverviewView(ListView):
 
     def dispatch(self, request, *args, **kwargs):
         user = self.request.user
-        if hasattr(user, "marker"):
+        if self.request.current_session is not None and hasattr(user, "marker"):
             session = None
             url = None
             marker = user.marker
@@ -118,6 +118,16 @@ class OverviewView(ListView):
 
         user = self.request.user
         context["show_users"] = user.is_superuser
+
+        if self.request.current_session is None or self.request.current_stage is None:
+            if user.is_superuser:
+                context[
+                    "setup_required"
+                ] = "You need to add a marking session with a request type in the admin."
+            else:
+                context["setup_required"] = "This site is not set up yet."
+
+            return context
 
         assignments = (
             context["assignments"]
