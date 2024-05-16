@@ -13,6 +13,12 @@ from crowdsourcer.models import (
 )
 
 
+class TestEmptyDB(TestCase):
+    def test_home_page(self):
+        response = self.client.get("/")
+        self.assertEqual(response.status_code, 200)
+
+
 class TestHomePage(TestCase):
     fixtures = [
         "basics.json",
