@@ -43,6 +43,7 @@ class VolunteersView(VolunteerAccessMixin, ListView):
                     .values("num_assignments")
                 )
             )
+            .order_by("username")
         )
 
 
@@ -146,6 +147,13 @@ class AvailableAssignmentAuthorities(VolunteerAccessMixin, ListView):
     context_object_name = "authorities"
 
     def get_queryset(self):
+        if (
+            self.request.GET.get("ms") is None
+            or self.request.GET.get("rt") is None
+            or self.request.GET.get("s") is None
+        ):
+            return []
+
         return PublicAuthority.objects.filter(
             questiongroup__marking_session__id=self.request.GET["ms"]
         ).exclude(
