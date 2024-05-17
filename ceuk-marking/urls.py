@@ -115,6 +115,11 @@ session_patterns = [
     ),
     # stats
     path(
+        "stats/",
+        stats.StatsView.as_view(),
+        name="stats",
+    ),
+    path(
         "stats/all_first_marks_csv/",
         stats.AllFirstMarksCSVView.as_view(),
         name="all_first_marks_csv",
