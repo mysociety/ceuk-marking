@@ -23,6 +23,20 @@ from crowdsourcer.scoring import (
 logger = logging.getLogger(__name__)
 
 
+class StatsView(UserPassesTestMixin, TemplateView):
+    template_name = "crowdsourcer/stats.html"
+
+    def test_func(self):
+        return self.request.user.is_superuser
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        context["page_title"] = "Stats"
+
+        return context
+
+
 class AllMarksBaseCSVView(UserPassesTestMixin, ListView):
     context_object_name = "responses"
     response_type = "First Mark"

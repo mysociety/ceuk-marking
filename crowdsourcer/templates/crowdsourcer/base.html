@@ -79,8 +79,12 @@
                                 <li>
                                     <a class="dropdown-item" href="{% session_url 'all_section_progress' %}">Section Progress</a>
                                 </li>
+                                <li><hr class="dropdown-divider"></li>
                                 <li>
-                                    <a class="dropdown-item" href="{% session_url 'volunteer_csv_progress' %}">Volunteer CSV</a>
+                                    <a class="dropdown-item d-flex align-items-center justify-content-between" href="{% session_url 'volunteer_csv_progress' %}">
+                                        <span class="me-3">Volunteers</span>
+                                        {% include 'crowdsourcer/includes/csv-badge.html' %}
+                                    </a>
                                 </li>
                             </ul>
                         </li>
@@ -98,8 +102,12 @@
                                 <li>
                                     <a class="dropdown-item" href="{% session_url 'section_ror_progress' %}">Section Progress</a>
                                 </li>
+                                <li><hr class="dropdown-divider"></li>
                                 <li>
-                                    <a class="dropdown-item" href="{% session_url 'authority_contacts_report' %}">{{ marking_session.entity_name|default:"Council" }} Contacts</a>
+                                    <a class="dropdown-item d-flex align-items-center justify-content-between" href="{% session_url 'authority_contacts_report' %}">
+                                        <span class="me-3">{{ marking_session.entity_name|default:"Council" }} Contacts</span>
+                                        {% include 'crowdsourcer/includes/csv-badge.html' %}
+                                    </a>
                                 </li>
                             </ul>
                         </li>
@@ -120,44 +128,7 @@
                             </ul>
                         </li>
                         <li class="nav-item dropdown">
-                            <button class="nav-link dropdown-toggle" id="dropdown4" data-bs-toggle="dropdown" aria-expanded="false">
-                              Stats
-                            </button>
-                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdown4">
-                                <li>
-                                    <a class="dropdown-item" href="{% session_url 'all_first_marks_csv' %}">First Mark Scores</a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item" href="{% session_url 'all_ror_marks_csv' %}">Right of Reply Responses</a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item" href="{% session_url 'all_audit_marks_csv' %}">Audit Mark Scores</a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item" href="{% session_url 'council_disagree_mark_csv' %}">{{ marking_session.entity_name|default:"Council" }} disagree with positive mark</a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item" href="{% session_url 'stats_select_question' %}">Per question data</a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item" href="{% session_url 'bad_responses' %}">Responses with no answer</a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item" href="{% session_url 'duplicate_responses' %}">Responses with duplicate answers</a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item" href="{% session_url 'raw_and_weighted_totals_csv' %}">Raw and weighted scores and totals (CSV)</a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item" href="{% session_url 'weighted_totals_csv' %}">Weighted section totals (CSV)</a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item" href="{% session_url 'question_scores_csv' %}">Question scores and answers (CSV)</a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item" href="{% session_url 'all_answers_csv' %}">All answer data (CSV)</a>
-                                </li>
-                            </ul>
+                            <a class="nav-link" href="{% session_url 'stats' %}">Stats</a>
                         </li>
                     </ul>
                 </div>
