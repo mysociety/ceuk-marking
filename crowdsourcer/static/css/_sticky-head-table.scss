@@ -1,0 +1,36 @@
+.sticky-head-table {
+    td, th {
+        background-clip: padding-box; // Fix positioned table borders bug in Firefox
+    }
+
+    & > thead {
+        position: sticky;
+        top: 0;
+        z-index: 2;
+        box-shadow: 0 1px 0 var(--bs-table-border-color);
+
+        td, th {
+            background-color: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            border-bottom: none;
+        }
+    }
+
+    & > tbody {
+        position: relative;
+        z-index: 1;
+    }
+
+    .sticky-subhead {
+        --lh-rem: calc(var(--bs-body-line-height) * 1rem);
+        position: sticky;
+        top: calc(var(--lh-rem) + 2rem);
+        box-shadow: 0 1px 0 var(--bs-table-border-color);
+
+        td, th {
+            background-color: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            border-bottom: none;
+        }
+    }
+}
