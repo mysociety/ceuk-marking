@@ -2,7 +2,8 @@
     font-weight: 900;
 
     img {
-        width: 7rem;
+        width: auto;
+        max-height: 32px;
         padding-right: 1rem;
         border-right: 1px solid $border-color;
     }
