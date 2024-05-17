@@ -8,3 +8,17 @@
         border-right: 1px solid $border-color;
     }
 }
+
+// Compensate for padding on navbar nav-link elements
+.navbar-expand {
+    @each $breakpoint in map-keys($grid-breakpoints) {
+        $next: breakpoint-next($breakpoint, $grid-breakpoints);
+        $infix: breakpoint-infix($next, $grid-breakpoints);
+
+        &#{$infix} .navbar-nav {
+            @include media-breakpoint-up($next) {
+                margin-right: calc(-1 * var(--#{$prefix}navbar-nav-link-padding-x));
+            }
+        }
+    }
+}
