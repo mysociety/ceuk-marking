@@ -18,9 +18,10 @@
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                    <ul class="navbar-nav ms-sm-auto pt-2 pt-sm-0 flex-wrap justify-content-end">
+                    <ul class="navbar-nav ms-sm-auto pt-2 pt-sm-0 flex-wrap justify-content-end flex-grow-1">
                       {% if not setup_required and user.is_superuser %}
-                        <li class="nav-item dropdown">
+                      {% if sessions|length > 1 %}
+                        <li class="nav-item dropdown me-sm-auto">
                           <button class="nav-link dropdown-toggle" id="navbarDropdown" data-bs-toggle="dropdown" aria-expanded="false">
                             {{ marking_session.label }}
                           </button>
@@ -32,6 +33,7 @@
                             {% endfor %}
                           </ul>
                         </li>
+                      {% endif %}
                         <li class="nav-item dropdown">
                           <button class="nav-link dropdown-toggle" id="navbarDropdown" data-bs-toggle="dropdown" aria-expanded="false">
                             Volunteer progress
