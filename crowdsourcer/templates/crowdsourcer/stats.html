@@ -1,0 +1,55 @@
+{% extends 'crowdsourcer/base.html' %}
+
+{% load crowdsourcer_tags %}
+
+{% block content %}
+{% if show_login %}
+    <h1 class="mb-4">Sign in</h1>
+    <a href="{% url 'login' %}">Sign in</a>
+{% else %}
+    <h1 class="mb-4">{{ page_title }}</h1>
+    <div class="list-group" style="max-width: 32rem;">
+        <a class="list-group-item list-group-item-action d-flex align-items-center justify-content-between" href="{% session_url 'all_first_marks_csv' %}">
+            <span class="me-3">First Mark Scores</span>
+            {% include 'crowdsourcer/includes/csv-badge.html' %}
+        </a>
+        <a class="list-group-item list-group-item-action d-flex align-items-center justify-content-between" href="{% session_url 'all_ror_marks_csv' %}">
+            <span class="me-3">Right of Reply Responses</span>
+            {% include 'crowdsourcer/includes/csv-badge.html' %}
+        </a>
+        <a class="list-group-item list-group-item-action d-flex align-items-center justify-content-between" href="{% session_url 'all_audit_marks_csv' %}">
+            <span class="me-3">Audit Mark Scores</span>
+            {% include 'crowdsourcer/includes/csv-badge.html' %}
+        </a>
+        <a class="list-group-item list-group-item-action d-flex align-items-center justify-content-between" href="{% session_url 'council_disagree_mark_csv' %}">
+            <span class="me-3">{{ marking_session.entity_name|default:"Council" }} disagree with positive mark</span>
+            {% include 'crowdsourcer/includes/csv-badge.html' %}
+        </a>
+        <a class="list-group-item list-group-item-action d-flex align-items-center justify-content-between" href="{% session_url 'stats_select_question' %}">
+            Per question data
+        </a>
+        <a class="list-group-item list-group-item-action d-flex align-items-center justify-content-between" href="{% session_url 'bad_responses' %}">
+            Responses with no answer
+        </a>
+        <a class="list-group-item list-group-item-action d-flex align-items-center justify-content-between" href="{% session_url 'duplicate_responses' %}">
+            Responses with duplicate answers
+        </a>
+        <a class="list-group-item list-group-item-action d-flex align-items-center justify-content-between" href="{% session_url 'raw_and_weighted_totals_csv' %}">
+            <span class="me-3">Raw and weighted scores and totals</span>
+            {% include 'crowdsourcer/includes/csv-badge.html' %}
+        </a>
+        <a class="list-group-item list-group-item-action d-flex align-items-center justify-content-between" href="{% session_url 'weighted_totals_csv' %}">
+            <span class="me-3">Weighted section totals</span>
+            {% include 'crowdsourcer/includes/csv-badge.html' %}
+        </a>
+        <a class="list-group-item list-group-item-action d-flex align-items-center justify-content-between" href="{% session_url 'question_scores_csv' %}">
+            <span class="me-3">Question scores and answers</span>
+            {% include 'crowdsourcer/includes/csv-badge.html' %}
+        </a>
+        <a class="list-group-item list-group-item-action d-flex align-items-center justify-content-between" href="{% session_url 'all_answers_csv' %}">
+            <span class="me-3">All answer data</span>
+            {% include 'crowdsourcer/includes/csv-badge.html' %}
+        </a>
+    </div>
+{% endif %}
+{% endblock %}
