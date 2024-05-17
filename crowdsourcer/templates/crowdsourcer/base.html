@@ -19,113 +19,17 @@
                 </button>
                 <div class="collapse navbar-collapse" id="navbarSupportedContent">
                     <ul class="navbar-nav ms-sm-auto pt-2 pt-sm-0 flex-wrap justify-content-end flex-grow-1">
-                      {% if not setup_required and user.is_superuser %}
-                      {% if sessions|length > 1 %}
+                      {% if not setup_required and user.is_superuser and sessions|length > 1 %}
                         <li class="nav-item dropdown me-sm-auto">
-                          <button class="nav-link dropdown-toggle" id="navbarDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                          <button class="nav-link dropdown-toggle" id="dropdown0" data-bs-toggle="dropdown" aria-expanded="false">
                             {{ marking_session.label }}
                           </button>
-                          <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                          <ul class="dropdown-menu" aria-labelledby="dropdown0">
                             {% for session in sessions %}
                             <li>
                               <a class="dropdown-item d-flex" href="/{{ session.label }}/">{{ session.label }}</a>
                             </li>
                             {% endfor %}
-                          </ul>
-                        </li>
-                      {% endif %}
-                        <li class="nav-item dropdown">
-                          <button class="nav-link dropdown-toggle" id="navbarDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                            Volunteer progress
-                          </button>
-                          <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-                            <li>
-                              <a class="dropdown-item d-flex" href="{% session_url 'authority_assignments' %}">{{ marking_session.entity_name|default:"Council" }}s assigned</a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item d-flex" href="{% session_url 'all_authority_progress' %}">{{ marking_session.entity_name|default:"Council" }} Progress</a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item d-flex" href="{% session_url 'all_section_progress' %}">Section Progress</a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item d-flex" href="{% session_url 'volunteer_csv_progress' %}">Volunteer CSV</a>
-                            </li>
-                          </ul>
-                        </li>
-                        <li class="nav-item dropdown">
-                          <button class="nav-link dropdown-toggle" id="navbarDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                            Right of Reply progress
-                          </button>
-                          <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-                            <li>
-                                <a class="dropdown-item d-flex" href="{% session_url 'all_authority_ror_progress' %}">{{ marking_session.entity_name|default:"Council" }} Progress</a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item d-flex" href="{% session_url 'authority_login_report' %}">{{ marking_session.entity_name|default:"Council" }} Login Report</a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item d-flex" href="{% session_url 'section_ror_progress' %}">Section Progress</a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item d-flex" href="{% session_url 'authority_contacts_report' %}">{{ marking_session.entity_name|default:"Council" }} Contacts</a>
-                            </li>
-                          </ul>
-                        </li>
-                        <li class="nav-item dropdown">
-                          <button class="nav-link dropdown-toggle" id="navbarDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                            Stats
-                          </button>
-                          <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-                            <li>
-                                <a class="dropdown-item d-flex" href="{% session_url 'all_first_marks_csv' %}">First Mark Scores</a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item d-flex" href="{% session_url 'all_ror_marks_csv' %}">Right of Reply Responses</a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item d-flex" href="{% session_url 'all_audit_marks_csv' %}">Audit Mark Scores</a>
-                            </li>
-                            <li>
-                              <a class="dropdown-item d-flex" href="{% session_url 'council_disagree_mark_csv' %}">{{ marking_session.entity_name|default:"Council" }} disagree with positive mark</a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item d-flex" href="{% session_url 'stats_select_question' %}">Per question data</a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item d-flex" href="{% session_url 'bad_responses' %}">Responses with no answer</a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item d-flex" href="{% session_url 'duplicate_responses' %}">Responses with duplicate answers</a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item d-flex" href="{% session_url 'raw_and_weighted_totals_csv' %}">Raw and weighted scores and totals (CSV)</a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item d-flex" href="{% session_url 'weighted_totals_csv' %}">Weighted section totals (CSV)</a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item d-flex" href="{% session_url 'question_scores_csv' %}">Question scores and answers (CSV)</a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item d-flex" href="{% session_url 'all_answers_csv' %}">All answer data (CSV)</a>
-                            </li>
-                          </ul>
-                        </li>
-                        <li class="nav-item dropdown">
-                          <button class="nav-link dropdown-toggle" id="navbarDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                            Audit progress
-                          </button>
-                          <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-                            <li>
-                              <a class="dropdown-item d-flex" href="{% session_url 'audit_authority_assignments' %}">{{ marking_session.entity_name|default:"Council" }}s assigned</a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item d-flex" href="{% session_url 'audit_all_authority_progress' %}">{{ marking_session.entity_name|default:"Council" }} Progress</a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item d-flex" href="{% session_url 'audit_all_section_progress' %}">Section Progress</a>
-                            </li>
                           </ul>
                         </li>
                       {% endif %}
@@ -135,7 +39,7 @@
                             <li class="nav-item">
                                 <a class="nav-link" href="https://docs.google.com/document/d/1kPzvASwPI157n7i2GBuv0S8YwiYGpZwmEm0pDUmpR_A/edit?usp=sharing">Right of Reply Guide</a>
                             </li>
-                            {% endif %}
+                          {% endif %}
                           <li class="nav-item">
                               <a class="nav-link" href="{% url 'home' %}">My assignments</a>
                           </li>
@@ -145,13 +49,121 @@
                         </li>
                       {% else %}
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'home' %}">Sign in</a>
+                            <a class="nav-link" href="{% url 'login' %}">Sign in</a>
                         </li>
                       {% endif %}
                     </ul>
                 </div>
             </div>
         </nav>
+      {% if not setup_required and user.is_superuser %}
+        <nav class="navbar navbar-expand-sm navbar-dark text-bg-danger">
+            <div class="container">
+                <h2 class="navbar-text fs-6 mb-0">Admin</h2>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#adminbarSupportedContent" aria-controls="adminbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="adminbarSupportedContent">
+                    <ul class="navbar-nav ms-sm-auto pt-2 pt-sm-0 flex-wrap justify-content-end flex-grow-1">
+                        <li class="nav-item dropdown">
+                            <button class="nav-link dropdown-toggle" id="dropdown1" data-bs-toggle="dropdown" aria-expanded="false">
+                              Volunteer progress
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdown1">
+                                <li>
+                                    <a class="dropdown-item" href="{% session_url 'authority_assignments' %}">{{ marking_session.entity_name|default:"Council" }}s assigned</a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="{% session_url 'all_authority_progress' %}">{{ marking_session.entity_name|default:"Council" }} Progress</a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="{% session_url 'all_section_progress' %}">Section Progress</a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="{% session_url 'volunteer_csv_progress' %}">Volunteer CSV</a>
+                                </li>
+                            </ul>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <button class="nav-link dropdown-toggle" id="dropdown2" data-bs-toggle="dropdown" aria-expanded="false">
+                              Right of Reply progress
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdown2">
+                                <li>
+                                    <a class="dropdown-item" href="{% session_url 'all_authority_ror_progress' %}">{{ marking_session.entity_name|default:"Council" }} Progress</a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="{% session_url 'authority_login_report' %}">{{ marking_session.entity_name|default:"Council" }} Login Report</a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="{% session_url 'section_ror_progress' %}">Section Progress</a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="{% session_url 'authority_contacts_report' %}">{{ marking_session.entity_name|default:"Council" }} Contacts</a>
+                                </li>
+                            </ul>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <button class="nav-link dropdown-toggle" id="dropdown3" data-bs-toggle="dropdown" aria-expanded="false">
+                              Audit progress
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdown3">
+                                <li>
+                                    <a class="dropdown-item" href="{% session_url 'audit_authority_assignments' %}">{{ marking_session.entity_name|default:"Council" }}s assigned</a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="{% session_url 'audit_all_authority_progress' %}">{{ marking_session.entity_name|default:"Council" }} Progress</a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="{% session_url 'audit_all_section_progress' %}">Section Progress</a>
+                                </li>
+                            </ul>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <button class="nav-link dropdown-toggle" id="dropdown4" data-bs-toggle="dropdown" aria-expanded="false">
+                              Stats
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdown4">
+                                <li>
+                                    <a class="dropdown-item" href="{% session_url 'all_first_marks_csv' %}">First Mark Scores</a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="{% session_url 'all_ror_marks_csv' %}">Right of Reply Responses</a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="{% session_url 'all_audit_marks_csv' %}">Audit Mark Scores</a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="{% session_url 'council_disagree_mark_csv' %}">{{ marking_session.entity_name|default:"Council" }} disagree with positive mark</a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="{% session_url 'stats_select_question' %}">Per question data</a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="{% session_url 'bad_responses' %}">Responses with no answer</a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="{% session_url 'duplicate_responses' %}">Responses with duplicate answers</a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="{% session_url 'raw_and_weighted_totals_csv' %}">Raw and weighted scores and totals (CSV)</a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="{% session_url 'weighted_totals_csv' %}">Weighted section totals (CSV)</a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="{% session_url 'question_scores_csv' %}">Question scores and answers (CSV)</a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="{% session_url 'all_answers_csv' %}">All answer data (CSV)</a>
+                                </li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+      {% endif %}
         <div class="site-content py-4 py-md-5">
             <div class="container">
             {% block content %}

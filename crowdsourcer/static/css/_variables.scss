@@ -1,3 +1,5 @@
+$white: #fff;
+
 // Options
 
 $enable-shadows: true;
@@ -104,6 +106,13 @@ $form-label-font-weight: bold;
 // Navbar
 
 $navbar-brand-font-size: 1.5rem;
+
+$navbar-dark-color: $white;
+$navbar-dark-hover-color: $navbar-dark-color;
+$navbar-dark-active-color: $navbar-dark-color;
+$navbar-dark-disabled-color: rgba($navbar-dark-color, .25);
+$navbar-dark-icon-color: $navbar-dark-color;
+$navbar-dark-toggler-border-color: rgba($navbar-dark-icon-color, .5);
 
 // Dropdowns
 
