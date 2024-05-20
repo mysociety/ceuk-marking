@@ -312,6 +312,9 @@ class Assigned(models.Model):
     marking_session = models.ForeignKey(MarkingSession, on_delete=models.CASCADE)
     history = HistoricalRecords()
 
+    def __str__(self):
+        return f"{self.user.email}, {self.section.title}, {self.response_type.type}, {self.marking_session.label}"
+
     @classmethod
     def is_user_assigned(cls, user, **kwargs):
         if user.is_superuser:
