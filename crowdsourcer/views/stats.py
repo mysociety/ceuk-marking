@@ -23,11 +23,13 @@ from crowdsourcer.scoring import (
 logger = logging.getLogger(__name__)
 
 
-class StatsView(UserPassesTestMixin, TemplateView):
-    template_name = "crowdsourcer/stats.html"
-
+class StatsUserTestMixin(UserPassesTestMixin):
     def test_func(self):
-        return self.request.user.is_superuser
+        return self.request.user.has_perm("crowdsourcer.can_view_stats")
+
+
+class StatsView(StatsUserTestMixin, TemplateView):
+    template_name = "crowdsourcer/stats.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -37,13 +39,10 @@ class StatsView(UserPassesTestMixin, TemplateView):
         return context
 
 
-class AllMarksBaseCSVView(UserPassesTestMixin, ListView):
+class AllMarksBaseCSVView(StatsUserTestMixin, ListView):
     context_object_name = "responses"
     response_type = "First Mark"
     file_name = "grace_first_mark_scores.csv"
-
-    def test_func(self):
-        return self.request.user.is_superuser
 
     def get_queryset(self):
         return (
@@ -210,12 +209,9 @@ class CouncilDisagreeMarkCSVView(AllMarksBaseCSVView):
         return context
 
 
-class SelectQuestionView(UserPassesTestMixin, ListView):
+class SelectQuestionView(StatsUserTestMixin, ListView):
     template_name = "crowdsourcer/stats_select_question.html"
     context_object_name = "questions"
-
-    def test_func(self):
-        return self.request.user.is_superuser
 
     def get_queryset(self):
         return (
@@ -240,7 +236,7 @@ class SelectQuestionView(UserPassesTestMixin, ListView):
         return context
 
 
-class QuestionDataCSVView(UserPassesTestMixin, ListView):
+class QuestionDataCSVView(StatsUserTestMixin, ListView):
     context_object_name = "responses"
     response_type = "First Mark"
     headers = [
@@ -252,9 +248,6 @@ class QuestionDataCSVView(UserPassesTestMixin, ListView):
         "evidence",
         "private_notes",
     ]
-
-    def test_func(self):
-        return self.request.user.is_superuser
 
     def set_stage(self):
         stage = self.kwargs["stage"]
@@ -366,10 +359,7 @@ class RoRQuestionDataCSVView(QuestionDataCSVView):
         return data
 
 
-class BaseScoresView(UserPassesTestMixin, TemplateView):
-    def test_func(self):
-        return self.request.user.is_superuser
-
+class BaseScoresView(StatsUserTestMixin, TemplateView):
     def get_scores(self):
         self.scoring = get_scoring_object(self.request.current_session)
 
@@ -398,9 +388,6 @@ class AllAnswerDataView(BaseScoresView):
 
 class WeightedScoresDataCSVView(BaseScoresView):
     file_name = "all_sections_scores.csv"
-
-    def test_func(self):
-        return self.request.user.is_superuser
 
     def get_context_data(self, **kwargs):
         ordered_sections = [
@@ -520,12 +507,8 @@ class SectionScoresDataCSVView(BaseScoresView):
         return context
 
 
-class QuestionScoresCSV(UserPassesTestMixin, ListView):
+class QuestionScoresCSV(StatsUserTestMixin, ListView):
     context_object_name = "options"
-
-    def test_func(self):
-
-        return self.request.user.is_superuser
 
     def get_queryset(self):
         return (
@@ -630,12 +613,9 @@ class QuestionScoresCSV(UserPassesTestMixin, ListView):
         return response
 
 
-class BadResponsesView(UserPassesTestMixin, ListView):
+class BadResponsesView(StatsUserTestMixin, ListView):
     context_object_name = "responses"
     template_name = "crowdsourcer/bad_responses.html"
-
-    def test_func(self):
-        return self.request.user.is_superuser
 
     def get_queryset(self):
         responses = (
@@ -652,12 +632,9 @@ class BadResponsesView(UserPassesTestMixin, ListView):
         return responses
 
 
-class DuplicateResponsesView(UserPassesTestMixin, ListView):
+class DuplicateResponsesView(StatsUserTestMixin, ListView):
     context_object_name = "responses"
     template_name = "crowdsourcer/duplicate_responses.html"
-
-    def test_func(self):
-        return self.request.user.is_superuser
 
     def get_queryset(self):
         return get_duplicate_responses(self.request.current_session)
