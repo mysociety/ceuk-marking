@@ -1,16 +1,10 @@
+import pathlib
+
 from django.contrib.auth.models import Permission, User
 from django.test import TestCase
 from django.urls import reverse
 
-from crowdsourcer.models import (
-    Assigned,
-    Marker,
-    MarkingSession,
-    PublicAuthority,
-    Response,
-    ResponseType,
-    Section,
-)
+from crowdsourcer.models import Assigned, MarkingSession, ResponseType, Section
 
 
 class BaseTestCase(TestCase):
@@ -192,3 +186,203 @@ class TestEditVolunteer(BaseTestCase):
 
         u = User.objects.get(id=2)
         self.assertEqual(u.marker.response_type.type, "Audit")
+
+
+class TestBulkAssign(BaseTestCase):
+    def test_assignments(self):
+        url = reverse("bulk_assign_volunteer")
+        response = self.client.get(url)
+
+        self.assertEqual(
+            Assigned.objects.filter(marking_session__label="Default").count(), 4
+        )
+        self.assertEqual(
+            Assigned.objects.filter(marking_session__label="Second Session").count(), 1
+        )
+
+        volunteer_file = (
+            pathlib.Path(__file__).parent.resolve() / "data" / "test_volunteers.xlsx"
+        )
+        with open(volunteer_file, "rb") as fp:
+            response = self.client.post(
+                url,
+                data={
+                    "volunteer_list": fp,
+                    "response_type": "First Mark",
+                    "session": "Default",
+                    "num_assignments": 2,
+                },
+            )
+
+        self.assertRedirects(response, f"/Default{reverse('list_volunteers')}")
+        # only adds 2 as there are only two councils
+        self.assertEqual(
+            Assigned.objects.filter(marking_session__label="Default").count(), 6
+        )
+        self.assertEqual(
+            Assigned.objects.filter(marking_session__label="Second Session").count(), 1
+        )
+
+    def test_force_assignments(self):
+        url = reverse("bulk_assign_volunteer")
+        response = self.client.get(url)
+
+        self.assertEqual(
+            Assigned.objects.filter(marking_session__label="Default").count(), 4
+        )
+
+        volunteer_file = (
+            pathlib.Path(__file__).parent.resolve() / "data" / "test_volunteers.xlsx"
+        )
+        with open(volunteer_file, "rb") as fp:
+            response = self.client.post(
+                url,
+                data={
+                    "volunteer_list": fp,
+                    "response_type": "First Mark",
+                    "session": "Default",
+                    "num_assignments": 10,
+                    "always_assign": True,
+                },
+            )
+
+        self.assertRedirects(response, f"/Default{reverse('list_volunteers')}")
+        # only adds 2 as there are only two councils
+        self.assertEqual(
+            Assigned.objects.filter(marking_session__label="Default").count(), 6
+        )
+
+    def test_not_enough_volunteers_warning(self):
+        url = reverse("bulk_assign_volunteer")
+        response = self.client.get(url)
+
+        self.assertEqual(Assigned.objects.count(), 5)
+
+        volunteer_file = (
+            pathlib.Path(__file__).parent.resolve() / "data" / "test_volunteers.xlsx"
+        )
+        with open(volunteer_file, "rb") as fp:
+            response = self.client.post(
+                url,
+                data={
+                    "volunteer_list": fp,
+                    "response_type": "First Mark",
+                    "session": "Default",
+                    "num_assignments": 10,
+                },
+            )
+
+        self.assertEqual(response.status_code, 200)
+        form = response.context["form"]
+
+        self.assertEqual(
+            form.errors["__all__"][0],
+            "Too many volunteers for Transport, not all volunteers will get assignments. Need 2.0 per volunteer.",
+        )
+
+        self.assertEqual(Assigned.objects.count(), 5)
+
+    def test_not_enough_councils_warning(self):
+        url = reverse("bulk_assign_volunteer")
+        response = self.client.get(url)
+
+        self.assertEqual(Assigned.objects.count(), 5)
+
+        volunteer_file = (
+            pathlib.Path(__file__).parent.resolve() / "data" / "test_volunteers.xlsx"
+        )
+        with open(volunteer_file, "rb") as fp:
+            response = self.client.post(
+                url,
+                data={
+                    "volunteer_list": fp,
+                    "response_type": "First Mark",
+                    "session": "Default",
+                    "num_assignments": 1,
+                },
+            )
+
+        self.assertEqual(response.status_code, 200)
+        form = response.context["form"]
+
+        self.assertEqual(
+            form.errors["__all__"][0],
+            "Not enough volunteers for Transport, not all entities will have volunteers - 1.0 more volunteers needed.",
+        )
+
+        self.assertEqual(Assigned.objects.count(), 5)
+
+    def test_bad_section_warning(self):
+        s = Section.objects.get(title="Transport", marking_session__label="Default")
+        s.title = "Not Transport"
+        s.save()
+
+        url = reverse("bulk_assign_volunteer")
+        response = self.client.get(url)
+
+        self.assertEqual(Assigned.objects.count(), 5)
+
+        volunteer_file = (
+            pathlib.Path(__file__).parent.resolve() / "data" / "test_volunteers.xlsx"
+        )
+        with open(volunteer_file, "rb") as fp:
+            response = self.client.post(
+                url,
+                data={
+                    "volunteer_list": fp,
+                    "response_type": "First Mark",
+                    "session": "Default",
+                    "num_assignments": 1,
+                },
+            )
+
+        self.assertEqual(response.status_code, 200)
+        form = response.context["form"]
+
+        self.assertEqual(
+            form.errors["__all__"][0],
+            "Cannot assign to section 'Transport', it does not exist.",
+        )
+
+        self.assertEqual(Assigned.objects.count(), 5)
+
+    def test_assignments_already_made_error(self):
+        u = User.objects.create(
+            username="test_marker@example.org", email="test_marker@example.org"
+        )
+        ms = MarkingSession.objects.get(label="Default")
+        Assigned.objects.create(
+            section=Section.objects.get(title="Transport", marking_session=ms),
+            response_type=ResponseType.objects.get(type="First Mark"),
+            marking_session=ms,
+            user=u,
+        )
+
+        url = reverse("bulk_assign_volunteer")
+        response = self.client.get(url)
+
+        self.assertEqual(Assigned.objects.count(), 6)
+
+        volunteer_file = (
+            pathlib.Path(__file__).parent.resolve() / "data" / "test_volunteers.xlsx"
+        )
+        with open(volunteer_file, "rb") as fp:
+            response = self.client.post(
+                url,
+                data={
+                    "volunteer_list": fp,
+                    "response_type": "First Mark",
+                    "session": "Default",
+                    "num_assignments": 1,
+                },
+            )
+
+        self.assertEqual(response.status_code, 200)
+        form = response.context["form"]
+
+        self.assertEqual(
+            form.errors["__all__"][0],
+            "No assignments will be made, all volunteers must already have assignments.",
+        )
+
+        self.assertEqual(Assigned.objects.count(), 6)
