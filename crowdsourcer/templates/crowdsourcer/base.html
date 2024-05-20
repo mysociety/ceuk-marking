@@ -56,84 +56,95 @@
                 </div>
             </div>
         </nav>
-      {% if not setup_required and user.is_superuser %}
-        <nav class="navbar navbar-expand-sm navbar-dark text-bg-danger">
-            <div class="container">
-                <h2 class="navbar-text fs-6 mb-0">Admin</h2>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#adminbarSupportedContent" aria-controls="adminbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="collapse navbar-collapse" id="adminbarSupportedContent">
-                    <ul class="navbar-nav ms-sm-auto pt-2 pt-sm-0 flex-wrap justify-content-end flex-grow-1">
-                        <li class="nav-item dropdown">
-                            <button class="nav-link dropdown-toggle" id="dropdown1" data-bs-toggle="dropdown" aria-expanded="false">
-                              First Mark
-                            </button>
-                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdown1">
-                                <li>
-                                    <a class="dropdown-item" href="{% session_url 'authority_assignments' %}">{{ marking_session.entity_name|default:"Council" }}s assigned</a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item" href="{% session_url 'all_authority_progress' %}">{{ marking_session.entity_name|default:"Council" }} Progress</a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item" href="{% session_url 'all_section_progress' %}">Section Progress</a>
-                                </li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li>
-                                    <a class="dropdown-item d-flex align-items-center justify-content-between" href="{% session_url 'volunteer_csv_progress' %}">
-                                        <span class="me-3">Volunteers</span>
-                                        {% include 'crowdsourcer/includes/csv-badge.html' %}
-                                    </a>
-                                </li>
-                            </ul>
-                        </li>
-                        <li class="nav-item dropdown">
-                            <button class="nav-link dropdown-toggle" id="dropdown2" data-bs-toggle="dropdown" aria-expanded="false">
-                              Right of Reply
-                            </button>
-                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdown2">
-                                <li>
-                                    <a class="dropdown-item" href="{% session_url 'all_authority_ror_progress' %}">{{ marking_session.entity_name|default:"Council" }} Progress</a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item" href="{% session_url 'authority_login_report' %}">{{ marking_session.entity_name|default:"Council" }} Login Report</a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item" href="{% session_url 'section_ror_progress' %}">Section Progress</a>
-                                </li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li>
-                                    <a class="dropdown-item d-flex align-items-center justify-content-between" href="{% session_url 'authority_contacts_report' %}">
-                                        <span class="me-3">{{ marking_session.entity_name|default:"Council" }} Contacts</span>
-                                        {% include 'crowdsourcer/includes/csv-badge.html' %}
-                                    </a>
-                                </li>
-                            </ul>
-                        </li>
-                        <li class="nav-item dropdown">
-                            <button class="nav-link dropdown-toggle" id="dropdown3" data-bs-toggle="dropdown" aria-expanded="false">
-                              Audit
-                            </button>
-                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdown3">
-                                <li>
-                                    <a class="dropdown-item" href="{% session_url 'audit_authority_assignments' %}">{{ marking_session.entity_name|default:"Council" }}s assigned</a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item" href="{% session_url 'audit_all_authority_progress' %}">{{ marking_session.entity_name|default:"Council" }} Progress</a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item" href="{% session_url 'audit_all_section_progress' %}">Section Progress</a>
-                                </li>
-                            </ul>
-                        </li>
-                        <li class="nav-item dropdown">
-                            <a class="nav-link" href="{% session_url 'stats' %}">Stats</a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </nav>
+        {% if not setup_required %}
+          {% if perms.crowdsourcer.can_view_progress or perms.crowdsourcer.can_view_stats or perms.crowdsourcer.can_manage_users %}
+          <nav class="navbar navbar-expand-sm navbar-dark text-bg-danger">
+              <div class="container">
+                  <h2 class="navbar-text fs-6 mb-0">Admin</h2>
+                  <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#adminbarSupportedContent" aria-controls="adminbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                      <span class="navbar-toggler-icon"></span>
+                  </button>
+                  <div class="collapse navbar-collapse" id="adminbarSupportedContent">
+                      <ul class="navbar-nav ms-sm-auto pt-2 pt-sm-0 flex-wrap justify-content-end flex-grow-1">
+                          {% if perms.crowdsourcer.can_view_progress %}
+                          <li class="nav-item dropdown">
+                              <button class="nav-link dropdown-toggle" id="dropdown1" data-bs-toggle="dropdown" aria-expanded="false">
+                                First Mark
+                              </button>
+                              <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdown1">
+                                  <li>
+                                      <a class="dropdown-item" href="{% session_url 'authority_assignments' %}">{{ marking_session.entity_name|default:"Council" }}s assigned</a>
+                                  </li>
+                                  <li>
+                                      <a class="dropdown-item" href="{% session_url 'all_authority_progress' %}">{{ marking_session.entity_name|default:"Council" }} Progress</a>
+                                  </li>
+                                  <li>
+                                      <a class="dropdown-item" href="{% session_url 'all_section_progress' %}">Section Progress</a>
+                                  </li>
+                                  <li><hr class="dropdown-divider"></li>
+                                  <li>
+                                      <a class="dropdown-item d-flex align-items-center justify-content-between" href="{% session_url 'volunteer_csv_progress' %}">
+                                          <span class="me-3">Volunteers</span>
+                                          {% include 'crowdsourcer/includes/csv-badge.html' %}
+                                      </a>
+                                  </li>
+                              </ul>
+                          </li>
+                          <li class="nav-item dropdown">
+                              <button class="nav-link dropdown-toggle" id="dropdown2" data-bs-toggle="dropdown" aria-expanded="false">
+                                Right of Reply
+                              </button>
+                              <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdown2">
+                                  <li>
+                                      <a class="dropdown-item" href="{% session_url 'all_authority_ror_progress' %}">{{ marking_session.entity_name|default:"Council" }} Progress</a>
+                                  </li>
+                                  <li>
+                                      <a class="dropdown-item" href="{% session_url 'authority_login_report' %}">{{ marking_session.entity_name|default:"Council" }} Login Report</a>
+                                  </li>
+                                  <li>
+                                      <a class="dropdown-item" href="{% session_url 'section_ror_progress' %}">Section Progress</a>
+                                  </li>
+                                  <li><hr class="dropdown-divider"></li>
+                                  <li>
+                                      <a class="dropdown-item d-flex align-items-center justify-content-between" href="{% session_url 'authority_contacts_report' %}">
+                                          <span class="me-3">{{ marking_session.entity_name|default:"Council" }} Contacts</span>
+                                          {% include 'crowdsourcer/includes/csv-badge.html' %}
+                                      </a>
+                                  </li>
+                              </ul>
+                          </li>
+                          <li class="nav-item dropdown">
+                              <button class="nav-link dropdown-toggle" id="dropdown3" data-bs-toggle="dropdown" aria-expanded="false">
+                                Audit
+                              </button>
+                              <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdown3">
+                                  <li>
+                                      <a class="dropdown-item" href="{% session_url 'audit_authority_assignments' %}">{{ marking_session.entity_name|default:"Council" }}s assigned</a>
+                                  </li>
+                                  <li>
+                                      <a class="dropdown-item" href="{% session_url 'audit_all_authority_progress' %}">{{ marking_session.entity_name|default:"Council" }} Progress</a>
+                                  </li>
+                                  <li>
+                                      <a class="dropdown-item" href="{% session_url 'audit_all_section_progress' %}">Section Progress</a>
+                                  </li>
+                              </ul>
+                          </li>
+                          {% endif %}
+                          {% if perms.crowdsourcer.can_view_stats %}
+                          <li class="nav-item dropdown">
+                              <a class="nav-link" href="{% session_url 'stats' %}">Stats</a>
+                          </li>
+                          {% endif %}
+                          {% if perms.crowdsourcer.can_manage_users %}
+                          <li class="nav-item dropdown">
+                              <a class="nav-link" href="{% session_url 'list_volunteers' %}">Volunteers</a>
+                          </li>
+                          {% endif %}
+                      </ul>
+                  </div>
+              </div>
+          </nav>
+        {% endif %}
       {% endif %}
         <div class="site-content py-4 py-md-5">
             <div class="container">
