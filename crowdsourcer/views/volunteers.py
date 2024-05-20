@@ -186,7 +186,10 @@ class BulkAssignVolunteer(VolunteerAccessMixin, FormView):
         if form_class is None:
             form_class = self.form_class
 
-        return form_class([(rt.type, rt.type) for rt in ResponseType.objects.all()])
+        return form_class(
+            [(rt.type, rt.type) for rt in ResponseType.objects.all()],
+            **self.get_form_kwargs()
+        )
 
     def get_success_url(self):
         return reverse(
@@ -223,7 +226,9 @@ class BulkAssignVolunteer(VolunteerAccessMixin, FormView):
 
             num_assignments = max_assignments - existing_assignments
 
-            section = Section.objects.get(title=row["Assigned Section"])
+            section = Section.objects.get(
+                title=row["Assigned Section"], marking_session=ms
+            )
             assigned = Assigned.objects.filter(
                 marking_session=ms,
                 section=section,
