@@ -11,30 +11,18 @@ from crowdsourcer.models import MarkingSession, Option, Question, QuestionGroup,
 class Command(BaseCommand):
     help = "import questions"
 
-    question_file = settings.BASE_DIR / "data" / "questions.xlsx"
-
     column_names = [
         "question_no",
-        "topic",
         "question",
         "criteria",
         "clarifications",
-        "how_marked",
         "weighting",
-        "climate_justice",
-        "district",
-        "single_tier",
-        "county",
-        "northern_ireland",
+        "question_groups",
         "question_type",
         "points",
     ]
 
     def add_arguments(self, parser):
-        parser.add_argument(
-            "-q", "--quiet", action="store_true", help="Silence progress bars."
-        )
-
         parser.add_argument(
             "--text_only",
             action="store_true",
@@ -55,27 +43,7 @@ class Command(BaseCommand):
             "--file", action="store", help="Excel file containing the questions"
         )
 
-        parser.add_argument(
-            "--column_list", action="store", help="file with list of column names"
-        )
-
-    def get_column_names(self, **kwargs):
-        column_list = kwargs.get("column_list", None)
-        column_list = settings.BASE_DIR / "data" / column_list
-        if not column_list.exists():
-            self.stderr.write(
-                f"file does not exist: {column_list}, using standard columns"
-            )
-            return
-
-        if column_list is not None:
-            df = pd.read_csv(settings.BASE_DIR / "data" / column_list)
-            columns = []
-            for _, row in df.iterrows():
-                columns.append(row["Column"])
-            self.column_names = columns
-
-    def handle(self, quiet: bool = False, *args, **kwargs):
+    def handle(self, *args, **kwargs):
         file = kwargs.get("file", None)
 
         if file is None:
@@ -97,57 +65,18 @@ class Command(BaseCommand):
             self.stderr.write(f"No session with that name: {session_label}")
             return
 
-        for q in QuestionGroup.objects.filter(marking_session=session).exclude(
-            description="Combined Authority"
-        ):
-            key = q.description.lower().replace(" ", "_")
-            q_groups[key] = q
+        for q in QuestionGroup.objects.filter(marking_session=session):
+            q_groups[q.description] = q
 
-        self.get_column_names(**kwargs)
-
-        for section in Section.objects.exclude(title__contains="(CA)").filter(
-            marking_session=session
-        ):
-            print(section)
-            header = 2
+        for section in Section.objects.filter(marking_session=session):
+            print(f"importing questions for {section}")
             df = pd.read_excel(
                 self.question_file,
                 sheet_name=section.title,
-            )
-            for index, row in df.iterrows():
-                q_cell = row.iat[3]
-                if type(q_cell) == str and q_cell.strip() == "Question":
-                    header = index + 1
-                    break
-
-                if index > 5:
-                    print(f"Did not find header in {section}")
-                    break
-
-            df = pd.read_excel(
-                self.question_file,
-                sheet_name=section.title,
-                header=header,
-                usecols=lambda name: "Unnamed" not in name,
+                header=1,
             )
 
             df = df.dropna(axis="index", how="all")
-            drop_cols = [
-                "Climate Justice/Adaptation Tag",
-                "Drop down box options for no mark awarded (internal)",
-                "Is this question or criteria changing?",
-                "Change proposed",
-                "New Criteria",
-                "Clarifications",
-                "2023 Scorecards Criteria",
-                "2023 Scorecards Clarifications",
-                "2023 Criteria",
-                "2023 Clarifications",
-                "Previous Criteria from 2023 Scorecards",
-            ]
-            for col in drop_cols:
-                if col in df.columns:
-                    df = df.drop(col, axis=1)
             df = df.iloc[:, :14]
 
             columns = list(self.column_names)
@@ -172,23 +101,16 @@ class Command(BaseCommand):
                     if len(q_parts) == 2:
                         q_part = q_parts[1]
 
-                how_marked = "volunteer"
                 question_type = "yes_no"
-                if row["how_marked"] == "FOI":
-                    how_marked = "foi"
-                    question_type = "foi"
-                elif row["how_marked"] == "National Data":
-                    how_marked = "national_data"
-                    question_type = "national_data"
 
                 if row.get("question_type", None) is not None and not pd.isna(
                     row["question_type"]
                 ):
-                    if row["question_type"] == "Tiered answer":
+                    if row["question_type"].lower() == "tiered answer":
                         question_type = "tiered"
-                    elif row["question_type"] == "Tick all that apply":
+                    elif row["question_type"].lower() == "tick all that apply":
                         question_type = "multiple_choice"
-                    elif row["question_type"] == "Multiple choice":
+                    elif row["question_type"].lower() == "multiple choice":
                         question_type = "select_one"
 
                 row = row.fillna("")
@@ -196,9 +118,9 @@ class Command(BaseCommand):
                     "description": row["question"],
                     "criteria": row["criteria"],
                     "question_type": question_type,
-                    "how_marked": how_marked,
+                    "how_marked": "volunteer",
                     "clarifications": row["clarifications"],
-                    "topic": row["topic"],
+                    "topic": "",
                     "weighting": row["weighting"],
                 }
 
@@ -239,16 +161,19 @@ class Command(BaseCommand):
                     )
                     for i in range(1, options):
                         desc = row[f"option_{i}"]
+                        if pd.isna(desc) or desc.strip() == "":
+                            continue
+
                         score = 1
                         ordering = i
                         if q.question_type == "tiered":
                             score = i
-                        if not pd.isna(desc):
-                            o, c = Option.objects.update_or_create(
-                                question=q,
-                                description=desc,
-                                defaults={"score": score, "ordering": ordering},
-                            )
+
+                        o, c = Option.objects.update_or_create(
+                            question=q,
+                            description=desc,
+                            defaults={"score": score, "ordering": ordering},
+                        )
                 elif q.question_type == "yes_no":
                     for desc in ["Yes", "No"]:
                         ordering = 1
@@ -262,6 +187,5 @@ class Command(BaseCommand):
                             defaults={"score": score, "ordering": ordering},
                         )
 
-                for col, group in q_groups.items():
-                    if row[col] == "Yes":
-                        q.questiongroup.add(group)
+                for group in row["question_groups"].split("|"):
+                    q.questiongroup.add(q_groups[group])
