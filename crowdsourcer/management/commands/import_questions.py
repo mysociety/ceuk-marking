@@ -97,7 +97,9 @@ class Command(BaseCommand):
             self.stderr.write(f"No session with that name: {session_label}")
             return
 
-        for q in QuestionGroup.objects.exclude(description="Combined Authority"):
+        for q in QuestionGroup.objects.filter(marking_session=session).exclude(
+            description="Combined Authority"
+        ):
             key = q.description.lower().replace(" ", "_")
             q_groups[key] = q
 
@@ -106,17 +108,46 @@ class Command(BaseCommand):
         for section in Section.objects.exclude(title__contains="(CA)").filter(
             marking_session=session
         ):
+            print(section)
+            header = 2
             df = pd.read_excel(
                 self.question_file,
                 sheet_name=section.title,
-                header=2,
+            )
+            for index, row in df.iterrows():
+                q_cell = row.iat[3]
+                if type(q_cell) == str and q_cell.strip() == "Question":
+                    header = index + 1
+                    break
+
+                if index > 5:
+                    print(f"Did not find header in {section}")
+                    break
+
+            df = pd.read_excel(
+                self.question_file,
+                sheet_name=section.title,
+                header=header,
                 usecols=lambda name: "Unnamed" not in name,
             )
 
-            print(section.title)
             df = df.dropna(axis="index", how="all")
-            if "Climate Justice/Adaptation Tag" in df.columns:
-                df = df.drop("Climate Justice/Adaptation Tag", axis=1)
+            drop_cols = [
+                "Climate Justice/Adaptation Tag",
+                "Drop down box options for no mark awarded (internal)",
+                "Is this question or criteria changing?",
+                "Change proposed",
+                "New Criteria",
+                "Clarifications",
+                "2023 Scorecards Criteria",
+                "2023 Scorecards Clarifications",
+                "2023 Criteria",
+                "2023 Clarifications",
+                "Previous Criteria from 2023 Scorecards",
+            ]
+            for col in drop_cols:
+                if col in df.columns:
+                    df = df.drop(col, axis=1)
             df = df.iloc[:, :14]
 
             columns = list(self.column_names)
@@ -130,6 +161,9 @@ class Command(BaseCommand):
                 q_no = row["question_no"]
                 q_part = None
                 if pd.isna(q_no):
+                    continue
+
+                if pd.isna(row["question"]):
                     continue
 
                 if type(q_no) is not int:
@@ -157,6 +191,7 @@ class Command(BaseCommand):
                     elif row["question_type"] == "Multiple choice":
                         question_type = "select_one"
 
+                row = row.fillna("")
                 defaults = {
                     "description": row["question"],
                     "criteria": row["criteria"],
