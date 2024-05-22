@@ -43,6 +43,12 @@ class Command(BaseCommand):
             "--file", action="store", help="Excel file containing the questions"
         )
 
+    def clean_extra(self, extra):
+        if pd.isna(extra):
+            extra = "n/a"
+
+        return extra
+
     def handle(self, *args, **kwargs):
         file = kwargs.get("file", None)
 
@@ -116,10 +122,10 @@ class Command(BaseCommand):
                 row = row.fillna("")
                 defaults = {
                     "description": row["question"],
-                    "criteria": row["criteria"],
+                    "criteria": self.clean_extra(row["criteria"]),
                     "question_type": question_type,
                     "how_marked": "volunteer",
-                    "clarifications": row["clarifications"],
+                    "clarifications": self.clean_extra(row["clarifications"]),
                     "topic": "",
                     "weighting": row["weighting"],
                 }

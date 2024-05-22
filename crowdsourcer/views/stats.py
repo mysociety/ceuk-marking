@@ -560,6 +560,8 @@ class QuestionScoresCSV(UserPassesTestMixin, ListView):
                 max_score = scoring["q_maxes"][section].get(number, 0)
                 q = {
                     "q": option.question.description,
+                    "clarifications": option.question.clarifications,
+                    "criteria": option.question.criteria,
                     "how_marked": option.question.how_marked,
                     "type": option.question.question_type,
                     "raw_max": max_score,
@@ -583,6 +585,8 @@ class QuestionScoresCSV(UserPassesTestMixin, ListView):
                 "raw max",
                 "weighted max",
                 "options",
+                "clarifications",
+                "criteria",
             ]
         )
 
@@ -604,6 +608,8 @@ class QuestionScoresCSV(UserPassesTestMixin, ListView):
                     q["raw_max"],
                     q["weighted_max"],
                     q["options"],
+                    q["clarifications"],
+                    q["criteria"],
                 ]
                 rows.append(row)
 
