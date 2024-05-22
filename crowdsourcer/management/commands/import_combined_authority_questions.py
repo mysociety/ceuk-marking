@@ -110,7 +110,7 @@ class Command(BaseCommand):
                 for index, row in df.iterrows():
                     for i in [2, 3]:
                         q_cell = row.iat[i]
-                        if type(q_cell) == str and q_cell.strip() == "Question":
+                        if type(q_cell) is str and q_cell.strip() == "Question":
                             header = index + 1
                             found_header = True
                             break
@@ -208,6 +208,13 @@ class Command(BaseCommand):
                             )
                             continue
 
+                weighting = "low"
+                if type(row["weighting"]) is str:
+                    weighting = row["weighting"].strip().lower()
+                else:
+                    print(
+                        f"bad weighting for {section.title}, {q_no}{q_part}: {row['weighting']}"
+                    )
                 defaults = {
                     "description": row["question"],
                     "criteria": row["criteria"],
@@ -215,6 +222,7 @@ class Command(BaseCommand):
                     "how_marked": how_marked,
                     "clarifications": row["clarifications"],
                     "topic": row["topic"],
+                    "weighting": weighting,
                 }
 
                 if kwargs["text_only"]:
@@ -222,6 +230,7 @@ class Command(BaseCommand):
                         "question_type",
                         "how_marked",
                         "topic",
+                        "weighting",
                     ]:
                         del defaults[default]
 
