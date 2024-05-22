@@ -190,17 +190,20 @@ class Command(BaseCommand):
                         question_type = "national_data"
 
                     if not pd.isna(row["question_type"]):
-                        if row["question_type"] == "Tiered answer":
+                        q_type = row["question_type"].strip().lower()
+                        if q_type == "tiered answer":
                             question_type = "tiered"
-                        elif row["question_type"] == "Tick all that apply":
+                        elif q_type == "tick all that apply":
                             question_type = "multiple_choice"
-                        elif row["question_type"] in [
-                            "Multiple choice",
-                            "Multiple",
+                        elif q_type in [
+                            "multiple choice",
+                            "multiple",
                             "multiple",
                         ]:
                             question_type = "select_one"
-                        elif row["question_type"] == "Y/N":
+                        elif q_type == "negative" or q_type == "negatively marked":
+                            question_type = "negative"
+                        elif q_type == "y/n":
                             pass
                         else:
                             print(
