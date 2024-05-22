@@ -75,6 +75,12 @@ class Command(BaseCommand):
                 columns.append(row["Column"])
             self.column_names = columns
 
+    def clean_extra(self, extra):
+        if pd.isna(extra) or extra == "" or extra == "nan":
+            extra = "n/a"
+
+        return extra
+
     def handle(self, quiet: bool = False, *args, **kwargs):
         file = kwargs.get("file", None)
 
@@ -211,10 +217,10 @@ class Command(BaseCommand):
                     )
                 defaults = {
                     "description": row["question"],
-                    "criteria": row["criteria"],
+                    "criteria": self.clean_extra(row["criteria"]),
                     "question_type": question_type,
                     "how_marked": how_marked,
-                    "clarifications": row["clarifications"],
+                    "clarifications": self.clean_extra(row["clarifications"]),
                     "topic": row["topic"],
                     "weighting": weighting,
                 }
