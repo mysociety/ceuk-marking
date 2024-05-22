@@ -32,7 +32,7 @@ class Section(models.Model):
     marking_session = models.ForeignKey(MarkingSession, on_delete=models.CASCADE)
 
     def __str__(self):
-        return self.title
+        return f"{self.title} ({self.marking_session.label})"
 
 
 class QuestionGroup(models.Model):
