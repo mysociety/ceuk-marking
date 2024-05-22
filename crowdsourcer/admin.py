@@ -66,7 +66,13 @@ class QuestionAdmin(admin.ModelAdmin):
         "description",
         "weighting",
     )
-    list_filter = ["section__marking_session", "section", "how_marked", "questiongroup"]
+    list_filter = [
+        "section__marking_session",
+        "how_marked",
+        "question_type",
+        "questiongroup",
+        "section",
+    ]
     ordering = ("section", "number", "number_part")
 
 
