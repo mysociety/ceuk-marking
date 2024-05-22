@@ -184,12 +184,22 @@ class Command(BaseCommand):
                 if row.get("question_type", None) is not None and not pd.isna(
                     row["question_type"]
                 ):
-                    if row["question_type"] == "Tiered answer":
+                    q_type = row["question_type"].strip().lower()
+                    if q_type == "tiered answer":
                         question_type = "tiered"
-                    elif row["question_type"] == "Tick all that apply":
+                    elif q_type == "tick all that apply":
                         question_type = "multiple_choice"
-                    elif row["question_type"] == "Multiple choice":
+                    elif q_type == "multiple choice":
                         question_type = "select_one"
+                    elif q_type == "negative" or q_type == "negatively marked":
+                        question_type = "negative"
+                    elif q_type == "y/n":
+                        pass
+                    else:
+                        print(
+                            f"missing question type: {section.title}, {row['question_no']} - {row['question_type']}"
+                        )
+                        continue
 
                 row = row.fillna("")
                 weighting = "low"
