@@ -57,11 +57,15 @@
                 <div class="col-md-4 offset-md-1 order-md-2 mb-3 mb-sm-4">
                     <details class="text-muted">
                         <summary class="fw-bold mb-2">Criteria</summary>
+                        {% autoescape off %}
                         {{q_form.question_obj.criteria|linebreaks }}
+                        {% endautoescape %}
                     </details>
                     <details class="text-muted">
                         <summary class="fw-bold mb-2">Clarifications</summary>
+                        {% autoescape off %}
                         {{q_form.question_obj.clarifications|linebreaks }}
+                        {% endautoescape %}
                     </details>
                 </div>
                 <div class="col-md-7 order-md-1">
