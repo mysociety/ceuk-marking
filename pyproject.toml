@@ -17,6 +17,7 @@ django-libsass = "^0.9"
 django-bootstrap5 = "^22.2"
 django-simple-history = "^3.2.0"
 mysoc-dataset = "^0.3.0"
+markdown = "^3.6"
 
 [tool.poetry.dev-dependencies]
 black = "^24.3.0"
