@@ -1,6 +1,7 @@
 {% extends 'crowdsourcer/base.html' %}
 
 {% load django_bootstrap5 %}
+{% load crowdsourcer_tags %}
 
 {% block content %}
     <h1 class="mb-3 mb-md-4">
@@ -58,11 +59,15 @@
                 <div class="col-md-4 offset-md-1 order-md-2 mb-3 mb-sm-4">
                     <details class="text-muted">
                         <summary class="fw-bold mb-2">Criteria</summary>
-                        {{q_form.question_obj.criteria|linebreaks }}
+                        {% markdown %}
+{{q_form.question_obj.criteria }}
+                        {% endmarkdown %}
                     </details>
                     <details class="text-muted">
                         <summary class="fw-bold mb-2">Clarifications</summary>
-                        {{q_form.question_obj.clarifications|linebreaks }}
+                        {% markdown %}
+{{q_form.question_obj.clarifications }}
+                        {% endmarkdown %}
                     </details>
                 </div>
                 <div class="col-md-7 order-md-1">

@@ -2,6 +2,7 @@
 
 {% load django_bootstrap5 %}
 {% load neighbourhood_filters %}
+{% load crowdsourcer_tags %}
 
 {% block content %}
     <h1 class="mb-3 mb-md-4">
@@ -57,11 +58,15 @@
             <div class="d-sm-flex mx-n3 text-muted">
                 <details class="mt-3 mt-sm-0 mx-3 mw-30em">
                     <summary class="fw-bold mb-2">Criteria</summary>
-                    {{ q_form.question_obj.criteria|linebreaks }}
+                        {% markdown %}
+{{q_form.question_obj.criteria }}
+                        {% endmarkdown %}
                 </details>
                 <details class="mt-3 mt-sm-0 mx-3 mw-30em">
                     <summary class="fw-bold mb-2">Clarifications</summary>
-                    {{ q_form.question_obj.clarifications|linebreaks }}
+                        {% markdown %}
+{{q_form.question_obj.clarifications }}
+                        {% endmarkdown %}
                 </details>
             </div>
             <div class="row gx-lg-5">
