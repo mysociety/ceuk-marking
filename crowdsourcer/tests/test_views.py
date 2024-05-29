@@ -606,6 +606,153 @@ class TestSaveView(BaseTestCase):
 
         self.assertEquals(answers.count(), 2)
 
+    # it's not possible with the django test client to do simultaneous form submissions
+    # so this isn't testing that the bug is fixed, but it is testing that the fix doesn't
+    # have any ill effects and that it exhibits the correct behaviour.
+    #
+    # see https://github.com/mysociety/ceuk-marking/issues/40
+    def test_multi_save_fix(self):
+        url = reverse(
+            "authority_question_edit", args=("Aberdeenshire Council", "Transport")
+        )
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+
+        answers = Response.objects.filter(
+            authority__name="Aberdeenshire Council",
+            question__section__title="Transport",
+        ).order_by("question__number")
+
+        self.assertEquals(answers.count(), 0)
+
+        response = self.client.post(
+            url,
+            data={
+                "form-INITIAL_FORMS": 2,
+                "form-MAX_NUM_FORMS": 2,
+                "form-MIN_NUM_FORMS": 2,
+                "form-TOTAL_FORMS": 2,
+                "form-0-authority": 2,
+                "form-0-evidence": "foo",
+                "form-0-option": "14",
+                "form-0-page_number": "1",
+                "form-0-private_notes": "qux",
+                "form-0-public_notes": "bar",
+                "form-0-question": "281",
+                "form-1-authority": 2,
+                "form-1-evidence": "foo",
+                "form-1-multi_option": "161",
+                "form-1-page_number": "1",
+                "form-1-private_notes": "qux",
+                "form-1-public_notes": "bar",
+                "form-1-question": "282",
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        msg = response.context.get("message", "")
+        self.assertEquals(msg, "Your answers have been saved.")
+
+        answers = Response.objects.filter(
+            authority__name="Aberdeenshire Council",
+            question__section__title="Transport",
+        ).order_by("question__number")
+
+        self.assertEquals(answers.count(), 2)
+        last_update = answers[1].last_update
+
+        response = self.client.post(
+            url,
+            data={
+                "form-INITIAL_FORMS": 2,
+                "form-MAX_NUM_FORMS": 2,
+                "form-MIN_NUM_FORMS": 2,
+                "form-TOTAL_FORMS": 2,
+                "form-0-authority": 2,
+                "form-0-evidence": "foo",
+                "form-0-option": "14",
+                "form-0-page_number": "1",
+                "form-0-private_notes": "qux",
+                "form-0-public_notes": "bar",
+                "form-0-question": "281",
+                "form-1-authority": 2,
+                "form-1-evidence": "foo",
+                "form-1-multi_option": "161",
+                "form-1-page_number": "1",
+                "form-1-private_notes": "qux",
+                "form-1-public_notes": "bar",
+                "form-1-question": "282",
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        msg = response.context.get("message", "")
+        self.assertEquals(msg, "Your answers have been saved.")
+
+        answers = Response.objects.filter(
+            authority__name="Aberdeenshire Council",
+            question__section__title="Transport",
+        ).order_by("question__number")
+
+        self.assertEquals(answers.count(), 2)
+
+        self.assertEquals(answers[0].option.description, "Yes")
+
+        options = answers[1].multi_option
+        self.assertEquals(options.count(), 1)
+        self.assertEquals(options.first().description, "Car share")
+        private_notes = answers[1].private_notes
+        self.assertEquals(private_notes, "qux")
+
+        # as the response was the same it should not have updated
+        self.assertEquals(last_update, answers[1].last_update)
+
+        response = self.client.post(
+            url,
+            data={
+                "form-INITIAL_FORMS": 2,
+                "form-MAX_NUM_FORMS": 2,
+                "form-MIN_NUM_FORMS": 2,
+                "form-TOTAL_FORMS": 2,
+                "form-0-authority": 2,
+                "form-0-evidence": "foo",
+                "form-0-option": "14",
+                "form-0-page_number": "1",
+                "form-0-private_notes": "qux",
+                "form-0-public_notes": "bar",
+                "form-0-question": "281",
+                "form-1-authority": 2,
+                "form-1-evidence": "foo",
+                "form-1-multi_option": "161",
+                "form-1-page_number": "1",
+                "form-1-private_notes": "more qux",
+                "form-1-public_notes": "bar",
+                "form-1-question": "282",
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        msg = response.context.get("message", "")
+        self.assertEquals(msg, "Your answers have been saved.")
+
+        answers = Response.objects.filter(
+            authority__name="Aberdeenshire Council",
+            question__section__title="Transport",
+        ).order_by("question__number")
+
+        self.assertEquals(answers.count(), 2)
+
+        self.assertEquals(answers[0].option.description, "Yes")
+
+        options = answers[1].multi_option
+        self.assertEquals(options.count(), 1)
+        self.assertEquals(options.first().description, "Car share")
+        private_notes = answers[1].private_notes
+        self.assertEquals(private_notes, "more qux")
+
+        # as the response was different this should have updated
+        self.assertNotEquals(last_update, answers[1].last_update)
+
 
 class TestAllAuthorityProgressView(BaseTestCase):
     def test_non_admin_denied(self):

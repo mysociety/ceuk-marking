@@ -95,6 +95,32 @@ class BaseQuestionView(TemplateView):
         self.check_permissions()
         return super().get(*args, **kwargs)
 
+    def session_form_hash(self):
+        return f"form-submission+{self.__class__.__name__}"
+
+    def get_post_hash(self):
+        excluded = {
+            "csrfmiddlewaretoken",
+        }
+        post_hash = hash(
+            tuple(
+                sorted(
+                    (k, v) for k, v in self.request.POST.items() if k not in excluded
+                )
+            )
+        )
+
+        return post_hash
+
+    # there are occassional issues with the same form being resubmitted twice the first time
+    # someone saves a result which means you get two responses saved for the same question which
+    # leads to issues when exporting the data so add in some basic checking that this isn't a
+    # repeat submission.
+    def check_form_not_resubmitted(self, post_hash):
+        previous_post_hash = self.request.session.get(self.session_form_hash())
+
+        return post_hash != previous_post_hash
+
     def post(self, *args, **kwargs):
         self.check_permissions()
         section_title = self.kwargs.get("section_title", "")
@@ -107,8 +133,14 @@ class BaseQuestionView(TemplateView):
         formset = self.get_form()
         if formset.is_valid():
             logger.debug("form IS VALID")
-            for form in formset:
-                self.process_form(form)
+            post_hash = self.get_post_hash()
+            if self.check_form_not_resubmitted(post_hash):
+                logger.debug("form saved")
+                for form in formset:
+                    self.process_form(form)
+                self.request.session[self.session_form_hash()] = post_hash
+            else:
+                logger.debug("form RESUBMITTED, not saving")
         else:
             logger.debug(f"form NOT VALID, errors are {formset.errors}")
             return self.render_to_response(self.get_context_data(form=formset))
