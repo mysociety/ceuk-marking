@@ -30,9 +30,11 @@ to the stats menu which provides various summary data.
 
 The important models are:
 
+ * Marking Session - overall project
  * PublicAuthority - local authority details
  * Section - question sections
  * Question - Question details
+ * QuestionGroup - connects questions with authorities
  * Option - Possible answers for a Question
  * Response - Answer for a question
  * Assigned - Volunteer assignments

@@ -48,7 +48,9 @@ questions and assign them to the relevant councils. The questions data
 should be downloaded as an Excel sheet from the Google sheet populated
 by CEUK.
 
-Details on file strucures can be found in DATA.md
+Details on file strucures can be found in [DATA.md](https://github.com/mysociety/ceuk-marking/blob/main/DATA.md).
+
+Form more details on managing an instance see [ADMIN.md](https://github.com/mysociety/ceuk-marking/blob/main/ADMIN.md).
 
 ### Data structure
 
@@ -86,67 +88,6 @@ admin. An assigment has a ResponseType as well as a Section and Council.
 
 There is also a Marker object associated with a Volunteer which
 determines what stage they are marking (e.g. Audit)
-
-### Setting up a volunteer in the django admin
-
-In the django admin add a user. Then create a Marker associated with
-that user and assign a ResponseType.
-
-For each council you want to user to mark you can then create an
-Assignment setting the user, section, council and response type.
-
-If you create an assignment with only a user, section and response type
-the user will be assigned to all councils in that section.
-
-The full set of steps are:
-
- * Create the user
- * Create a Marker for the user and set the Response Type to the
-     relevant one. You can ignore the Authority.
- * Create an Assignment and set the User, Section, Authority and
-     Response Type. You can ignore the Question.
-
-Once the user has been set up they can set a password by visiting the
-django password reset page.
-
-For initial volunteer setup there is an `import_volunteers` management
-command. This will take a list of volunteers and assign each of them a
-set number of councils in the section they are assigned until the
-councils have run out. If there are more volunteers than assignments
-then some volunteers will not be assigned. The number of councils to
-assign is currently hard coded in the script.
-
-### Exporting marks
-
-Once the process is complete the `export_marks` command will generate a
-set of CSV files with the final marks.
-
-### Mark weighting
-
-The database only holds the per question marks. All generating of final
-marks etc is done by the `export_marks` command.
-
-The final marks use a weighted mark where the possible maximum score is
-based on the weighting as follows:
-
- * low - 1 mark
- * medium - 2 marks
- * high - 3 marks
-
-The score is then calculated thus:
-
-    ( score / max score ) * weighted maximum
-
-Some questions are negatively marked in which case no weighting is
-applied. Likewise for unweighted questions.
-
-Sections are also weighted when calculating the final total. The section
-weightings are currenty hard coded into the scoring code. Section
-weightings are dependent on the council group. Section weightings are
-applied to the weighted section totals.
-
-It is the weighted percentages that are displayed on the Scorecards
-site.
 
 ### Running the tests
 
