@@ -87,6 +87,9 @@ class Question(models.Model):
         max_length=30, default="yes_no", choices=QUESTION_TYPES
     )
     weighting = models.CharField(max_length=20, default="low", choices=WEIGHTINGS)
+    previous_question = models.ForeignKey(
+        "Question", null=True, on_delete=models.SET_NULL
+    )
 
     @property
     def number_and_part(self):
