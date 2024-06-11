@@ -289,7 +289,7 @@ class Response(models.Model):
         text = self.public_notes
         if text is None:
             return []
-        links = re.findall(r"((?:https?://|www\.)[^ ]*)", text)
+        links = re.findall(r"((?:https?://|www\.)[^ \r\n]*)", text)
         return links
 
     @classmethod
