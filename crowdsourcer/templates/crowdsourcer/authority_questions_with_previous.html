@@ -69,147 +69,90 @@
                 </details>
             </div>
             <div class="row gx-lg-5">
-                <div class="col-lg-4 mt-4">
+                <div class="col-lg-6 mt-6">
 
-                    <h3 class="h5 text-muted mb-3 mb-lg-4">First Mark</h3>
+                    <h3 class="h5 text-muted mb-3 mb-lg-4">Previous Response</h3>
 
                     <h4 class="form-label fs-6">Marker’s answer</h4>
                     <div class="read-only-answer mb-3 mb-md-4">
-                      {% if q_form.orig.multi_option.values %}
+                      {% if q_form.previous_response.multi_option.values %}
                         <p>
-                          {% for option in q_form.orig.multi_option.values %}
+                          {% for option in q_form.previous_response.multi_option.values %}
                             {{ option.description }},
                           {% empty %}
                             (none)
                           {% endfor %}
                         </p>
                       {% else %}
-                        {{ q_form.orig.option|default:"(none)"|linebreaks }}
+                        {{ q_form.previous_response.option|default:"(none)"|linebreaks }}
                       {% endif %}
                     </div>
 
                   {% if q_form.question_obj.how_marked == 'foi' %}
                     <h4 class="form-label fs-6">FOI request</h4>
                     <div class="read-only-answer mb-3 mb-md-4">
-                        {{ q_form.orig.evidence|urlize_external }}
+                        {{ q_form.previous_response.evidence|urlize_external }}
                     </div>
                   {% else %}
                     <h4 class="form-label fs-6">Marker’s evidence of criteria met</h4>
                     <div class="read-only-answer mb-3 mb-md-4">
-                        {{ q_form.orig.evidence|default:"(none)"|linebreaks }}
+                        {{ q_form.previous_response.evidence|default:"(none)"|linebreaks }}
                     </div>
                   {% endif %}
 
                   {% if q_form.question_obj.how_marked != 'foi' %}
                     <h4 class="form-label fs-6">Links to evidence</h4>
                     <div class="read-only-answer mb-3 mb-md-4">
-                        {{ q_form.orig.public_notes|default:"(none)"|urlize_external|linebreaks }}
+                        {{ q_form.previous_response.public_notes|default:"(none)"|urlize_external|linebreaks }}
                     </div>
 
                     <h4 class="form-label fs-6">Page number</h4>
                     <div class="read-only-answer mb-3 mb-md-4">
-                        {{ q_form.orig.page_number|default:"(none)" }}<br>
+                        {{ q_form.previous_response.page_number|default:"(none)" }}<br>
                     </div>
                   {% endif %}
 
                     <h4 class="form-label fs-6">Marker’s additional notes</h4>
                     <div class="read-only-answer mb-3 mb-md-4">
-                        {{ q_form.orig.private_notes|default:"(none)"|linebreaks }}
+                        {{ q_form.previous_response.private_notes|default:"(none)"|linebreaks }}
                     </div>
 
                 </div>
-                <div class="col-lg-4 mt-4">
+                <div class="col-lg-6 mt-6 js-new-responses">
 
-                    <h3 class="h5 text-muted mb-3 mb-lg-4">Right of Reply</h3>
-
-                    <h4 class="form-label fs-6">Council response</h4>
-                  {% if q_form.ror.agree_with_response is True %}
-                    <div class="read-only-answer mb-3 mb-md-4 bg-green-100 text-green-700">
-                      <p>Council agrees with first mark</p>
-                    </div>
-                  {% elif q_form.ror.agree_with_response is False %}
-                    <div class="read-only-answer mb-3 mb-md-4 bg-red-100 text-red-700">
-                      <p>Council disagrees with first mark</p>
-                    </div>
-                  {% else %}
-                    <div class="read-only-answer mb-3 mb-md-4">
-                      <p>No response from Council</p>
-                    </div>
-                  {% endif %}
-
-                    <h4 class="form-label fs-6">Council evidence</h4>
-                    <div class="read-only-answer mb-3 mb-md-4">
-                        {{ q_form.ror.evidence|default:"(none)"|linebreaks }}
-                    </div>
-
-                    <h4 class="form-label fs-6">Council notes</h4>
-                    <div class="read-only-answer mb-3 mb-md-4">
-                        {{ q_form.ror.private_notes|default:"(none)"|linebreaks }}
-                    </div>
-
-                </div>
-                <div class="col-lg-4 mt-4 js-audit-responses">
-
-                    <h3 class="h5 text-muted mb-3 mb-lg-4">Audited response</h3>
+                    <h3 class="h5 text-muted mb-3 mb-lg-4">New response</h3>
 
                     <div class="mb-3">
-                        <!-- TODO: Make this button work -->
-                        <button class="btn btn-sm {% if q_form.ror.agree_with_response is True %}btn-outline-success{% else %}btn-outline-primary{% endif %} d-flex align-items-center js-copy-audit-response-from-first-mark" type="button">
+                        <button class="btn btn-sm btn-outline-primary d-flex align-items-center js-copy-response-from-previous" type="button">
                           {% include 'crowdsourcer/icons/magic-wand.svg' %}
-                          Copy from First Mark
+                          Copy from Previous Response
                         </button>
                     </div>
 
-                    <script type="application/json" class="js-first-mark-json">
+                    <script type="application/json" class="js-previous-json">
                     {
-                      {% if q_form.orig.multi_option.values %}
+                      {% if q_form.previous_response.multi_option.values %}
                         "multi_option": [
-                          {% for option in q_form.orig.multi_option.values %}
-                            "{{ option.id }}"{% if not forloop.last %},{% endif %}
+                          {% for option in q_form.previous_response.multi_option.values %}
+                            "{{ option.description }}"{% if not forloop.last %},{% endif %}
                           {% endfor %}
                         ],
                       {% else %}
-                        "option": "{{ q_form.orig.option.id }}",
+                        "option": "{{ q_form.previous_response.option.description }}",
                       {% endif %}
                       {% if q_form.question_obj.how_marked == "foi" %}
                         "evidence": "",
-                        "public_notes": "{{ q_form.orig.evidence|default_if_none:''|escapejs }}",
+                        "public_notes": "{{ q_form.previous_response.evidence|default_if_none:''|escapejs }}",
                       {% else %}
-                        "evidence": "{{ q_form.orig.evidence|default_if_none:''|escapejs }}",
-                        "public_notes": "{{ q_form.orig.public_notes|default_if_none:''|escapejs }}",
+                        "evidence": "{{ q_form.previous_response.evidence|default_if_none:''|escapejs }}",
+                        "public_notes": "{{ q_form.previous_response.public_notes|default_if_none:''|escapejs }}",
                       {% endif %}
-                        "page_number": "{{ q_form.orig.page_number|default_if_none:''|escapejs }}",
-                        "private_notes": "{{ q_form.orig.private_notes|default_if_none:''|escapejs }}"
+                        "page_number": "{{ q_form.previous_response.page_number|default_if_none:''|escapejs }}",
+                        "private_notes": "{{ q_form.previous_response.private_notes|default_if_none:''|escapejs }}"
                     }
                     </script>
 
-                    <label class="form-label" for="{{ q_form.option.if_for_label }}">Answer</label>
-                    {% if q_form.question_obj.section.title == "Transport" and q_form.question_obj.number == 11 and authority.questiongroup.description == "District" %}
-                    <p class="form-text">
-                      <strong>Note:</strong> District councils are not responsible for transport planning, so you should ignore any road projects in this council’s response.
-                    </p>
-                    {% endif %}
-                  {% if q_form.question_obj.question_type == "multiple_choice" %}
-                    {% bootstrap_field q_form.multi_option show_label="skip" %}
-                  {% else %}
-                    {% bootstrap_field q_form.option show_label="skip" %}
-                  {% endif %}
-
-                    {% bootstrap_field q_form.page_number %}
-
-                    {% bootstrap_field q_form.evidence %}
-
-                    {% bootstrap_field q_form.public_notes %}
-
-                    {% bootstrap_field q_form.private_notes %}
-
-                    {% if q_form.question_obj.how_marked == "foi" %}
-                      {% bootstrap_field q_form.foi_answer_in_ror %}
-                    {% endif %}
-
-                    {{ q_form.authority }}
-                    {{ q_form.question }}
-                    {{ q_form.id }}
+                    {% include 'crowdsourcer/includes/first_mark_response_form_fields.html' %}
 
                 </div>
             </div>
@@ -222,22 +165,28 @@
     </form>
 
     <script>
-    document.querySelectorAll('.js-copy-audit-response-from-first-mark').forEach(function(el, i){
+    document.querySelectorAll('.js-copy-response-from-previous').forEach(function(el, i){
       el.addEventListener('click', function(e){
         e.preventDefault();
-        var audit_responses = el.closest('.js-audit-responses');
-        var first_mark_responses = JSON.parse(audit_responses.querySelector('.js-first-mark-json').textContent);
+        var new_responses = el.closest('.js-new-responses');
+        var previous_responses = JSON.parse(new_responses.querySelector('.js-previous-json').textContent);
 
         ["page_number", "evidence", "public_notes", "private_notes"].forEach(function(slug, i){
-          audit_responses.querySelector('[name$="' + slug + '"]').value = first_mark_responses[slug];
+          new_responses.querySelector('[name$="' + slug + '"]').value = previous_responses[slug];
         });
 
-        if(first_mark_responses.multi_option){
-          audit_responses.querySelectorAll('[name$="multi_option"]').forEach(function(checkbox){
-            checkbox.checked = ( first_mark_responses.multi_option.indexOf(checkbox.value) > -1 );
+        /*
+          Have to do this by comparing the labels as there is a new set of options so the ids
+          will not match. This will fail if the text is not the same but then it should.
+         */
+        if(previous_responses.multi_option){
+          new_responses.querySelectorAll('[name$="multi_option"]').forEach(function(checkbox){
+            checkbox.checked = ( previous_responses.multi_option.indexOf(checkbox.label) > -1 );
           });
         } else {
-          audit_responses.querySelector('[name$="option"]').value = first_mark_responses.option;
+          new_responses.querySelectorAll('[name$="option"] option').forEach(function(option){
+            option.selected = option.label = previous_responses.option;
+          });
         }
       });
     });

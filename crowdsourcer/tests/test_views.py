@@ -335,6 +335,8 @@ class TestSaveView(BaseTestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
 
+        self.assertFalse(response.context["has_previous_questions"])
+
         response = self.client.post(
             url,
             data={
@@ -752,6 +754,30 @@ class TestSaveView(BaseTestCase):
 
         # as the response was different this should have updated
         self.assertNotEquals(last_update, answers[1].last_update)
+
+
+class TestSaveWithPreviousQuestionsView(BaseTestCase):
+    fixtures = [
+        "authorities.json",
+        "basics.json",
+        "users.json",
+        "questions.json",
+        "options.json",
+        "assignments.json",
+    ]
+
+    def test_save(self):
+        u = User.objects.get(username="other_marker")
+        self.client.force_login(u)
+
+        url = reverse(
+            "session_urls:authority_question_edit",
+            args=("Second Session", "Aberdeenshire Council", "Transport"),
+        )
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+
+        self.assertTrue(response.context["has_previous_questions"])
 
 
 class TestAllAuthorityProgressView(BaseTestCase):

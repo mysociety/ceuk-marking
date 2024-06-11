@@ -54,6 +54,7 @@ class ResponseForm(ModelForm):
 
         self.authority_obj = self.initial.get("authority", None)
         self.question_obj = self.initial.get("question", None)
+        self.previous_response = self.initial.get("previous_response", None)
 
         self.fields["option"].queryset = Option.objects.filter(
             question=self.question_obj

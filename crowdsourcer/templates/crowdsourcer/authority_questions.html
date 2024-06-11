@@ -69,24 +69,7 @@
                     </details>
                 </div>
                 <div class="col-md-7 order-md-1">
-                    <label class="form-label" for="{{ q_form.option.if_for_label }}">Answer</label>
-                  {% if q_form.question_obj.question_type == "multiple_choice" %}
-                    {% bootstrap_field q_form.multi_option show_label="skip" %}
-                  {% else %}
-                    {% bootstrap_field q_form.option show_label="skip" %}
-                  {% endif %}
-
-                    {% bootstrap_field q_form.page_number %}
-
-                    {% bootstrap_field q_form.evidence %}
-
-                    {% bootstrap_field q_form.public_notes %}
-
-                    {% bootstrap_field q_form.private_notes %}
-
-                    {{ q_form.authority }}
-                    {{ q_form.question }}
-                    {{ q_form.id }}
+                    {% include 'crowdsourcer/includes/first_mark_response_form_fields.html' %}
                 </div>
             </div>
         </fieldset>

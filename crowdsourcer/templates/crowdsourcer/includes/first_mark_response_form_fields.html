@@ -1,0 +1,29 @@
+{% load django_bootstrap5 %}
+
+<label class="form-label" for="{{ q_form.option.if_for_label }}">Answer</label>
+{% if q_form.question_obj.section.title == "Transport" and q_form.question_obj.number == 11 and authority.questiongroup.description == "District" %}
+    <p class="form-text">
+      <strong>Note:</strong> District councils are not responsible for transport planning, so you should ignore any road projects in this council’s response.
+    </p>
+{% endif %}
+{% if q_form.question_obj.question_type == "multiple_choice" %}
+    {% bootstrap_field q_form.multi_option show_label="skip" %}
+{% else %}
+    {% bootstrap_field q_form.option show_label="skip" %}
+{% endif %}
+
+{% bootstrap_field q_form.page_number %}
+
+{% bootstrap_field q_form.evidence %}
+
+{% bootstrap_field q_form.public_notes %}
+
+{% bootstrap_field q_form.private_notes %}
+
+{% if q_form.question_obj.how_marked == "foi" %}
+  {% bootstrap_field q_form.foi_answer_in_ror %}
+{% endif %}
+
+{{ q_form.authority }}
+{{ q_form.question }}
+{{ q_form.id }}
