@@ -103,7 +103,11 @@
                   {% if q_form.question_obj.how_marked != 'foi' %}
                     <h4 class="form-label fs-6">Links to evidence</h4>
                     <div class="read-only-answer mb-3 mb-md-4">
-                        {{ q_form.previous_response.public_notes|default:"(none)"|urlize_external|linebreaks }}
+                        {% for link in q_form.previous_response.evidence_links %}
+                          <p>
+                            {{ link|check_if_broken }}
+                          </p>
+                        {% endfor %}
                     </div>
 
                     <h4 class="form-label fs-6">Page number</h4>
