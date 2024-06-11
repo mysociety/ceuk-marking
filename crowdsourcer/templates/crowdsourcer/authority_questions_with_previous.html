@@ -102,8 +102,15 @@
 
                   {% if q_form.question_obj.how_marked != 'foi' %}
                     <h4 class="form-label fs-6">Links to evidence</h4>
-                    <div class="read-only-answer mb-3 mb-md-4">
-                        {{ q_form.previous_response.public_notes|default:"(none)"|urlize_external|linebreaks }}
+                    <div class="read-only-answer mb-0 mb-md-0">
+                        {% for link in q_form.previous_response.evidence_links %}
+                          <p>
+                            {{ link|check_if_broken }}
+                          </p>
+                        {% endfor %}
+                    </div>
+                    <div class="text-muted mb-3 mb-md-4 small">
+                      Red links were found to be no longer available in an automated check.
                     </div>
 
                     <h4 class="form-label fs-6">Page number</h4>
