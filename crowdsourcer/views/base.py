@@ -26,6 +26,7 @@ class BaseQuestionView(TemplateView):
     log_start = "marking form"
     title_start = ""
     how_marked_in = ["volunteer", "national_volunteer"]
+    has_previous_questions = False
 
     def setup(self, request, *args, **kwargs):
         super().setup(request, *args, **kwargs)
@@ -160,6 +161,7 @@ class BaseQuestionView(TemplateView):
         context[
             "page_title"
         ] = f"{self.title_start}{context['authority_name']}: {context['section_title']}"
+        context["has_previous_questions"] = self.has_previous_questions
 
         return context
 
