@@ -15,6 +15,7 @@ class Command(BaseCommand):
         "question_no",
         "topic",
         "question",
+        "no_mark_options",
         "criteria",
         "clarifications",
         "how_marked",
@@ -52,6 +53,18 @@ class Command(BaseCommand):
         )
         parser.add_argument(
             "--column_list", action="store", help="file with list of column names"
+        )
+
+        parser.add_argument(
+            "--delete_old_no_mark_options",
+            action="store_true",
+            help="remove old options with zero marks",
+        )
+
+        parser.add_argument(
+            "--delete_options",
+            action="store_true",
+            help="remove all options and recreate",
         )
 
     def get_column_names(self, **kwargs):
@@ -138,7 +151,6 @@ class Command(BaseCommand):
             df = df.dropna(axis="index", how="all")
             drop_cols = [
                 "Climate Justice/Adaptation Tag",
-                "Drop down box options for no mark awarded (internal)",
                 "Is this question or criteria changing?",
                 "Change proposed",
                 "New Criteria",
@@ -158,7 +170,11 @@ class Command(BaseCommand):
                     df = df.drop(col, axis=1)
 
             columns = list(self.column_names)
-            options = len(df.columns) - len(self.column_names) + 1
+
+            if "Drop down box options for no mark awarded (internal)" not in df.columns:
+                columns.remove("no_mark_options")
+
+            options = len(df.columns) - len(columns) + 1
             for i in range(1, options):
                 columns.append(f"option_{i}")
 
@@ -253,40 +269,68 @@ class Command(BaseCommand):
                 if kwargs["text_only"]:
                     continue
 
-                if q.question_type in ["select_one", "tiered", "multiple_choice"]:
-                    is_no = False
-                    for i in range(1, options):
-                        desc = row[f"option_{i}"]
-                        score = 1
-                        ordering = i
-                        if q.question_type == "tiered":
-                            score = i
-                        if not pd.isna(desc):
-                            if desc == "No":
-                                is_no = True
-                            o, c = Option.objects.update_or_create(
-                                question=q,
-                                description=desc,
-                                defaults={"score": score, "ordering": ordering},
-                            )
+                if kwargs["delete_old_no_mark_options"]:
+                    Option.objects.filter(question=q, score=0).delete()
 
-                    if not is_no and q.question_type == "tiered":
+                if kwargs["delete_options"]:
+                    Option.objects.filter(question=q).delete()
+
+                if row.get("no_mark_options") is not None:
+                    no_mark_options = row["no_mark_options"].splitlines()
+                else:
+                    no_mark_options = []
+
+                no_mark_options.extend(
+                    [
+                        "No Penalty Mark",
+                        "No evidence found",
+                        "Evidence does not meet criteria",
+                        "No response from FOI",
+                    ]
+                )
+
+                if q.question_type in ["select_one", "tiered", "multiple_choice"]:
+                    if not no_mark_options:
                         o, c = Option.objects.update_or_create(
                             question=q,
                             description="None",
                             defaults={"score": 0, "ordering": 100},
                         )
-                elif q.question_type == "yes_no":
-                    for desc in ["Yes", "No"]:
-                        ordering = 1
+                    no_mark_seen = 0
+                    for i in range(1, options):
+                        desc = str(row[f"option_{i}"]).strip()
+                        if pd.isna(desc) or desc == "":
+                            continue
                         score = 1
-                        if desc == "No":
+                        ordering = i
+                        if q.question_type == "tiered":
+                            score = i - no_mark_seen
+                        if desc in no_mark_options:
+                            no_mark_seen = no_mark_seen + 1
                             score = 0
-                            ordering = 2
                         o, c = Option.objects.update_or_create(
                             question=q,
                             description=desc,
                             defaults={"score": score, "ordering": ordering},
+                        )
+                elif q.question_type == "yes_no":
+                    o, c = Option.objects.update_or_create(
+                        question=q,
+                        description="Yes",
+                        defaults={"score": 1, "ordering": 1},
+                    )
+                    if no_mark_options:
+                        for option in no_mark_options:
+                            o, c = Option.objects.update_or_create(
+                                question=q,
+                                description=option,
+                                defaults={"score": 0, "ordering": 100},
+                            )
+                    else:
+                        o, c = Option.objects.update_or_create(
+                            question=q,
+                            description="No",
+                            defaults={"score": 0, "ordering": 2},
                         )
 
                 q.questiongroup.add(group)
