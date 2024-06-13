@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.contrib.admin import SimpleListFilter
 
 from crowdsourcer.models import (
     Assigned,
@@ -12,6 +13,26 @@ from crowdsourcer.models import (
     ResponseType,
     Section,
 )
+
+
+class SectionFilter(SimpleListFilter):
+    title = "section"
+
+    parameter_name = "section"
+
+    def lookups(self, request, model_admin):
+        qs = model_admin.get_queryset(request)
+        lookups = []
+        for section in Section.objects.filter(
+            pk__in=qs.values_list("section", flat=True).distinct()
+        ).order_by("marking_session", "title"):
+            lookups.append((section.id, section))
+
+        return lookups
+
+    def queryset(self, request, queryset):
+        if self.value():
+            return queryset.filter(section=self.value())
 
 
 @admin.register(Assigned)
@@ -71,7 +92,7 @@ class QuestionAdmin(admin.ModelAdmin):
         "how_marked",
         "question_type",
         "questiongroup",
-        "section",
+        SectionFilter,
     ]
     ordering = ("section", "number", "number_part")
 
