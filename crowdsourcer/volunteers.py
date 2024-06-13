@@ -1,5 +1,9 @@
 from collections import defaultdict
 
+from django.conf import settings
+from django.contrib.auth.forms import PasswordResetForm
+from django.http import HttpRequest
+
 import pandas as pd
 
 from crowdsourcer.models import Assigned, PublicAuthority, Section
@@ -75,3 +79,23 @@ def check_bulk_assignments(df, rt, ms, num_assignments, always_assign=False):
                 )
 
     return errors
+
+
+def send_registration_email(user, server_name):
+    subject_template = "registration/initial_password_email_subject.txt"
+    email_template = "registration/initial_password_email.html"
+
+    if user.email:
+        form = PasswordResetForm({"email": user.email})
+        assert form.is_valid()
+        request = HttpRequest()
+        request.META["SERVER_NAME"] = server_name
+        request.META["SERVER_PORT"] = 443
+        form.save(
+            request=request,
+            domain_override=server_name,
+            use_https=True,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            subject_template_name=subject_template,
+            email_template_name=email_template,
+        )

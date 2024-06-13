@@ -11,6 +11,7 @@ from django.views.generic import FormView, ListView
 from crowdsourcer.forms import (
     MarkerForm,
     MarkerFormset,
+    ResetEmailForm,
     UserForm,
     VolunteerAssignmentFormset,
     VolunteerBulkAssignForm,
@@ -23,6 +24,7 @@ from crowdsourcer.models import (
     ResponseType,
     Section,
 )
+from crowdsourcer.volunteers import send_registration_email
 
 logger = logging.getLogger(__name__)
 
@@ -118,6 +120,8 @@ class VolunteerEditView(VolunteerAccessMixin, FormView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
+        reset_form = ResetEmailForm(initial={"user_id": self.user.id})
+
         formset = MarkerFormset(
             instance=self.user,
             form_kwargs={"session": self.request.current_session},
@@ -125,6 +129,8 @@ class VolunteerEditView(VolunteerAccessMixin, FormView):
         )
 
         context["formset"] = formset
+        context["reset_form"] = reset_form
+        context["user"] = self.user
 
         return context
 
@@ -135,6 +141,25 @@ class VolunteerEditView(VolunteerAccessMixin, FormView):
         if formset.is_valid():
             form.save()
             formset.save()
+
+            return super().form_valid(form)
+
+
+class VolunteerSendResetEmailView(VolunteerAccessMixin, FormView):
+    form_class = ResetEmailForm
+    template_name = "crowdsourcer/volunteers/edit.html"
+
+    def get_success_url(self):
+        return reverse(
+            "session_urls:list_volunteers",
+            kwargs={"marking_session": self.request.current_session.label},
+        )
+
+    def form_valid(self, form):
+        if form.is_valid():
+            user_id = form.cleaned_data["user_id"]
+            user = get_object_or_404(User, pk=user_id)
+            send_registration_email(user, self.request.get_host())
 
             return super().form_valid(form)
 

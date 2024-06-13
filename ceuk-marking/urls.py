@@ -249,6 +249,11 @@ session_patterns = [
         name="add_volunteer",
     ),
     path(
+        "volunteers/reset_email/",
+        volunteers.VolunteerSendResetEmailView.as_view(),
+        name="reset_volunteer_email",
+    ),
+    path(
         "volunteers/<pk>/",
         volunteers.VolunteerEditView.as_view(),
         name="edit_volunteer",

@@ -393,6 +393,10 @@ class MarkerForm(ModelForm):
 MarkerFormset = inlineformset_factory(User, Marker, form=MarkerForm, can_delete=False)
 
 
+class ResetEmailForm(Form):
+    user_id = CharField(required=True, widget=HiddenInput)
+
+
 class VolunteerAssignentForm(ModelForm):
     def __init__(self, session=None, **kwargs):
         super().__init__(**kwargs)

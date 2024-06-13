@@ -10,12 +10,31 @@
     <h1 class="mb-4">Edit Volunteer</h1>
 
 
+    <div class="mb-4">
     <form action="" method="post">
         {% csrf_token %}
         {% bootstrap_form form %}
         {% bootstrap_formset formset %}
-        <input type="submit" value="Update">
+        <input class="btn btn-primary" type="submit" value="Update">
     </form>
+    </div>
+
+    {% if self.user.email  %}
+    <div class="mb-4">
+    <form action="{% session_url 'reset_volunteer_email' %}" method="post">
+        {% csrf_token %}
+        {{ reset_form }}
+        <input class="btn btn-secondary" type="submit" value="Send Reset Email">
+    </form>
+    </div>
+    {% else %}
+    <div class="mb-4">
+        <p class="text-danger">
+            No email address for user. Add one to send a login link.
+        </p>
+        <input disabled="true" class="btn btn-secondary" type="submit" value="Send Reset Email">
+    </div>
+    {% endif %}
 
 {% endif %}
 {% endblock %}
