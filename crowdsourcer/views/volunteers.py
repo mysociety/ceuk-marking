@@ -9,6 +9,7 @@ from django.urls import reverse
 from django.views.generic import FormView, ListView
 
 from crowdsourcer.forms import (
+    MarkerForm,
     MarkerFormset,
     UserForm,
     VolunteerAssignmentFormset,
@@ -52,6 +53,42 @@ class VolunteersView(VolunteerAccessMixin, ListView):
             )
             .order_by("username")
         )
+
+
+class VolunteerAddView(VolunteerAccessMixin, FormView):
+    template_name = "crowdsourcer/volunteers/create.html"
+    form_class = UserForm
+    context_object_name = "volunteer"
+
+    def get_success_url(self):
+        return reverse(
+            "session_urls:list_volunteers",
+            kwargs={"marking_session": self.request.current_session.label},
+        )
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        marker_form = MarkerForm(
+            **{**self.get_form_kwargs(), "session": self.request.current_session}
+        )
+
+        context["marker_form"] = marker_form
+
+        return context
+
+    def form_valid(self, form):
+        context = self.get_context_data()
+        marker_form = context["marker_form"]
+
+        if marker_form.is_valid():
+            u = form.save()
+            marker_form.instance.user_id = u.id
+            m = marker_form.save()
+
+            m.marking_session.add(self.request.current_session)
+
+            return super().form_valid(form)
 
 
 class VolunteerEditView(VolunteerAccessMixin, FormView):
