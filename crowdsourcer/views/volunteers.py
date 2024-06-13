@@ -9,7 +9,7 @@ from django.urls import reverse
 from django.views.generic import FormView, ListView
 
 from crowdsourcer.forms import (
-    MarkerForm,
+    CreateMarkerForm,
     MarkerFormset,
     ResetEmailForm,
     UserForm,
@@ -71,7 +71,7 @@ class VolunteerAddView(VolunteerAccessMixin, FormView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        marker_form = MarkerForm(
+        marker_form = CreateMarkerForm(
             **{**self.get_form_kwargs(), "session": self.request.current_session}
         )
 
@@ -89,6 +89,9 @@ class VolunteerAddView(VolunteerAccessMixin, FormView):
             m = marker_form.save()
 
             m.marking_session.add(self.request.current_session)
+
+            if marker_form.cleaned_data["send_reset"] is True:
+                send_registration_email(u, self.request.get_host())
 
             return super().form_valid(form)
 
