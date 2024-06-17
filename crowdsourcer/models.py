@@ -209,6 +209,13 @@ class PublicAuthority(models.Model):
 
         return authorities
 
+    def get_data(self, data_name):
+        try:
+            data = AuthorityData.objects.get(authority=self, data_name=data_name)
+            return data.data_value
+        except AuthorityData.DoesNotExist:
+            return None
+
     class Meta:
         verbose_name_plural = "authorities"
 

@@ -163,6 +163,7 @@ class BaseQuestionView(TemplateView):
         ] = f"{self.title_start}{context['authority_name']}: {context['section_title']}"
         context["has_previous_questions"] = self.has_previous_questions
 
+        context["council_minutes"] = self.authority.get_data("council_minutes")
         return context
 
 
