@@ -104,6 +104,17 @@ class Question(models.Model):
         return Option.objects.filter(question=self).order_by("ordering", "score")
 
 
+class AuthorityData(models.Model):
+    authority = models.ForeignKey("PublicAuthority", on_delete=models.CASCADE)
+    data_name = models.CharField(max_length=200)
+    data_value = models.TextField()
+
+    class Meta:
+        indexes = [
+            models.Index(fields=["authority", "data_name"]),
+        ]
+
+
 class PublicAuthority(models.Model):
     COUNTRIES = [
         ("england", "England"),
