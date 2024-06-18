@@ -416,9 +416,11 @@ class VolunteerAssignentForm(ModelForm):
                 .exclude(id=self.instance.id)
                 .values_list("authority_id", flat=True)
             )
-            self.fields["authority"].queryset = PublicAuthority.objects.exclude(
-                id__in=assigned_authorities
-            ).order_by("name")
+            self.fields["authority"].queryset = (
+                self.fields["authority"]
+                .queryset.exclude(id__in=assigned_authorities)
+                .order_by("name")
+            )
 
     class Meta:
         model = Assigned

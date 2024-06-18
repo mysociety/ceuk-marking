@@ -24,7 +24,7 @@ async function getAvailableAuthorities($fs) {
     return response.json()
 }
 $(function(){
-  $('select').on('change', function(e){
+  $('select .field_rt,select .field_section').on('change', function(e){
     var $d = $(this);
     var $fs = $d.parents('fieldset');
 
