@@ -176,7 +176,7 @@ class PublicAuthority(models.Model):
             question_types = Question.VOLUNTEER_TYPES
 
         authorities = cls.objects.filter(
-            questiongroup__question__in=questions
+            marking_session=marking_session, questiongroup__question__in=questions
         ).annotate(
             num_questions=Subquery(
                 Question.objects.filter(

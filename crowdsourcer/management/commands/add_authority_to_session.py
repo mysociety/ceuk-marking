@@ -62,7 +62,7 @@ class Command(BaseCommand):
             count = 0
             for index, row in df.iterrows():
                 try:
-                    authority = PublicAuthority.options.get(id=row["gssNumber"])
+                    authority = PublicAuthority.objects.get(unique_id=row["gssNumber"])
                     count += 1
                 except PublicAuthority.DoesNotExist:
                     self.stderr.write(f"No authority found for {row['gssNumber']}")

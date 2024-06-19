@@ -7,7 +7,8 @@
     "name": "A Combined Authority",
     "website": "https://www.example.org",
     "type": "COMB",
-    "questiongroup": 5
+    "questiongroup": 5,
+    "marking_session": [1]
   }
 }
 ]

@@ -66,7 +66,8 @@ class BaseAllAuthorityProgressView(UserPassesTestMixin, ListView):
         response_type = ResponseType.objects.get(type=self.stage)
         qs = (
             PublicAuthority.objects.filter(
-                questiongroup__marking_session=self.request.current_session
+                marking_session=self.request.current_session,
+                questiongroup__marking_session=self.request.current_session,
             )
             .annotate(
                 num_questions=Subquery(
@@ -399,7 +400,8 @@ class AuthorityLoginReport(UserPassesTestMixin, ListView):
     def get_queryset(self):
         authorities = (
             PublicAuthority.objects.filter(
-                questiongroup__marking_session=self.request.current_session
+                marking_session=self.request.current_session,
+                questiongroup__marking_session=self.request.current_session,
             )
             .annotate(
                 has_logged_in=Subquery(

@@ -14,7 +14,14 @@ from crowdsourcer.forms import (
     VolunteerAssignmentFormset,
     VolunteerBulkAssignForm,
 )
-from crowdsourcer.models import Assigned, Marker, PublicAuthority, ResponseType, Section
+from crowdsourcer.models import (
+    Assigned,
+    Marker,
+    MarkingSession,
+    PublicAuthority,
+    ResponseType,
+    Section,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -154,8 +161,10 @@ class AvailableAssignmentAuthorities(VolunteerAccessMixin, ListView):
         ):
             return []
 
+        marking_session = MarkingSession.objects.get(id=self.request.GET["ms"])
         return PublicAuthority.objects.filter(
-            questiongroup__marking_session__id=self.request.GET["ms"]
+            marking_session=marking_session,
+            questiongroup__marking_session=marking_session,
         ).exclude(
             id__in=Assigned.objects.filter(
                 response_type=self.request.GET["rt"],
@@ -236,7 +245,7 @@ class BulkAssignVolunteer(VolunteerAccessMixin, FormView):
             ).values("authority")
 
             to_assign = PublicAuthority.objects.filter(
-                questiongroup__marking_session=ms
+                marking_session=ms, questiongroup__marking_session=ms
             ).exclude(id__in=assigned)[:num_assignments]
 
             for a in to_assign:

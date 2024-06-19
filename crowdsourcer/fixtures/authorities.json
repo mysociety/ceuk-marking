@@ -8,7 +8,8 @@
     "website": "https://www.aberdeencity.gov.uk",
     "country": "scotland",
     "type": "UTA",
-    "questiongroup": 1
+    "questiongroup": 1,
+    "marking_session": [1,2]
   }
 },
 {
@@ -20,7 +21,8 @@
     "website": "https://www.aberdeenshire.gov.uk",
     "country": "scotland",
     "type": "UTA",
-    "questiongroup": 1
+    "questiongroup": 1,
+    "marking_session": [1,2]
   }
 },
 {
@@ -32,7 +34,8 @@
     "website": "https://www.adur-worthing.gov.uk/",
     "country": "england",
     "type": "DIS",
-    "questiongroup": 2
+    "questiongroup": 2,
+    "marking_session": [1,2]
   }
 },
 {
@@ -45,7 +48,8 @@
     "questiongroup": 2,
     "country": "northern ireland",
     "type": "NID",
-    "do_not_mark": true
+    "do_not_mark": true,
+    "marking_session": [1]
   }
 }
 ]
