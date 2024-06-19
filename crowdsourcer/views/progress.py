@@ -72,6 +72,7 @@ class BaseAllAuthorityProgressView(UserPassesTestMixin, ListView):
                 num_questions=Subquery(
                     Question.objects.filter(
                         questiongroup=OuterRef("questiongroup"),
+                        section__marking_session=self.request.current_session,
                         how_marked__in=self.types,
                     )
                     .values("questiongroup")
@@ -82,6 +83,8 @@ class BaseAllAuthorityProgressView(UserPassesTestMixin, ListView):
             .annotate(
                 num_responses=Subquery(
                     Response.objects.filter(
+                        question__questiongroup=OuterRef("questiongroup"),
+                        question__section__marking_session=self.request.current_session,
                         authority=OuterRef("pk"),
                         response_type=response_type,
                     )
