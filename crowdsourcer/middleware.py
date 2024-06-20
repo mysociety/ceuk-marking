@@ -39,9 +39,9 @@ class AddStateMiddleware:
             context["marking_session"] = request.current_session
             context["sessions"] = MarkingSession.objects.filter(active=True)
             context["brand"] = settings.BRAND
-            context[
-                "brand_include"
-            ] = f"crowdsourcer/cobrand/navbar_{context['brand']}.html"
+            context["brand_include"] = (
+                f"crowdsourcer/cobrand/navbar_{context['brand']}.html"
+            )
 
             response.context_data = context
 

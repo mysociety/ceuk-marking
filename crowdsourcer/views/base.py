@@ -158,9 +158,9 @@ class BaseQuestionView(TemplateView):
             name=self.kwargs.get("name", "")
         )
         context["authority_name"] = self.kwargs.get("name", "")
-        context[
-            "page_title"
-        ] = f"{self.title_start}{context['authority_name']}: {context['section_title']}"
+        context["page_title"] = (
+            f"{self.title_start}{context['authority_name']}: {context['section_title']}"
+        )
         context["has_previous_questions"] = self.has_previous_questions
 
         context["council_minutes"] = self.authority.get_data("council_minutes")

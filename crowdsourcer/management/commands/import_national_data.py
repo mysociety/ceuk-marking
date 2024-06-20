@@ -84,7 +84,7 @@ https://data.barbour-abi.com/smart-map/repd/desnz/?type=heat_network""",
                 {"desc": "50% recycling rate", "score": 1},
                 {"desc": "60% recycling rate", "score": 2},
                 {"desc": "70% recycling rate", "score": 3},
-            ]
+            ],
             # "options": [{"desc": "Criteria not met", "score": 0},]
         },
         {

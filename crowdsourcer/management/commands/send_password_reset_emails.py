@@ -36,9 +36,9 @@ class Command(BaseCommand):
                         form = PasswordResetForm({"email": user.email})
                         assert form.is_valid()
                         request = HttpRequest()
-                        request.META[
-                            "SERVER_NAME"
-                        ] = "marking.councilclimatescorecards.uk"
+                        request.META["SERVER_NAME"] = (
+                            "marking.councilclimatescorecards.uk"
+                        )
                         request.META["SERVER_PORT"] = 443
                         form.save(
                             request=request,
