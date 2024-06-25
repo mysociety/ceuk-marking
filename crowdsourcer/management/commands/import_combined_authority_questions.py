@@ -200,14 +200,12 @@ class Command(BaseCommand):
 
                 how_marked = "volunteer"
                 question_type = "yes_no"
+                how_marked_row = str(row["how_marked"]).strip().lower()
                 if not kwargs["text_only"]:
-                    if row["how_marked"] == "FOI":
+                    if how_marked_row == "foi":
                         how_marked = "foi"
                         question_type = "foi"
-                    elif (
-                        "National Data" in row["how_marked"]
-                        or "National data" in row["how_marked"]
-                    ):
+                    elif "national data" == how_marked_row:
                         how_marked = "national_data"
                         question_type = "national_data"
 

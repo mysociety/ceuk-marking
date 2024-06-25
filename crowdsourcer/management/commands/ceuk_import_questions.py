@@ -196,10 +196,11 @@ class Command(BaseCommand):
 
                 how_marked = "volunteer"
                 question_type = "yes_no"
-                if row["how_marked"] == "FOI":
+                how_marked_row = str(row["how_marked"]).strip().lower()
+                if how_marked_row == "foi":
                     how_marked = "foi"
                     question_type = "foi"
-                elif row["how_marked"] == "National Data":
+                elif how_marked_row == "national data":
                     how_marked = "national_data"
                     question_type = "national_data"
 
