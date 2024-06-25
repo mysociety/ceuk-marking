@@ -77,7 +77,7 @@ class Question(models.Model):
     description = models.TextField()
     criteria = models.TextField(blank=True, null=True)
     section = models.ForeignKey(Section, on_delete=models.CASCADE)
-    questiongroup = models.ManyToManyField(QuestionGroup)
+    questiongroup = models.ManyToManyField(QuestionGroup, blank=True)
     clarifications = models.TextField(blank=True, null=True)
     topic = models.CharField(max_length=200, blank=True, null=True)
     how_marked = models.CharField(
@@ -88,7 +88,7 @@ class Question(models.Model):
     )
     weighting = models.CharField(max_length=20, default="low", choices=WEIGHTINGS)
     previous_question = models.ForeignKey(
-        "Question", null=True, on_delete=models.SET_NULL
+        "Question", blank=True, null=True, on_delete=models.SET_NULL
     )
 
     @property
