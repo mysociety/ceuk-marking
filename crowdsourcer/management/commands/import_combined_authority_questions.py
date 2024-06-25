@@ -210,7 +210,7 @@ class Command(BaseCommand):
                         question_type = "national_data"
 
                     if not pd.isna(row["question_type"]):
-                        q_type = row["question_type"].strip().lower()
+                        q_type = str(row["question_type"]).strip().lower()
                         if q_type == "tiered answer":
                             question_type = "tiered"
                         elif q_type == "tick all that apply":

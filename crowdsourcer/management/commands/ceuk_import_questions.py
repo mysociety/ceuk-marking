@@ -207,7 +207,7 @@ class Command(BaseCommand):
                 if row.get("question_type", None) is not None and not pd.isna(
                     row["question_type"]
                 ):
-                    q_type = row["question_type"].strip().lower()
+                    q_type = str(row["question_type"]).strip().lower()
                     if q_type == "tiered answer":
                         question_type = "tiered"
                     elif q_type == "tick all that apply":
@@ -227,7 +227,7 @@ class Command(BaseCommand):
                 row = row.fillna("")
                 weighting = "low"
                 if type(row["weighting"]) is str:
-                    weighting = row["weighting"].strip().lower()
+                    weighting = str(row["weighting"]).strip().lower()
                 else:
                     print(
                         f"bad weighting for {section.title}, {q_no}{q_part}: {row['weighting']}"
