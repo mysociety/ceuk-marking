@@ -315,6 +315,7 @@ class Command(BaseCommand):
                         if desc in no_mark_options:
                             no_mark_seen = no_mark_seen + 1
                             score = 0
+                            ordering = 100 + ordering
                         o, c = Option.objects.update_or_create(
                             question=q,
                             description=desc,
