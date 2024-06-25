@@ -281,14 +281,15 @@ class Command(BaseCommand):
                 else:
                     no_mark_options = []
 
-                no_mark_options.extend(
-                    [
-                        "No Penalty Mark",
-                        "No evidence found",
-                        "Evidence does not meet criteria",
-                        "No response from FOI",
-                    ]
-                )
+                if q.question_type != "yes_no":
+                    no_mark_options.extend(
+                        [
+                            "No Penalty Mark",
+                            "No evidence found",
+                            "Evidence does not meet criteria",
+                            "No response from FOI",
+                        ]
+                    )
 
                 if q.question_type in ["select_one", "tiered", "multiple_choice"]:
                     if not no_mark_options:
