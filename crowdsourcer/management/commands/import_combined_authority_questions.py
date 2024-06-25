@@ -297,8 +297,12 @@ class Command(BaseCommand):
                         )
                     no_mark_seen = 0
                     for i in range(1, options):
-                        desc = str(row[f"option_{i}"]).strip()
-                        if pd.isna(desc) or desc == "":
+                        option_col = f"option_{i}"
+                        desc = str(row[option_col]).strip()
+                        # do this slightly odd thing because the str conversion on a na will get
+                        # you nan but need to do str etc to check for blank. Can't do this as
+                        # a bulk operation on the df as we don't know how many option cols there are
+                        if pd.isna(row[option_col]) or desc == "":
                             continue
                         score = 1
                         ordering = i
