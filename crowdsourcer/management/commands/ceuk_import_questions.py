@@ -336,6 +336,7 @@ class Command(BaseCommand):
                             defaults={"score": 0, "ordering": 2},
                         )
 
+                q.questiongroup.clear()
                 for col, group in q_groups.items():
                     if row[col] in ["Yes", "Y", "All"]:
                         q.questiongroup.add(group)
