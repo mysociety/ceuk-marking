@@ -25,7 +25,7 @@
           {% for volunteer in volunteers %}
             <tr>
                 <td>
-                    <a title="edit user" href="{% session_url 'edit_volunteer' volunteer.pk %}">{{ volunteer.name }} {{ volunteer.email }}</a>
+                    <a title="edit user" href="{% session_url 'edit_volunteer' volunteer.pk %}">{{ volunteer.email|default:volunteer.username }}</a>
                 </td>
                 <td>
                     {{ volunteer.marker.response_type|default:"First Mark" }}
