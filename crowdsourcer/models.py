@@ -395,7 +395,7 @@ class Marker(models.Model):
     authority = models.ForeignKey(
         PublicAuthority, blank=True, null=True, on_delete=models.SET_NULL
     )
-    marking_session = models.ManyToManyField(MarkingSession, null=True)
+    marking_session = models.ManyToManyField(MarkingSession, blank=True)
 
     class Meta:
         permissions = [
