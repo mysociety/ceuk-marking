@@ -44,6 +44,8 @@ MAPIT_API_KEY = env("MAPIT_API_KEY")
 LOG_LEVEL = env("LOG_LEVEL")
 BRAND = env("BRAND")
 
+BRAND_TEMPLATES = BASE_DIR / "cobrands" / BRAND
+
 # make sure CSRF checking still works behind load balancers
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
@@ -93,7 +95,7 @@ ROOT_URLCONF = "ceuk-marking.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [BASE_DIR / "templates"],
+        "DIRS": [BRAND_TEMPLATES, BASE_DIR / "templates"],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
