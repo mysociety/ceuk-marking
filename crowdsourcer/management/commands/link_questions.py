@@ -69,8 +69,9 @@ class Command(BaseCommand):
         questions = defaultdict(dict)
 
         for section in Section.objects.filter(marking_session=session):
-            for question in Question.objects.filter(section=section):
-                questions[section.title][question.number_and_part] = question
+            for question in Question.objects.filter(section=section).order_by("pk"):
+                if questions[section.title].get(question.number_and_part) is None:
+                    questions[section.title][question.number_and_part] = question
 
         return questions
 
