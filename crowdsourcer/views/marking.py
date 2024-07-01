@@ -12,7 +12,11 @@ from crowdsourcer.models import (
     Response,
     ResponseType,
 )
-from crowdsourcer.views.base import BaseQuestionView, BaseSectionAuthorityList
+from crowdsourcer.views.base import (
+    BaseQuestionView,
+    BaseResponseJSONView,
+    BaseSectionAuthorityList,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -280,3 +284,7 @@ class AuthoritySectionQuestions(BaseQuestionView):
             logger.debug(
                 f"option is {cleaned_data.get('option', None)}, multi is {cleaned_data.get('multi_option', None)}"
             )
+
+
+class AuthoritySectionJSONQuestion(BaseResponseJSONView):
+    pass
