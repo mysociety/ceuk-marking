@@ -68,6 +68,11 @@ session_patterns = [
         name="section_authorities",
     ),
     path(
+        "authorities/<name>/section/<section_title>/questions/<question>/",
+        marking.AuthoritySectionJSONQuestion.as_view(),
+        name="authority_json_question_edit",
+    ),
+    path(
         "authorities/<name>/section/<section_title>/questions/",
         marking.AuthoritySectionQuestions.as_view(),
         name="authority_question_edit",

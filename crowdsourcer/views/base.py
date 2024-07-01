@@ -4,9 +4,10 @@ from django.contrib.auth.mixins import UserPassesTestMixin
 from django.core.exceptions import PermissionDenied
 from django.db.models import Count, F, FloatField, OuterRef, Subquery
 from django.db.models.functions import Cast
+from django.http import JsonResponse
 from django.views.generic import ListView, TemplateView
 
-from crowdsourcer.forms import ResponseFormset
+from crowdsourcer.forms import ResponseForm, ResponseFormset
 from crowdsourcer.models import (
     Assigned,
     PublicAuthority,
@@ -165,6 +166,144 @@ class BaseQuestionView(TemplateView):
 
         context["council_minutes"] = self.authority.get_data("council_minutes")
         return context
+
+
+class BaseResponseJSONView(TemplateView):
+    model = Response
+    form = ResponseForm
+    response_type = "First Mark"
+    log_start = "marking form"
+    title_start = ""
+    how_marked_in = ["volunteer", "national_volunteer"]
+
+    def setup(self, request, *args, **kwargs):
+        super().setup(request, *args, **kwargs)
+        try:
+            self.rt = ResponseType.objects.get(type=self.response_type)
+        except ResponseType.DoesNotExist:
+            self.rt = None
+
+    def check_local_permissions(self):
+        return True
+
+    def check_permissions(self):
+        if self.request.user.is_anonymous:
+            raise PermissionDenied
+
+        if self.check_local_permissions() is False:
+            raise PermissionDenied
+
+        if not Assigned.is_user_assigned(
+            self.request.user,
+            authority=self.kwargs["name"],
+            section=self.kwargs["section_title"],
+            marking_session=self.request.current_session,
+            current_stage=self.rt,
+        ):
+            raise PermissionDenied
+
+    def get_initial_obj(self):
+        self.authority = PublicAuthority.objects.get(name=self.kwargs["name"])
+        self.question = Question.objects.get(id=self.kwargs["question"])
+        instance = None
+        initial = {
+            "authority": self.authority,
+            "question": self.question,
+        }
+        try:
+            instance = Response.objects.get(
+                authority=self.authority, question=self.question, response_type=self.rt
+            )
+            logger.debug(
+                f"FOUND initial object for {self.authority}, {self.question}, {self.rt}"
+            )
+            for f in [
+                "evidence",
+                "id",
+                "multi_option",
+                "option",
+                "page_number",
+                "private_notes",
+                "public_notes",
+            ]:
+                initial[f] = getattr(instance, f)
+            logger.debug(f"initial data is {initial}")
+        except Response.DoesNotExist:
+            logger.debug(
+                f"did NOT find initial object for {self.authority}, {self.question}, {self.rt}"
+            )
+            pass
+
+        return {"initial": initial, "instance": instance}
+
+    def get_form(self):
+        initial = self.get_initial_obj()
+        if self.request.POST:
+            data = self.request.POST
+            form = self.form(
+                data, instance=initial["instance"], initial=initial["initial"]
+            )
+        else:
+            form = self.form(instance=initial["instance"], initial=initial["initial"])
+        return form
+
+    def get(self, *args, **kwargs):
+        return None
+
+    def session_form_hash(self):
+        return f"form-submission+{self.__class__.__name__}"
+
+    def get_post_hash(self):
+        excluded = {
+            "csrfmiddlewaretoken",
+        }
+        post_hash = hash(
+            tuple(
+                sorted(
+                    (k, v) for k, v in self.request.POST.items() if k not in excluded
+                )
+            )
+        )
+
+        return post_hash
+
+    def post(self, *args, **kwargs):
+        self.check_permissions()
+        section_title = self.kwargs.get("section_title", "")
+        authority = self.kwargs.get("name", "")
+        logger.debug(
+            f"{self.log_start} JSON post from {self.request.user.email} for {authority}/{section_title}"
+        )
+        logger.debug(f"post data is {self.request.POST}")
+
+        form = self.get_form()
+        logger.debug("got form")
+        if form.is_valid():
+            logger.debug("form IS VALID")
+            post_hash = self.get_post_hash()
+            if self.check_form_not_resubmitted(post_hash):
+                logger.debug("form GOOD, saving")
+                form.instance.response_type = self.rt
+                form.instance.user = self.request.user
+                form.save()
+                self.request.session[self.session_form_hash()] = post_hash
+            else:
+                logger.debug("form RESUBMITTED, not saving")
+        else:
+            logger.debug(f"form NOT VALID, errors are {form.errors}")
+            return JsonResponse({"success": 0, "errors": form.errors})
+
+        print(form.instance)
+        return JsonResponse({"success": 1})
+
+    # there are occassional issues with the same form being resubmitted twice the first time
+    # someone saves a result which means you get two responses saved for the same question which
+    # leads to issues when exporting the data so add in some basic checking that this isn't a
+    # repeat submission.
+    def check_form_not_resubmitted(self, post_hash):
+        previous_post_hash = self.request.session.get(self.session_form_hash())
+
+        return post_hash != previous_post_hash
 
 
 class BaseSectionAuthorityList(ListView):
