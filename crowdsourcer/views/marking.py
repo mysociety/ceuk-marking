@@ -243,13 +243,14 @@ class AuthoritySectionQuestions(BaseQuestionView):
 
         if is_previous:
             self.has_previous_questions = True
+            audit_rt = ResponseType.objects.get(type="Audit")
             question_list = self.questions.values_list(
                 "previous_question_id", flat=True
             )
             prev_responses = Response.objects.filter(
                 authority=self.authority,
                 question__in=question_list,
-                response_type=self.rt,
+                response_type=audit_rt,
             ).select_related("question")
 
             response_map = {}
