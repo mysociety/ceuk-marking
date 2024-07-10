@@ -401,7 +401,7 @@ class ResetEmailForm(Form):
     user_id = CharField(required=True, widget=HiddenInput)
 
 
-class VolunteerAssignentForm(ModelForm):
+class VolunteerAssignmentForm(ModelForm):
     def __init__(self, session=None, **kwargs):
         super().__init__(**kwargs)
         if session is not None:
@@ -445,7 +445,7 @@ class VolunteerAssignentForm(ModelForm):
 
 
 VolunteerAssignmentFormset = inlineformset_factory(
-    User, Assigned, form=VolunteerAssignentForm, extra=1
+    User, Assigned, form=VolunteerAssignmentForm, extra=1
 )
 
 

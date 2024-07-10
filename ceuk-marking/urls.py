@@ -240,7 +240,7 @@ session_patterns = [
     ),
     path(
         "volunteers/<user_id>/assign/",
-        volunteers.VolunteerAssignentView.as_view(),
+        volunteers.VolunteerAssignmentView.as_view(),
         name="assign_volunteer",
     ),
     path(

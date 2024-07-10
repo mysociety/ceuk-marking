@@ -167,7 +167,7 @@ class VolunteerSendResetEmailView(VolunteerAccessMixin, FormView):
             return super().form_valid(form)
 
 
-class VolunteerAssignentView(VolunteerAccessMixin, FormView):
+class VolunteerAssignmentView(VolunteerAccessMixin, FormView):
     template_name = "crowdsourcer/volunteers/assign.html"
     form_class = VolunteerAssignmentFormset
 
