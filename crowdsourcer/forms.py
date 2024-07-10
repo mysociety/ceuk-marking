@@ -391,7 +391,7 @@ class MarkerForm(ModelForm):
 
 
 class CreateMarkerForm(MarkerForm):
-    send_reset = BooleanField(label="Send registration email")
+    send_reset = BooleanField(label="Send registration email", required=False)
 
 
 MarkerFormset = inlineformset_factory(User, Marker, form=MarkerForm, can_delete=False)
