@@ -19,7 +19,7 @@
     </form>
     </div>
 
-    {% if self.user.email  %}
+    {% if user.email  %}
     <div class="mb-4">
     <form action="{% session_url 'reset_volunteer_email' %}" method="post">
         {% csrf_token %}
