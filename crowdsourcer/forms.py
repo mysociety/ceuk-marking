@@ -406,7 +406,7 @@ class VolunteerAssignmentForm(ModelForm):
         super().__init__(**kwargs)
         if session is not None:
             self.fields["authority"].queryset = PublicAuthority.objects.filter(
-                questiongroup__marking_session=session,
+                marking_session=session,
             ).order_by("name")
             self.fields["section"].queryset = Section.objects.filter(
                 marking_session=session
@@ -421,6 +421,7 @@ class VolunteerAssignmentForm(ModelForm):
                     response_type=self.instance.response_type,
                     marking_session=session,
                     section=self.instance.section,
+                    authority__isnull=False,
                 )
                 .exclude(id=self.instance.id)
                 .values_list("authority_id", flat=True)

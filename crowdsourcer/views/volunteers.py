@@ -235,6 +235,7 @@ class AvailableAssignmentAuthorities(VolunteerAccessMixin, ListView):
                 response_type=self.request.GET["rt"],
                 marking_session=self.request.GET["ms"],
                 section=self.request.GET["s"],
+                authority__isnull=False,
             ).values_list("authority_id", flat=True)
         )
 
