@@ -227,16 +227,27 @@ class AvailableAssignmentAuthorities(VolunteerAccessMixin, ListView):
             return []
 
         marking_session = MarkingSession.objects.get(id=self.request.GET["ms"])
-        return PublicAuthority.objects.filter(
-            marking_session=marking_session,
-            questiongroup__marking_session=marking_session,
-        ).exclude(
-            id__in=Assigned.objects.filter(
-                response_type=self.request.GET["rt"],
-                marking_session=self.request.GET["ms"],
-                section=self.request.GET["s"],
-                authority__isnull=False,
-            ).values_list("authority_id", flat=True)
+        exclusions = Assigned.objects.filter(
+            response_type=self.request.GET["rt"],
+            marking_session=self.request.GET["ms"],
+            section=self.request.GET["s"],
+            authority__isnull=False,
+        )
+        # we want to be able to re-select the authority that was already assigned
+        # for existing assignments
+        if self.request.GET.get("id") is not None:
+            id = int(self.request.GET["id"])
+            if id:
+                exclusions = exclusions.exclude(id=id)
+
+        exclusions = exclusions.values_list("authority_id", flat=True)
+        return (
+            PublicAuthority.objects.filter(
+                marking_session=marking_session,
+                questiongroup__marking_session=marking_session,
+            )
+            .exclude(id__in=exclusions)
+            .order_by("name")
         )
 
     def render_to_response(self, context, **response_kwargs):

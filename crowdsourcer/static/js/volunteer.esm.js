@@ -1,15 +1,26 @@
 async function getAvailableAuthorities($fs) {
     var url = "/volunteers/available_authorities/";
 
-    var $session = $fs.find('.field_session').eq(0);
     var $section = $fs.find('.field_section').eq(0);
     var $rt = $fs.find('.field_rt').eq(0);
+    var $id = $fs.find('[name$="-id"]').eq(0);
 
     if ($rt.val() == "" || $section.val() == "") {
       return { results: [] };
     }
 
-    url = url + "?rt=" + $rt.val() + "&s=" + $section.val() + "&ms=" + $session.val()
+    var params = {
+      rt: $rt.val(),
+      s: $section.val(),
+      ms: $fs.find('.field_session').eq(0).val()
+    };
+
+
+    if ($id.val()) {
+      params['id'] = $id.val();
+    }
+
+    url = url + '?' + $.param(params);
 
     const response = await fetch(url, {
         method: 'GET',
