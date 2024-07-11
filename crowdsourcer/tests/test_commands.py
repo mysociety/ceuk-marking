@@ -6,7 +6,15 @@ from django.contrib.auth.models import User
 from django.core.management import call_command
 from django.test import TestCase
 
-from crowdsourcer.models import Assigned, Marker, MarkingSession, Response
+from crowdsourcer.models import (
+    Assigned,
+    Marker,
+    MarkingSession,
+    PublicAuthority,
+    Question,
+    Response,
+    ResponseType,
+)
 
 
 class BaseCommandTestCase(TestCase):
@@ -250,3 +258,261 @@ updated 2 items for Buildings & Heating: 9
 {GREEN}done{NOBOLD}
 """,
         )
+
+
+class AssignAutomaticPoints(BaseCommandTestCase):
+    fixtures = [
+        "authorities.json",
+        "basics.json",
+        "users.json",
+        "questions.json",
+        "options.json",
+    ]
+
+    def test_basic_run(self):
+        data_file = (
+            pathlib.Path(__file__).parent.resolve() / "data" / "automatic_points.csv"
+        )
+
+        self.assertEquals(Response.objects.count(), 0)
+        self.call_command(
+            "add_automatic_points",
+            session="Default",
+            file=data_file,
+            previous="Second Session",
+            stage="First Mark",
+            commit=True,
+        )
+        self.assertEquals(Response.objects.count(), 1)
+
+        r = Response.objects.get(question_id=269)
+
+        self.assertEquals(
+            r.option.description,
+            "One or more significant building have been retrofitted",
+        )
+        self.assertEquals(r.page_number, "322,323")
+        self.assertEquals(r.public_notes, "https://www.example.org/retrofit-rules")
+        self.assertEquals(r.evidence, "Awarded the point due to the Legislation")
+        self.assertEquals(
+            r.private_notes,
+            "All District Councils get the point\nAutomatically assigned mark",
+        )
+        self.assertEquals(r.authority.name, "Adur District Council")
+
+    def test_replace_answers_run(self):
+        data_file = (
+            pathlib.Path(__file__).parent.resolve() / "data" / "automatic_points.csv"
+        )
+
+        authority = PublicAuthority.objects.get(name="Adur District Council")
+        question = Question.objects.get(id=269)
+        rt = ResponseType.objects.get(type="First Mark")
+        u = User.objects.get(username="marker")
+        r = Response.objects.create(
+            user=u,
+            question=question,
+            authority=authority,
+            response_type=rt,
+            option_id=3,
+            page_number="333",
+            public_notes="http://example.com/rules",
+            evidence="Some evidence",
+            private_notes="These are private notes",
+        )
+
+        self.assertEquals(Response.objects.count(), 1)
+        self.call_command(
+            "add_automatic_points",
+            session="Default",
+            file=data_file,
+            previous="Second Session",
+            stage="First Mark",
+            commit=True,
+            update_existing_responses=True,
+        )
+        self.assertEquals(Response.objects.count(), 1)
+
+        r = Response.objects.get(question_id=269)
+
+        self.assertEquals(
+            r.option.description,
+            "One or more significant building have been retrofitted",
+        )
+        self.assertEquals(r.page_number, "322,323")
+        self.assertEquals(r.public_notes, "https://www.example.org/retrofit-rules")
+        self.assertEquals(r.evidence, "Awarded the point due to the Legislation")
+        self.assertEquals(
+            r.private_notes,
+            "All District Councils get the point\nAutomatically assigned mark\nOverridden by automatic assignment",
+        )
+        self.assertEquals(r.authority.name, "Adur District Council")
+
+    def test_copy_previous_answers_run_bad_opt_match(self):
+        data_file = (
+            pathlib.Path(__file__).parent.resolve()
+            / "data"
+            / "automatic_points_copy_prev.csv"
+        )
+
+        authority = PublicAuthority.objects.get(name="Adur District Council")
+        question = Question.objects.get(id=281)
+        rt = ResponseType.objects.get(type="Audit")
+        u = User.objects.get(username="marker")
+        Response.objects.create(
+            user=u,
+            question=question,
+            authority=authority,
+            response_type=rt,
+            option_id=14,
+            page_number="333",
+            public_notes="http://example.com/rules",
+            evidence="Some evidence",
+            private_notes="These are private notes",
+        )
+
+        self.assertEquals(Response.objects.count(), 1)
+        self.call_command(
+            "add_automatic_points",
+            session="Second Session",
+            file=data_file,
+            previous="Default",
+            stage="First Mark",
+            commit=True,
+        )
+        self.assertEquals(Response.objects.count(), 1)
+
+    def test_copy_previous_answers_run(self):
+        data_file = (
+            pathlib.Path(__file__).parent.resolve()
+            / "data"
+            / "automatic_points_copy_prev.csv"
+        )
+
+        opt_map = (
+            pathlib.Path(__file__).parent.resolve()
+            / "data"
+            / "automatic_points_opt_map.csv"
+        )
+
+        authority = PublicAuthority.objects.get(name="Adur District Council")
+        question = Question.objects.get(id=281)
+        rt = ResponseType.objects.get(type="Audit")
+        u = User.objects.get(username="marker")
+        r = Response.objects.create(
+            user=u,
+            question=question,
+            authority=authority,
+            response_type=rt,
+            option_id=14,
+            page_number="333",
+            public_notes="http://example.com/rules",
+            evidence="Some evidence",
+            private_notes="These are private notes",
+        )
+
+        self.assertEquals(Response.objects.count(), 1)
+        self.call_command(
+            "add_automatic_points",
+            session="Second Session",
+            file=data_file,
+            option_map=opt_map,
+            previous="Default",
+            stage="First Mark",
+            commit=True,
+        )
+        self.assertEquals(Response.objects.count(), 2)
+
+        r = Response.objects.get(question_id=2002)
+
+        self.assertEquals(
+            r.option.description,
+            "Section Session Transport Q1 Opt 1",
+        )
+        self.assertEquals(r.page_number, "333")
+        self.assertEquals(r.public_notes, "http://example.com/rules")
+        self.assertEquals(r.evidence, "Some evidence")
+        self.assertEquals(
+            r.private_notes,
+            "These are private notes\nAutomatically assigned mark",
+        )
+        self.assertEquals(r.authority.name, "Adur District Council")
+
+    def test_copy_and_overwrite_previous_answers(self):
+        data_file = (
+            pathlib.Path(__file__).parent.resolve()
+            / "data"
+            / "automatic_points_copy_prev_overwrite.csv"
+        )
+
+        opt_map = (
+            pathlib.Path(__file__).parent.resolve()
+            / "data"
+            / "automatic_points_opt_map.csv"
+        )
+
+        authority = PublicAuthority.objects.get(name="Adur District Council")
+        question = Question.objects.get(id=281)
+        rt = ResponseType.objects.get(type="Audit")
+        u = User.objects.get(username="marker")
+        r = Response.objects.create(
+            user=u,
+            question=question,
+            authority=authority,
+            response_type=rt,
+            option_id=14,
+            page_number="333",
+            public_notes="http://example.com/rules",
+            evidence="Some evidence",
+            private_notes="These are private notes",
+        )
+
+        self.assertEquals(Response.objects.count(), 1)
+        self.call_command(
+            "add_automatic_points",
+            session="Second Session",
+            file=data_file,
+            option_map=opt_map,
+            previous="Default",
+            stage="First Mark",
+            commit=True,
+        )
+        self.assertEquals(Response.objects.count(), 2)
+
+        r = Response.objects.get(question_id=2002)
+
+        self.assertEquals(
+            r.option.description,
+            "Section Session Transport Q1 Opt 1",
+        )
+        self.assertEquals(r.page_number, "333")
+        self.assertEquals(r.public_notes, "http://example.org/some-rules")
+        self.assertEquals(r.evidence, "Some evidence")
+        self.assertEquals(
+            r.private_notes,
+            "These are private notes\nAutomatically assigned mark",
+        )
+        self.assertEquals(r.authority.name, "Adur District Council")
+
+    def test_multiple_choice_question(self):
+        data_file = (
+            pathlib.Path(__file__).parent.resolve()
+            / "data"
+            / "automatic_points_multi_choice.csv"
+        )
+        self.assertEquals(Response.objects.count(), 0)
+        self.call_command(
+            "add_automatic_points",
+            session="Default",
+            file=data_file,
+            previous="Second Session",
+            stage="First Mark",
+            commit=True,
+        )
+        self.assertEquals(Response.objects.count(), 1)
+        r = Response.objects.get(question_id=282)
+
+        self.assertIsNone(r.option)
+        self.assertIsNotNone(r.multi_option)
+
+        self.assertEquals(r.multi_option.all()[0].description, "Car share")
