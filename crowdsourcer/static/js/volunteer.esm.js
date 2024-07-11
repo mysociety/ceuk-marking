@@ -1,3 +1,5 @@
+const name_regex = /assigned_set-(?<id>\d+)-(?<name>\w+)/i
+
 async function getAvailableAuthorities($fs) {
     var url = "/volunteers/available_authorities/";
 
@@ -52,5 +54,27 @@ $(function(){
         });
       }
     });
+  });
+
+  $('#add_row').on('click', function(e){
+    var $form = $('#assign_form');
+    var $fs = $('#assign_form fieldset').last();
+
+    var $new_fs = $fs.clone(true);
+    $new_fs.find('input, select').each(function() {
+      let $input = $(this);
+      let name = $input.attr('name');
+      let matches = name.match(name_regex);
+      let id = parseInt(matches.groups['id']);
+      id = id + 1;
+
+      let new_name = 'assigned_set-' + id + '-' + matches.groups['name'];
+      $input.attr('name', new_name);
+
+    });
+
+    $fs.after($new_fs);
+    var $total_forms = $('#assign_form input[name="assigned_set-TOTAL_FORMS"]');
+    $total_forms.val(parseInt($total_forms.val()) + 1);
   });
 });

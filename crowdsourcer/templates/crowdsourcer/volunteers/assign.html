@@ -14,7 +14,7 @@
     <h3 class="mb-4">Assign to {{ user.username }}</h3>
 
 
-    <form action="" method="post">
+    <form action="" method="post" id="assign_form">
         {% csrf_token %}
         {% if formset.total_error_count > 0 %}
           <div class="mb-4">
@@ -86,7 +86,7 @@
                 </fieldset>
             {% endfor %}
         </div>
-        <input type="submit" value="Update">
+        <input type="submit" class="btn btn-primary" value="Update"> <input type="button" class="btn btn-secondary" id="add_row" value="Add Row">
     </form>
 
 {% endif %}
