@@ -343,5 +343,11 @@ class Command(BaseCommand):
 
                 q.questiongroup.clear()
                 for col, group in q_groups.items():
-                    if row[col] in ["Yes", "Y", "All"]:
+                    if row[col] in [
+                        "Yes",
+                        "Y",
+                        "All",
+                        "Yes (England only)",
+                        "Yes (English only)",
+                    ]:
                         q.questiongroup.add(group)
