@@ -195,7 +195,8 @@
          */
         if(previous_responses.multi_option){
           new_responses.querySelectorAll('[name$="multi_option"]').forEach(function(checkbox){
-            checkbox.checked = ( previous_responses.multi_option.indexOf(checkbox.label) > -1 );
+            let label_text = $('label[for=' + checkbox.id + ']').text();
+            checkbox.checked = ( previous_responses.multi_option.indexOf(label_text) > -1 );
           });
         } else {
           new_responses.querySelectorAll('[name$="option"] option').forEach(function(option){
