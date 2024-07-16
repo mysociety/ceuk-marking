@@ -29,9 +29,12 @@ $(function(){
       data[name] = val;
     });
     if ( $fs.find('.form-check-input').length ) {
-      let $f = $fs.find('.form-check-input').get(0);
-      let name = get_name_from_input($f);
-      data[name] = $( $f.name ).val();
+      let f = $fs.find('.form-check-input').get(0);
+      let name = get_name_from_input(f);
+      let val = []
+      data[name] = $fs.find('.form-check-input:checked').map(function(_, e) {
+        return $(e).val();
+      }).get();
     }
 
     if (!has_values) {
@@ -46,7 +49,7 @@ $(function(){
 
     let url = window.location + data["question"] + "/";
 
-    $.post(url, data, function(r_data) {
+    $.post({ url: url, data: data, traditional: true, success: function(r_data) {
       if (r_data["success"] != 1) {
         $fs.find('.form-select, .form-control, .form-check-input, input[type="hidden"]').each(function() {
           let $f = $(this);
@@ -70,6 +73,6 @@ $(function(){
 
         disable_submit_if_invalid()
       }
-    });
+    }});
   });
 });
