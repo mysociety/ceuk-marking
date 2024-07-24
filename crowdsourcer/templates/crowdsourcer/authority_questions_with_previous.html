@@ -200,7 +200,7 @@
           });
         } else {
           new_responses.querySelectorAll('[name$="option"] option').forEach(function(option){
-            option.selected = option.label = previous_responses.option;
+            option.selected = (option.label == previous_responses.option);
           });
         }
       });
