@@ -454,7 +454,10 @@ class BaseSectionProgressView(UserPassesTestMixin, ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        section = Section.objects.get(title=self.kwargs["section_title"])
+        section = Section.objects.get(
+            title=self.kwargs["section_title"],
+            marking_session=self.request.current_session,
+        )
         questions = Question.objects.filter(section=section, how_marked__in=self.types)
         rt = ResponseType.objects.get(type=self.response_type)
 
