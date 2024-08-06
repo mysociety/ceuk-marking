@@ -160,6 +160,9 @@ class AuthorityRORSectionQuestions(BaseQuestionView):
         authority = PublicAuthority.objects.get(name=self.kwargs["name"])
         user = self.request.user
 
+        if user.is_anonymous:
+            raise PermissionDenied
+
         if (
             user.is_superuser
             or Marker.objects.filter(
