@@ -244,7 +244,9 @@ class Command(BaseCommand):
                     previous_question = question.previous_question
 
             if copy_last_year is False:
-                answer = point["answer in GRACE"].strip()
+                answer = self.get_mapped_answer(
+                    point["answer in GRACE"].strip(), question, answer_map
+                )
                 try:
                     option = Option.objects.get(question=question, description=answer)
                 except Option.DoesNotExist:
