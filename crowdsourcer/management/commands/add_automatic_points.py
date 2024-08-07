@@ -284,11 +284,9 @@ class Command(BaseCommand):
                                 answer = self.get_mapped_answer(
                                     opt.description, question, answer_map
                                 )
-                                print(f"checking for {answer} in multi choice")
                                 new_opt = Option.objects.get(
                                     question=question, description=answer
                                 )
-                                print("found answer")
                                 options.append(new_opt)
                         else:
                             answer = self.get_mapped_answer(
