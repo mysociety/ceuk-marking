@@ -1,0 +1,7 @@
+use_cols,col_names
+First name,first_name
+Last name,last_name
+Email,email
+Allocated Section,assigned_section
+Own Council,council_area
+Type of Volunteering,type_of_volunteering
