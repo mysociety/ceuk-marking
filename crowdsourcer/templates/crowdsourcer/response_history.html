@@ -1,0 +1,68 @@
+{% extends 'crowdsourcer/base.html' %}
+
+{% load crowdsourcer_tags %}
+
+{% block content %}
+{% if show_login %}
+<h1 class="mb-4">Sign in</h1>
+<a href="{% url 'login' %}">Sign in</a>
+{% else %}
+<h1 class="mb-4">Reponse History</h1>
+
+{% if missing_question %}
+    <p>
+        Could not find that question
+    </p>
+{% else %}
+    <h3 class="mb-3">{{ question.section.title }}: {{ question }}</h3>
+    {% if responses is None %}
+    <p>
+        No responses to that question so far.
+    </p>
+    {% else %}
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>User</th>
+                    <th>Response</th>
+                    <th>Notes</th>
+                    <th>Links</th>
+                    <th>Private notes</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for response in responses %}
+                <tr>
+                    <td>
+                        {{ response.history_date }}
+                    </td>
+                    <td>
+                        {{ response.user }}
+                    </td>
+                    <td>
+                        {% if response.multi_option %}
+                            {% for r in response.multi_option %}
+                                {{ r }},
+                            {% endfor %}
+                        {% else %}
+                            {{ response.option }}
+                        {% endif %}
+                    </td>
+                    <td>
+                        {{ response.evidence }}
+                    </td>
+                    <td>
+                        {{ response.public_notes }}
+                    </td>
+                    <td>
+                        {{ response.private_notes }}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+{% endif %}
+{% endif %}
+{% endblock %}

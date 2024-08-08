@@ -677,3 +677,77 @@ class DuplicateResponsesView(StatsUserTestMixin, ListView):
         context["dupes"] = dupes
 
         return context
+
+
+class CouncilHistoryListView(StatsUserTestMixin, ListView):
+    context_object_name = "authorities"
+    template_name = "crowdsourcer/response_history_authorities.html"
+
+    def get_queryset(self):
+        return PublicAuthority.objects.filter(
+            marking_session=self.request.current_session
+        ).order_by("name")
+
+
+class CouncilQuestionHistoryListView(SelectQuestionView):
+    template_name = "crowdsourcer/response_history_questions.html"
+
+    def get_queryset(self):
+        try:
+            authority = PublicAuthority.objects.get(name=self.kwargs["authority"])
+        except PublicAuthority.DoesNotExist:
+            return None
+
+        return (
+            Question.objects.filter(
+                questiongroup=authority.questiongroup,
+                section__marking_session=self.request.current_session,
+            )
+            .select_related("section")
+            .order_by("section__title", "number", "number_part")
+        )
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        try:
+            authority = PublicAuthority.objects.get(name=self.kwargs["authority"])
+            context["authority"] = authority
+        except PublicAuthority.DoesNotExist:
+            context["no_authority"] = True
+
+        return context
+
+
+class ResponseHistoryView(StatsUserTestMixin, ListView):
+    context_object_name = "responses"
+    template_name = "crowdsourcer/response_history.html"
+
+    def get_queryset(self):
+        stage = self.kwargs["stage"]
+        authority = self.kwargs["authority"]
+        question = self.kwargs["question"]
+
+        try:
+            response = Response.objects.get(
+                question__section__marking_session=self.request.current_session,
+                question_id=question,
+                authority__name=authority,
+                response_type__type=stage,
+            )
+        except Response.DoesNotExist:
+            return None
+        return response.history.all()
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        try:
+            context["question"] = Question.objects.get(
+                section__marking_session=self.request.current_session,
+                id=self.kwargs["question"],
+            )
+        except Question.DoesNotExist:
+            context["missing_question"] = True
+
+        return context

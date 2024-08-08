@@ -1,0 +1,29 @@
+{% extends 'crowdsourcer/base.html' %}
+
+{% load crowdsourcer_tags %}
+
+{% block content %}
+{% if show_login %}
+    <h1 class="mb-4">Sign in</h1>
+    <a href="{% url 'login' %}">Sign in</a>
+{% else %}
+    <h1 class="mb-4">{{ session.entity_name }} History</h1>
+    <p>
+        Click on an authority to see the list of questions for that authority.
+    </p>
+
+    <table class="table sticky-head-table">
+        <tbody>
+          {% for authority in authorities %}
+            <tr>
+                <td class="align-middle">
+                    <a href="{% session_url 'question_history_list' authority.name %}" class="d-flex align-items-center">
+                        {{ authority.name }}
+                    </a>
+                </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+    </table>
+{% endif %}
+{% endblock %}

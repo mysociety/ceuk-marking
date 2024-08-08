@@ -1,0 +1,51 @@
+{% extends 'crowdsourcer/base.html' %}
+
+{% load crowdsourcer_tags %}
+
+{% block content %}
+{% if show_login %}
+    <h1 class="mb-4">Sign in</h1>
+    <a href="{% url 'login' %}">Sign in</a>
+{% else %}
+    <h1 class="mb-4">Question Data</h1>
+    <table class="table sticky-head-table">
+        <thead>
+            <tr>
+                <th>Question</th>
+                <th>First Mark</th>
+                <th>Right of Reply</th>
+                <th>Audit</th>
+            </tr>
+        </thead>
+      {% for section, data in sections.items %}
+        <tbody>
+            <tr class="sticky-subhead">
+                <td class="align-middle h5 lh-1" colspan="4">{{ section }}</td>
+            </tr>
+          {% for q in data %}
+            <tr>
+                <td class="align-middle">
+                    {{ q.number_and_part }} - {{ q.description }}
+                </td>
+                <td class="align-middle">
+                    <a href="{% session_url 'question_history' authority.name 'First Mark' q.id %}" class="d-flex align-items-center">
+                        View
+                    </a>
+                </td>
+                <td class="align-middle">
+                    <a href="{% session_url 'question_history' authority.name 'Right of Reply' q.id %}" class="d-flex align-items-center">
+                        View
+                    </a>
+                </td>
+                <td class="align-middle">
+                    <a href="{% session_url 'question_history' authority.name 'Audit' q.id %}" class="d-flex align-items-center">
+                        View
+                    </a>
+                </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      {% endfor %}
+    </table>
+{% endif %}
+{% endblock %}

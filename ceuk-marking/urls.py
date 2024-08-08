@@ -190,6 +190,21 @@ session_patterns = [
         stats.DuplicateResponsesView.as_view(),
         name="duplicate_responses",
     ),
+    path(
+        "stats/response_history/",
+        stats.CouncilHistoryListView.as_view(),
+        name="select_council_for_history",
+    ),
+    path(
+        "stats/response_history/<authority>/",
+        stats.CouncilQuestionHistoryListView.as_view(),
+        name="question_history_list",
+    ),
+    path(
+        "stats/response_history/<authority>/<stage>/<question>/",
+        stats.ResponseHistoryView.as_view(),
+        name="question_history",
+    ),
     # audit screens
     path(
         "section/audit/<section_title>/authorities/",
