@@ -202,6 +202,7 @@ class Command(BaseCommand):
                 u, _ = User.objects.update_or_create(
                     username=email,
                     defaults={
+                        "is_active": True,
                         "email": email,
                         "first_name": row["first_name"],
                         "last_name": row["last_name"],
@@ -240,7 +241,9 @@ class Command(BaseCommand):
                 # self.stdout.write(f"no section assigned for {row['email']}")
                 continue
 
-            existing_assignments = Assigned.objects.filter(user=u)
+            existing_assignments = Assigned.objects.filter(
+                user=u, marking_session=session
+            )
             if existing_assignments.count() > 0:
                 self.stdout.write(
                     f"{YELLOW}Existing assignments: {row['email']}{NOBOLD}"
@@ -289,7 +292,11 @@ class Command(BaseCommand):
             if options["make_assignments"] is True:
                 for council in councils_to_assign:
                     a, created = Assigned.objects.update_or_create(
-                        user=u, section=s, authority=council, marking_session=session
+                        user=u,
+                        section=s,
+                        authority=council,
+                        marking_session=session,
+                        response_type=rt,
                     )
 
         council_count = PublicAuthority.objects.filter(
@@ -304,7 +311,9 @@ class Command(BaseCommand):
             else:
                 self.stdout.write(f"{GREEN}All councils and sections assigned{NOBOLD}")
 
-        volunteer_count = User.objects.all().count()
+        volunteer_count = User.objects.filter(
+            marker__marking_session=session, marker__response_type=rt
+        ).count()
         assigned_count = (
             Assigned.objects.filter(user__is_superuser=False)
             .distinct("user_id")

@@ -335,7 +335,15 @@ class Assigned(models.Model):
     history = HistoricalRecords()
 
     def __str__(self):
-        return f"{self.user.email}, {self.section.title}, {self.response_type.type}, {self.marking_session.label}"
+        parts = [self.user.email, self.marking_session.label]
+        if self.authority is not None:
+            parts.append(self.authority.name)
+        if self.section is not None:
+            parts.append(self.section.title)
+        if self.response_type is not None:
+            parts.append(self.response_type.type)
+
+        return ", ".join(parts)
 
     @classmethod
     def is_user_assigned(cls, user, **kwargs):
