@@ -20,7 +20,7 @@
 
 {% bootstrap_field q_form.private_notes %}
 
-{% if q_form.question_obj.how_marked == "foi" %}
+{% if q_form.foi_answer_in_ror and q_form.question_obj.how_marked == "foi" %}
   {% bootstrap_field q_form.foi_answer_in_ror %}
 {% endif %}
 
