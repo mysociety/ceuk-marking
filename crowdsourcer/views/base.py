@@ -520,19 +520,33 @@ class BaseAuthorityAssignmentView(UserPassesTestMixin, ListView):
 
     def get_queryset(self):
         rt = ResponseType.objects.get(type=self.stage)
-        qs = PublicAuthority.objects.filter(
-            marking_session=self.request.current_session,
-            questiongroup__marking_session=self.request.current_session,
-        ).annotate(
-            num_sections=Subquery(
-                Assigned.objects.filter(
-                    authority=OuterRef("pk"),
-                    response_type=rt,
-                    section__marking_session=self.request.current_session,
+        qs = (
+            PublicAuthority.objects.filter(
+                marking_session=self.request.current_session,
+                questiongroup__marking_session=self.request.current_session,
+            )
+            .annotate(
+                num_sections=Subquery(
+                    Assigned.objects.filter(
+                        authority=OuterRef("pk"),
+                        response_type=rt,
+                        section__marking_session=self.request.current_session,
+                    )
+                    .values("authority")
+                    .annotate(num_sections=Count("pk"))
+                    .values("num_sections")
                 )
-                .values("authority")
-                .annotate(num_sections=Count("pk"))
-                .values("num_sections")
+            )
+            .annotate(
+                total_sections=Subquery(
+                    Question.objects.filter(
+                        questiongroup=OuterRef("questiongroup"),
+                        section__marking_session=self.request.current_session,
+                    )
+                    .values("section__marking_session__id")
+                    .annotate(total_sections=Count("section_id", distinct=True))
+                    .values("total_sections")
+                )
             )
         )
 
@@ -558,9 +572,6 @@ class BaseAuthorityAssignmentView(UserPassesTestMixin, ListView):
                 F("num_sections").asc(nulls_first=True), "name"
             )
 
-        context["total_sections"] = Section.objects.filter(
-            marking_session=self.request.current_session
-        ).count()
         context["authorities"] = authorities
         context["do_not_mark_only"] = do_not_mark_only
 
