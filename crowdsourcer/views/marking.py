@@ -46,7 +46,7 @@ class OverviewView(ListView):
 
             sessions = marker.marking_session.filter(active=True).all()
             if len(sessions) == 1:
-                session = marker.marking_session.first()
+                session = sessions.first()
                 if self.request.current_session != session:
                     url = reverse(
                         "session_urls:home", kwargs={"marking_session": session.label}

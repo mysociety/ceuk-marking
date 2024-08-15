@@ -50,6 +50,69 @@ class BaseTestCase(TestCase):
         self.user = u
 
 
+class TestSelectsCorrectMarkingSession(BaseTestCase):
+    def setUp(self):
+        u = User.objects.get(username="admin")
+        self.client.force_login(u)
+        self.user = u
+
+        m = Marker.objects.create(
+            user=u, response_type=ResponseType.objects.get(type="First Mark")
+        )
+        for ms in MarkingSession.objects.all():
+            m.marking_session.add(ms)
+
+    def test_uses_first_session(self):
+        response = self.client.get("/")
+        self.assertEqual(response.status_code, 200)
+
+        context = response.context
+        self.assertEqual(context["marking_session"].label, "Default")
+
+    def test_does_not_use_inactive_sessions(self):
+        ms = MarkingSession.objects.get(label="Default")
+        ms.active = False
+        ms.save()
+
+        response = self.client.get("/")
+        self.assertEqual(response.status_code, 200)
+        context = response.context
+        self.assertEqual(context["marking_session"].label, "Second Session")
+
+    def test_uses_default_session_if_set(self):
+        ms = MarkingSession.objects.get(label="Second Session")
+        ms.default = True
+        ms.save()
+
+        response = self.client.get("/")
+        self.assertEqual(response.status_code, 200)
+        context = response.context
+        self.assertEqual(context["marking_session"].label, "Second Session")
+
+        response = self.client.get("/Default/")
+        self.assertEqual(response.status_code, 200)
+        context = response.context
+        self.assertEqual(context["marking_session"].label, "Default")
+
+    def test_uses_marking_session_in_url(self):
+        response = self.client.get("/Default/")
+        self.assertEqual(response.status_code, 200)
+        context = response.context
+        self.assertEqual(context["marking_session"].label, "Default")
+
+        response = self.client.get("/Second Session/")
+        self.assertEqual(response.status_code, 200)
+        context = response.context
+        self.assertEqual(context["marking_session"].label, "Second Session")
+
+    def test_uses_only_session_in_marker(self):
+        m = Marker.objects.get(user=self.user)
+        m.marking_session.set([MarkingSession.objects.get(label="Second Session")])
+
+        response = self.client.get("/")
+        self.assertRedirects(response, "/Second%20Session/")
+
+
 class TestAssignmentView(BaseTestCase):
     fixtures = [
         "authorities.json",

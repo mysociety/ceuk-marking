@@ -22,7 +22,9 @@ class AddStateMiddleware:
                 label=session_name, active=True
             ).first()
         else:
-            current_session = MarkingSession.objects.filter(active=True).first()
+            current_session = (
+                MarkingSession.objects.filter(active=True).order_by("-default").first()
+            )
 
         if current_session is not None:
             current_stage = current_session.stage
