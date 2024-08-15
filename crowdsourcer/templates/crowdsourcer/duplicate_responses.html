@@ -7,17 +7,23 @@
 <h1 class="mb-4">Sign in</h1>
 <a href="{% url 'login' %}">Sign in</a>
 {% else %}
-<h1 class="mb-4">Duplicate Audit Responses</h1>
+<h1 class="mb-4">Duplicate {{ response_type }} Responses</h1>
 
 <p>
-    This is a list of audit responses that have an multiple answers.
+    This is a list of {{ response_type }} responses that have an multiple answers.
+</p>
+
+<p>
+    <a href="{% session_url 'duplicate_responses' %}?type=First Mark">First Mark duplicates</a> |
+    <a href="{% session_url 'duplicate_responses' %}?type=Right of Reply">Right of Reply duplicates</a> |
+    <a href="{% session_url 'duplicate_responses' %}?type=Audit">Audit duplicates</a>
 </p>
 
 <p>
     {% if ignore_exacts == "1" %}
-    <a href="{% session_url "duplicate_responses" %}">Show exact matches</a>
+    <a href="{% session_url "duplicate_responses" %}?type={{ response_type }}">Show exact matches</a>
     {% else %}
-    <a href="{% session_url "duplicate_responses" %}?ignore_exacts=1">Hide exact matches</a>
+    <a href="{% session_url "duplicate_responses" %}?ignore_exacts=1&type={{ response_type }}">Hide exact matches</a>
     {% endif %}
     ({{ exact_dupes|length }})
 </p>
@@ -36,10 +42,10 @@
         {% if forloop.first %}
         <tr>
             <td>
-                <a href="{% session_url 'authority_ror_progress' response.authority.name %}">{{ response.authority.name }}</a>
+                <a href="{% session_url progress_link response.authority.name %}">{{ response.authority.name }}</a>
             </td>
             <td>
-                <a href="{% session_url 'authority_ror' response.authority.name response.question.section.title %}">{{ response.question.section.title }}</a>
+                <a href="{% session_url question_link response.authority.name response.question.section.title %}">{{ response.question.section.title }}</a>
             </td>
             <td>
                 {{ response.question.number_and_part }}

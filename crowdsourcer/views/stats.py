@@ -637,13 +637,27 @@ class DuplicateResponsesView(StatsUserTestMixin, ListView):
     template_name = "crowdsourcer/duplicate_responses.html"
 
     def get_queryset(self):
-        return get_duplicate_responses(self.request.current_session)
+        response_type = self.request.GET.get("type", "Audit")
+        return get_duplicate_responses(
+            self.request.current_session, response_type=response_type
+        )
 
     def get_context_data(self, **kwargs):
         ignore_exacts = self.request.GET.get("ignore_exacts", 0)
+        response_type = self.request.GET.get("type", "Audit")
         context = super().get_context_data(**kwargs)
 
         duplicates = context["responses"]
+
+        progress_link = "audit_authority_progress"
+        question_link = "authority_audit"
+
+        if response_type == "First Mark":
+            progress_link = "authority_progress"
+            question_link = "authority_question_edit"
+        elif response_type == "Right of Reply":
+            progress_link = "authority_ror_progress"
+            question_link = "authority_ror"
 
         exact_duplicates = get_exact_duplicates(
             duplicates, self.request.current_session
@@ -663,7 +677,7 @@ class DuplicateResponsesView(StatsUserTestMixin, ListView):
             rs = Response.objects.filter(
                 question_id=d["question_id"],
                 authority_id=d["authority_id"],
-                response_type__type="Audit",
+                response_type__type=response_type,
             ).select_related("authority", "question", "question__section")
 
             dupe = []
@@ -672,6 +686,9 @@ class DuplicateResponsesView(StatsUserTestMixin, ListView):
                 dupe.append(r)
             dupes.append(dupe)
 
+        context["progress_link"] = progress_link
+        context["question_link"] = question_link
+        context["response_type"] = response_type
         context["ignore_exacts"] = ignore_exacts
         context["exact_dupes"] = exact_ids
         context["dupes"] = dupes
