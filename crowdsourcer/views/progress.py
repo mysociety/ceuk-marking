@@ -350,14 +350,26 @@ class VolunteerProgressCSVView(UserPassesTestMixin, OverviewView):
     def render_to_response(self, context, **response_kwargs):
         response = HttpResponse(content_type="text/csv")
         writer = csv.writer(response)
-        headers = ["username", "section", "councils_assigned", "councils_completed"]
+        headers = [
+            "username",
+            "section",
+            "stage",
+            "councils_assigned",
+            "councils_completed",
+        ]
         writer.writerow(headers)
         for stats in context["progress"]:
             a = stats["assignment"]
-            print(a)
+            section = "No section assigned"
+            stage = "No stage assigned"
+            if a.section is not None:
+                section = a.section.title
+            if a.response_type is not None:
+                stage = a.response_type.type
             row = [
                 a.user.username,
-                a.section.title,
+                section,
+                stage,
                 stats["total"],
                 stats["complete"],
             ]

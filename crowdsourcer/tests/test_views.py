@@ -1,6 +1,10 @@
+import io
+
 from django.contrib.auth.models import User
 from django.test import TestCase
 from django.urls import reverse
+
+import pandas as pd
 
 from crowdsourcer.models import (
     Assigned,
@@ -873,6 +877,101 @@ class TestVolunteerProgressView(BaseTestCase):
         context = response.context["sections"]
 
         self.assertEquals(len(context), 0)
+
+
+class TestVolunteerProgressCSVView(BaseTestCase):
+    def test_non_admin_denied(self):
+        response = self.client.get(reverse("volunteer_csv_progress"))
+        self.assertEquals(response.status_code, 403)
+
+    def test_view(self):
+        u = User.objects.get(username="admin")
+        self.client.force_login(u)
+        response = self.client.get(reverse("volunteer_csv_progress"))
+        self.assertEquals(response.status_code, 200)
+
+        content = response.content.decode("utf-8")
+        df = pd.read_csv(io.StringIO(content))
+
+        self.assertEquals(df.shape[0], 3)
+        b_and_h = df.iloc[0]
+        tran = df.iloc[1]
+        tran_audit = df.iloc[2]
+
+        self.assertEqual(b_and_h["username"], "marker")
+        self.assertEqual(b_and_h["section"], "Buildings & Heating")
+        self.assertEqual(b_and_h["stage"], "First Mark")
+        self.assertEqual(b_and_h["councils_assigned"], 1)
+        self.assertEqual(b_and_h["councils_completed"], 0)
+        self.assertEqual(tran["username"], "marker")
+        self.assertEqual(tran["section"], "Transport")
+        self.assertEqual(tran["stage"], "First Mark")
+        self.assertEqual(tran["councils_assigned"], 2)
+        self.assertEqual(tran["councils_completed"], 1)
+        self.assertEqual(tran_audit["username"], "auditor")
+        self.assertEqual(tran_audit["section"], "Transport")
+        self.assertEqual(tran_audit["stage"], "Audit")
+        self.assertEqual(tran_audit["councils_assigned"], 1)
+        self.assertEqual(tran_audit["councils_completed"], 0)
+
+    def test_missing_section_in_assignment(self):
+        a = Assigned.objects.get(
+            user__username="marker",
+            section__title="Transport",
+            authority__name="Aberdeenshire Council",
+        )
+        a.section = None
+        a.save()
+
+        u = User.objects.get(username="admin")
+        self.client.force_login(u)
+        response = self.client.get(reverse("volunteer_csv_progress"))
+        self.assertEquals(response.status_code, 200)
+
+        content = response.content.decode("utf-8")
+        df = pd.read_csv(io.StringIO(content))
+
+        self.assertEquals(df.shape[0], 4)
+        bad_section = df.iloc[2]
+
+        self.assertEqual(bad_section["section"], "No section assigned")
+        self.assertEqual(bad_section["councils_assigned"], 0)
+        self.assertEqual(bad_section["councils_completed"], 0)
+
+    def test_missing_response_type_in_assignment(self):
+        a = Assigned.objects.get(
+            user__username="marker",
+            section__title="Transport",
+            authority__name="Aberdeenshire Council",
+        )
+        a.response_type = None
+        a.save()
+
+        u = User.objects.get(username="admin")
+        self.client.force_login(u)
+        response = self.client.get(reverse("volunteer_csv_progress"))
+        self.assertEquals(response.status_code, 200)
+
+        content = response.content.decode("utf-8")
+        df = pd.read_csv(io.StringIO(content))
+
+        self.assertEquals(df.shape[0], 4)
+        tran = df.iloc[1]
+        tran_no_rt = df.iloc[2]
+
+        self.assertEqual(tran["section"], "Transport")
+        self.assertEqual(tran["stage"], "First Mark")
+        self.assertEqual(tran["councils_assigned"], 1)
+        self.assertEqual(tran["councils_completed"], 0)
+        self.assertEqual(tran_no_rt["section"], "Transport")
+        self.assertEqual(tran_no_rt["stage"], "No stage assigned")
+        self.assertEqual(tran_no_rt["councils_assigned"], 1)
+        self.assertEqual(tran_no_rt["councils_completed"], 0)
+        a = Assigned.objects.get(
+            user__username="marker",
+            section__title="Transport",
+            authority__name="Aberdeenshire Council",
+        )
 
 
 class TestAuthorityProgressView(BaseTestCase):

@@ -136,7 +136,7 @@ class OverviewView(ListView):
 
         assignments = (
             context["assignments"]
-            .distinct("user_id", "section_id")
+            .distinct("user_id", "section_id", "response_type_id")
             .select_related("section", "response_type")
         )
 
@@ -164,34 +164,37 @@ class OverviewView(ListView):
                 question_list = list(questions.values_list("id", flat=True))
                 question_cache[assignment.section_id] = question_list
 
-            args = [
-                question_list,
-                assignment.section.title,
-                assignment.user,
-                self.request.current_session,
-            ]
-            if assignment.authority_id is not None:
-                authorities = Assigned.objects.filter(
-                    active=True,
-                    user=assignment.user_id,
-                    section=assignment.section_id,
-                    response_type=stage,
-                ).values_list("authority_id", flat=True)
-                args.append(authorities)
-
-            response_counts = PublicAuthority.response_counts(
-                *args, question_types=types, response_type=assignment.response_type
-            ).distinct()
-
             total = 0
             complete = 0
 
-            for count in response_counts:
-                total += 1
-                if count.num_responses == count.num_questions:
-                    complete += 1
+            if assignment.section is not None:
+                args = [
+                    question_list,
+                    assignment.section.title,
+                    assignment.user,
+                    self.request.current_session,
+                ]
+                if assignment.authority_id is not None:
+                    authorities = Assigned.objects.filter(
+                        active=True,
+                        user=assignment.user_id,
+                        section=assignment.section_id,
+                        response_type=stage,
+                    ).values_list("authority_id", flat=True)
+                    args.append(authorities)
 
-            if assignment.response_type.type == "First Mark":
+                response_counts = PublicAuthority.response_counts(
+                    *args, question_types=types, response_type=assignment.response_type
+                ).distinct()
+
+                for count in response_counts:
+                    total += 1
+                    if count.num_responses == count.num_questions:
+                        complete += 1
+
+            if assignment.response_type is None:
+                section_link = "home"
+            elif assignment.response_type.type == "First Mark":
                 section_link = "section_authorities"
             elif assignment.response_type.type == "Audit":
                 section_link = "audit_section_authorities"
