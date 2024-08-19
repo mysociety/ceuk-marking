@@ -2,6 +2,7 @@ import logging
 
 from django.contrib.auth.mixins import UserPassesTestMixin
 from django.core.exceptions import PermissionDenied
+from django.core.mail import mail_admins
 from django.db.models import Count, F, FloatField, OuterRef, Subquery
 from django.db.models.functions import Cast
 from django.http import JsonResponse
@@ -210,6 +211,9 @@ class BaseResponseJSONView(TemplateView):
             "authority": self.authority,
             "question": self.question,
         }
+        logger.debug(
+            f"checking for initial object for {self.authority}, {self.question}, {self.rt}"
+        )
         try:
             instance = Response.objects.get(
                 authority=self.authority, question=self.question, response_type=self.rt
@@ -233,6 +237,26 @@ class BaseResponseJSONView(TemplateView):
                 f"did NOT find initial object for {self.authority}, {self.question}, {self.rt}"
             )
             pass
+        except Response.MultipleObjectsReturned:
+            logger.debug(
+                f"DUPLICATES for find initial object for {self.authority}, {self.question}, {self.rt}, selecting latest"
+            )
+            instance = (
+                Response.objects.filter(
+                    authority=self.authority,
+                    question=self.question,
+                    response_type=self.rt,
+                )
+                .order_by("-pk")
+                .first()
+            )
+            section_title = self.kwargs.get("section_title", "")
+            mail_admins(
+                f"Duplicate response for {self.authority}, {section_title}, {self.question.number_and_part} {self.rt}",
+                f"""
+Found a duplicate response when doing a JSON save. Have selected the most recent response option ({instance.pk}) to update.
+            """,
+            )
 
         return {"initial": initial, "instance": instance}
 
@@ -271,8 +295,9 @@ class BaseResponseJSONView(TemplateView):
         self.check_permissions()
         section_title = self.kwargs.get("section_title", "")
         authority = self.kwargs.get("name", "")
+        question = self.kwargs.get("question", "")
         logger.debug(
-            f"{self.log_start} JSON post from {self.request.user.email} for {authority}/{section_title}"
+            f"{self.log_start} JSON post from {self.request.user.email} for {authority}/{section_title}/{question}"
         )
         logger.debug(f"post data is {self.request.POST}")
 
@@ -293,7 +318,6 @@ class BaseResponseJSONView(TemplateView):
             logger.debug(f"form NOT VALID, errors are {form.errors}")
             return JsonResponse({"success": 0, "errors": form.errors})
 
-        print(form.instance)
         return JsonResponse({"success": 1})
 
     # there are occassional issues with the same form being resubmitted twice the first time
