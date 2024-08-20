@@ -97,7 +97,12 @@ class ResponseForm(ModelForm):
                 self.add_error(option_field, "This field is required")
 
         else:
-            if str(response) in ["No", "None", "No evidence found"]:
+            if str(response) in [
+                "No",
+                "None",
+                "No evidence found",
+                "Evidence doesn't meet criteria",
+            ]:
                 mandatory = self.mandatory_if_no
             else:
                 mandatory = self.mandatory_if_response
