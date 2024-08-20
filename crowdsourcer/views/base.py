@@ -173,7 +173,7 @@ class BaseResponseJSONView(TemplateView):
     model = Response
     form = ResponseForm
     response_type = "First Mark"
-    log_start = "marking form"
+    log_start = "JSON marking form"
     title_start = ""
     how_marked_in = ["volunteer", "national_volunteer"]
 
@@ -207,19 +207,21 @@ class BaseResponseJSONView(TemplateView):
         self.authority = PublicAuthority.objects.get(name=self.kwargs["name"])
         self.question = Question.objects.get(id=self.kwargs["question"])
         instance = None
+        log_start = f"{self.log_start}[{self.request.user.id}-{self.question.id}]"
+
         initial = {
             "authority": self.authority,
             "question": self.question,
         }
         logger.debug(
-            f"checking for initial object for {self.authority}, {self.question}, {self.rt}"
+            f"{log_start} checking for initial object for {self.authority}, {self.question}, {self.rt}"
         )
         try:
             instance = Response.objects.get(
                 authority=self.authority, question=self.question, response_type=self.rt
             )
             logger.debug(
-                f"FOUND initial object for {self.authority}, {self.question}, {self.rt}"
+                f"{log_start} FOUND initial object for {self.authority}, {self.question}, {self.rt}"
             )
             for f in [
                 "evidence",
@@ -231,15 +233,15 @@ class BaseResponseJSONView(TemplateView):
                 "public_notes",
             ]:
                 initial[f] = getattr(instance, f)
-            logger.debug(f"initial data is {initial}")
+            logger.debug(f"{log_start} initial data is {initial}")
         except Response.DoesNotExist:
             logger.debug(
-                f"did NOT find initial object for {self.authority}, {self.question}, {self.rt}"
+                f"{log_start} did NOT find initial object for {self.authority}, {self.question}, {self.rt}"
             )
             pass
         except Response.MultipleObjectsReturned:
             logger.debug(
-                f"DUPLICATES for find initial object for {self.authority}, {self.question}, {self.rt}, selecting latest"
+                f"{log_start} DUPLICATES for find initial object for {self.authority}, {self.question}, {self.rt}, selecting latest"
             )
             instance = (
                 Response.objects.filter(
@@ -296,26 +298,28 @@ Found a duplicate response when doing a JSON save. Have selected the most recent
         section_title = self.kwargs.get("section_title", "")
         authority = self.kwargs.get("name", "")
         question = self.kwargs.get("question", "")
+        log_start = f"{self.log_start}[{self.request.user.id}-{question}]"
+
         logger.debug(
-            f"{self.log_start} JSON post from {self.request.user.email} for {authority}/{section_title}/{question}"
+            f"{log_start} JSON post from {self.request.user.email} for {authority}/{section_title}/{question}"
         )
         logger.debug(f"post data is {self.request.POST}")
 
         form = self.get_form()
-        logger.debug("got form")
+        logger.debug(f"{log_start} got form")
         if form.is_valid():
-            logger.debug("form IS VALID")
+            logger.debug(f"{log_start} form IS VALID")
             post_hash = self.get_post_hash()
             if self.check_form_not_resubmitted(post_hash):
-                logger.debug("form GOOD, saving")
+                logger.debug(f"{log_start} form GOOD, saving")
                 form.instance.response_type = self.rt
                 form.instance.user = self.request.user
                 form.save()
                 self.request.session[self.session_form_hash()] = post_hash
             else:
-                logger.debug("form RESUBMITTED, not saving")
+                logger.debug(f"{log_start} form RESUBMITTED, not saving")
         else:
-            logger.debug(f"form NOT VALID, errors are {form.errors}")
+            logger.debug(f"{log_start} form NOT VALID, errors are {form.errors}")
             return JsonResponse({"success": 0, "errors": form.errors})
 
         return JsonResponse({"success": 1})
