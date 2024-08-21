@@ -14,7 +14,7 @@ function disable_submit_if_invalid() {
 $(function(){
   $('.form-select, .form-control, .form-check-input').on('blur', function(e){
     // if we have submitted the form then do not check as it might create duplicates
-    if (e.relatedTarget.id == "save_all_answers" && $(e.relatedTarget).prop("disabled") == false) {
+    if (e.relatedTarget && e.relatedTarget.id == "save_all_answers" && $(e.relatedTarget).prop("disabled") == false) {
       return;
     }
     var $d = $(this);
