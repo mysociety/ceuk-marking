@@ -166,6 +166,7 @@ class OverviewView(ListView):
 
             total = 0
             complete = 0
+            started = 0
 
             if assignment.section is not None:
                 args = [
@@ -189,6 +190,8 @@ class OverviewView(ListView):
 
                 for count in response_counts:
                     total += 1
+                    if count.num_responses is not None and count.num_responses > 0:
+                        started += 1
                     if count.num_responses == count.num_questions:
                         complete += 1
 
@@ -203,6 +206,7 @@ class OverviewView(ListView):
                 {
                     "assignment": assignment,
                     "complete": complete,
+                    "started": started,
                     "total": total,
                     "section_link": section_link,
                 }

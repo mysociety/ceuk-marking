@@ -355,6 +355,7 @@ class VolunteerProgressCSVView(UserPassesTestMixin, OverviewView):
             "section",
             "stage",
             "councils_assigned",
+            "councils_started",
             "councils_completed",
         ]
         writer.writerow(headers)
@@ -371,6 +372,7 @@ class VolunteerProgressCSVView(UserPassesTestMixin, OverviewView):
                 section,
                 stage,
                 stats["total"],
+                stats["started"],
                 stats["complete"],
             ]
             writer.writerow(row)
