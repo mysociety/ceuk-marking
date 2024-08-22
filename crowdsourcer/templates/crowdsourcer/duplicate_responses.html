@@ -42,13 +42,13 @@
         {% if forloop.first %}
         <tr>
             <td>
-                <a href="{% session_url progress_link response.authority.name %}">{{ response.authority.name }}</a>
+                <a title="Authority progress" href="{% session_url progress_link response.authority.name %}">{{ response.authority.name }}</a>
             </td>
             <td>
-                <a href="{% session_url question_link response.authority.name response.question.section.title %}">{{ response.question.section.title }}</a>
+                <a title="Question page" href="{% session_url question_link response.authority.name response.question.section.title %}">{{ response.question.section.title }}</a>
             </td>
             <td>
-                {{ response.question.number_and_part }}
+                <a title="Full response history" href="{% session_url 'question_history' response.authority.name response_type response.question.id %}">{{ response.question.number_and_part }}</a>
             </td>
         </tr>
         <tr>
