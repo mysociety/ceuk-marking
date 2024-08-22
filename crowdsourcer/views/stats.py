@@ -739,6 +739,7 @@ class CouncilQuestionHistoryListView(SelectQuestionView):
 class ResponseHistoryView(StatsUserTestMixin, ListView):
     context_object_name = "responses"
     template_name = "crowdsourcer/response_history.html"
+    has_duplicates = False
 
     def get_queryset(self):
         stage = self.kwargs["stage"]
@@ -752,6 +753,20 @@ class ResponseHistoryView(StatsUserTestMixin, ListView):
                 authority__name=authority,
                 response_type__type=stage,
             )
+        except Response.MultipleObjectsReturned:
+            self.has_duplicates = True
+
+            responses = Response.objects.filter(
+                question__section__marking_session=self.request.current_session,
+                question_id=question,
+                authority__name=authority,
+                response_type__type=stage,
+            ).order_by("last_update")
+            data = []
+            for response in responses:
+                data.extend(response.history.all())
+            data = sorted(data, key=lambda r: r.last_update)
+            return data
         except Response.DoesNotExist:
             return None
         return response.history.all()
@@ -767,4 +782,5 @@ class ResponseHistoryView(StatsUserTestMixin, ListView):
         except Question.DoesNotExist:
             context["missing_question"] = True
 
+        context["duplicates"] = self.has_duplicates
         return context

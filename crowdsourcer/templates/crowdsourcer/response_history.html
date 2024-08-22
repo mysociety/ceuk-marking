@@ -20,11 +20,19 @@
         No responses to that question so far.
     </p>
     {% else %}
+        {% if duplicates %}
+        <p class="text-danger">
+            Duplicate responses exist for this question
+        </p>
+        {% endif %}
         <table class="table">
             <thead>
                 <tr>
                     <th>Date</th>
                     <th>User</th>
+                    {% if duplicates %}
+                    <th>Response ID</th>
+                    {% endif %}
                     <th>Response</th>
                     <th>Notes</th>
                     <th>Links</th>
@@ -40,6 +48,9 @@
                     <td>
                         {{ response.user }}
                     </td>
+                    {% if duplicates %}
+                    <td>{{ response.id }}</td>
+                    {% endif %}
                     <td>
                         {% if response.multi_option %}
                             {% for r in response.multi_option %}
