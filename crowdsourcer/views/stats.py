@@ -547,6 +547,7 @@ class QuestionScoresCSV(StatsUserTestMixin, ListView):
                     "criteria": option.question.criteria,
                     "how_marked": option.question.how_marked,
                     "type": option.question.question_type,
+                    "weighting": option.question.weighting,
                     "raw_max": max_score,
                     "weighted_max": weighting_to_points(
                         option.question.weighting, max_score
@@ -565,6 +566,7 @@ class QuestionScoresCSV(StatsUserTestMixin, ListView):
                 "question",
                 "how marked",
                 "type",
+                "weighting",
                 "raw max",
                 "weighted max",
                 "options",
@@ -588,6 +590,7 @@ class QuestionScoresCSV(StatsUserTestMixin, ListView):
                     q["q"],
                     q["how_marked"],
                     q["type"],
+                    q["weighting"],
                     q["raw_max"],
                     q["weighted_max"],
                     q["options"],
