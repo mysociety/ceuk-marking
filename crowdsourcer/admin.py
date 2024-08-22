@@ -119,7 +119,11 @@ class ResponseAdmin(admin.ModelAdmin):
     )
 
     search_fields = ["question__description", "authority__name"]
-    list_filter = ["question__section", "response_type"]
+    list_filter = [
+        "question__section__marking_session",
+        "question__section",
+        "response_type",
+    ]
 
 
 @admin.register(ResponseType)
