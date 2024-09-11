@@ -1,6 +1,9 @@
+import csv
 import logging
+from collections import defaultdict
 
 from django.core.exceptions import PermissionDenied
+from django.http import HttpResponse
 from django.shortcuts import redirect
 from django.urls import reverse
 from django.views.generic import ListView
@@ -209,3 +212,120 @@ class AuthorityRORSectionQuestions(BaseQuestionView):
         context = super().get_context_data(**kwargs)
         context["ror_user"] = True
         return context
+
+
+class AuthorityRORCSVView(ListView):
+    context_object_name = "responses"
+
+    def get_queryset(self):
+        user = self.request.user
+
+        rt = ResponseType.objects.get(type="Right of Reply")
+        if user.is_superuser:
+            authority_name = self.kwargs["name"]
+            authority = PublicAuthority.objects.get(name=authority_name)
+        else:
+            authority = self.request.user.marker.authority
+
+        self.authority = authority
+
+        if authority is not None:
+            return (
+                Response.objects.filter(
+                    question__section__marking_session=self.request.current_session,
+                    response_type=rt,
+                    authority=authority,
+                )
+                .select_related("question", "question__section")
+                .order_by(
+                    "question__section__title",
+                    "question__number",
+                    "question__number_part",
+                )
+            )
+
+        return None
+
+    def get_first_mark_responses(self):
+        rt = ResponseType.objects.get(type="First Mark")
+        responses = (
+            Response.objects.filter(
+                question__section__marking_session=self.request.current_session,
+                response_type=rt,
+                authority=self.authority,
+            )
+            .select_related("question", "question__section")
+            .order_by(
+                "question__section__title",
+                "question__number",
+                "question__number_part",
+            )
+        )
+
+        by_section = defaultdict(dict)
+
+        for r in responses:
+            by_section[r.question.section.title][
+                r.question.number_and_part
+            ] = r.option.description
+
+        return by_section
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        rows = []
+        rows.append(
+            [
+                "section",
+                "question_no",
+                "question",
+                "first_mark_response",
+                "agree_with_mark",
+                "council_response",
+                "council_evidence",
+                "council_page_number",
+                "council_notes",
+            ]
+        )
+
+        first_mark_responses = self.get_first_mark_responses()
+
+        for response in context["responses"]:
+            first_mark_response = ""
+            if first_mark_responses.get(
+                response.question.section.title
+            ) and first_mark_responses[response.question.section.title].get(
+                response.question.number_and_part
+            ):
+                first_mark_response = first_mark_responses[
+                    response.question.section.title
+                ][response.question.number_and_part]
+            rows.append(
+                [
+                    response.question.section.title,
+                    response.question.number_and_part,
+                    response.question.description,
+                    first_mark_response,
+                    "Yes" if response.agree_with_response else "No",
+                    response.option,
+                    ",".join(response.evidence_links),
+                    response.page_number,
+                    response.evidence,
+                ]
+            )
+
+        context["authority"] = self.authority.name
+        context["rows"] = rows
+
+        return context
+
+    def render_to_response(self, context, **response_kwargs):
+        filename = f"{self.request.current_session.label}_{context['authority']}_Right_of_Reply.csv"
+        response = HttpResponse(
+            content_type="text/csv",
+            headers={"Content-Disposition": 'attachment; filename="' + filename + '"'},
+        )
+        writer = csv.writer(response)
+        for row in context["rows"]:
+            writer.writerow(row)
+        return response

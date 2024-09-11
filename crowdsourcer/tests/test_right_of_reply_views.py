@@ -1,6 +1,10 @@
+import io
+
 from django.contrib.auth.models import User
 from django.test import TestCase
 from django.urls import reverse
+
+import pandas as pd
 
 from crowdsourcer.models import (
     Assigned,
@@ -554,3 +558,40 @@ class TestChallengeView(BaseTestCase):
         progress = response.context["progress"]
 
         self.assertEqual(len(progress.keys()), 2)
+
+
+class TestCSVDownloadView(BaseTestCase):
+    def test_download(self):
+        url = reverse("authority_ror_download", args=("Aberdeenshire Council",))
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+
+        content = response.content.decode("utf-8")
+        # the dtype bit stops pandas doing annoying conversions and ending up
+        # with page numers as floats etc
+        df = pd.read_csv(io.StringIO(content), dtype="object")
+        # avoid nan results
+        df = df.fillna("")
+
+        self.assertEqual(df.shape[0], 2)
+        b_and_h_q4 = df.iloc[0]
+        b_and_h_q5 = df.iloc[1]
+
+        self.assertEqual(b_and_h_q4.question_no, "4")
+        self.assertEqual(
+            b_and_h_q4.first_mark_response,
+            "The council has completed an exercise to measure how much, approximately, it will cost them to retrofit all homes (to EPC C or higher, or equivalent) and there is a target date of 2030.",
+        )
+        self.assertEqual(b_and_h_q4.agree_with_mark, "Yes")
+        self.assertEqual(b_and_h_q4.council_page_number, "")
+        self.assertEqual(b_and_h_q4.council_evidence, "")
+
+        self.assertEqual(b_and_h_q5.question_no, "5")
+        self.assertEqual(
+            b_and_h_q5.first_mark_response,
+            "The council convenes or is a member of a local retrofit partnership",
+        )
+        self.assertEqual(b_and_h_q5.council_evidence, "http://example.org/")
+        self.assertEqual(b_and_h_q5.agree_with_mark, "No")
+        self.assertEqual(b_and_h_q5.council_page_number, "20")
+        self.assertEqual(b_and_h_q5.council_notes, "We do not agree for reasons")

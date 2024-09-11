@@ -49,5 +49,17 @@
     </div>
   {% endif %}
 
+  {% if marking_session.label == "Scorecards 2025" %}
+    <div class="my-5" style="max-width: 40rem">
+        <h2 class="mb-3 h4">Download your Right of Reply response</h2>
+        <p>You can download a CSV spreadsheet of the Right of Reply responses you have provided for the 2025 Council Climate Action Scorecards.</p>
+        <p>Please keep these responses private, this is for your own council’s internal use only.</p>
+        <a href="{% session_url 'authority_ror_download' authority_name %}" class="btn btn-primary d-inline-flex align-items-center">
+            {% include 'crowdsourcer/icons/download.svg' with classes="me-2" %}
+            Download responses CSV
+        </a>
+    </div>
+  {% endif %}
+
 {% endif %}
 {% endblock %}
