@@ -405,6 +405,7 @@ class Marker(models.Model):
         PublicAuthority, blank=True, null=True, on_delete=models.SET_NULL
     )
     marking_session = models.ManyToManyField(MarkingSession, blank=True)
+    send_welcome_email = models.BooleanField(default=False)
 
     class Meta:
         permissions = [
