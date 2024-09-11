@@ -40,5 +40,12 @@
           {% endfor %}
         </tbody>
     </table>
+
+    {% if marking_session.label == "Scorecards 2025" %}
+      <a href="{% session_url 'authority_ror_download' authority_name %}">Download your Right of Reply response</a>
+      <p>
+        Clicking here enables you to download a .csv copy of your Right of Reply responses you have provided for the 2025 Council Climate Action Scorecards. Please keep these responses private, for your own council internal use only.
+      </p>
+    {% endif %}
 {% endif %}
 {% endblock %}
