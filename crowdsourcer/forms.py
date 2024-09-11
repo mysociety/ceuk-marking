@@ -506,3 +506,11 @@ class VolunteerBulkAssignForm(Form):
             raise ValidationError(errors)
 
         self.volunteer_df = df
+
+
+class VolunteerDeactivateForm(Form):
+    stage = ChoiceField(required=True, choices=[])
+
+    def __init__(self, stage_choices, **kwargs):
+        super().__init__(**kwargs)
+        self.fields["stage"].choices = stage_choices

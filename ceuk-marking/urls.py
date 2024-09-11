@@ -259,6 +259,11 @@ session_patterns = [
         name="bulk_assign_volunteer",
     ),
     path(
+        "volunteers/deactivate/",
+        volunteers.DeactivateVolunteers.as_view(),
+        name="deactivate_volunteers",
+    ),
+    path(
         "volunteers/<user_id>/assign/",
         volunteers.VolunteerAssignmentView.as_view(),
         name="assign_volunteer",

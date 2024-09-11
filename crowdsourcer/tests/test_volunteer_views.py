@@ -4,7 +4,7 @@ from django.contrib.auth.models import Permission, User
 from django.test import TestCase
 from django.urls import reverse
 
-from crowdsourcer.models import Assigned, MarkingSession, ResponseType, Section
+from crowdsourcer.models import Assigned, Marker, MarkingSession, ResponseType, Section
 
 
 class BaseTestCase(TestCase):
@@ -386,3 +386,68 @@ class TestBulkAssign(BaseTestCase):
         )
 
         self.assertEqual(Assigned.objects.count(), 6)
+
+
+class TestDeactivateVolunteers(BaseTestCase):
+    def test_deactivate(self):
+        url = reverse("deactivate_volunteers")
+        response = self.client.get(url)
+
+        self.assertEqual(User.objects.filter(is_active=False).count(), 0)
+        u = User.objects.get(email="marker@example.org")
+        self.assertTrue(u.is_active)
+        response = self.client.post(
+            url,
+            data={"stage": "First Mark"},
+        )
+
+        self.assertRedirects(response, f"/Default{reverse('list_volunteers')}")
+        self.assertEqual(User.objects.filter(is_active=False).count(), 1)
+
+        u = User.objects.get(email="marker@example.org")
+        self.assertFalse(u.is_active)
+
+    def test_ignores_staff(self):
+        url = reverse("deactivate_volunteers")
+        response = self.client.get(url)
+
+        rt = ResponseType.objects.get(type="First Mark")
+        session = MarkingSession.objects.get(label="Default")
+
+        self.assertEqual(User.objects.filter(is_active=False).count(), 0)
+        u = User.objects.get(email="admin@example.org")
+        self.assertTrue(u.is_active)
+        m = Marker.objects.create(user=u, response_type=rt)
+        m.marking_session.set([session])
+        response = self.client.post(
+            url,
+            data={"stage": "First Mark"},
+        )
+
+        self.assertRedirects(response, f"/Default{reverse('list_volunteers')}")
+        self.assertEqual(User.objects.filter(is_active=False).count(), 1)
+        u = User.objects.get(email="admin@example.org")
+        self.assertTrue(u.is_active)
+
+    def test_respects_session(self):
+        url = reverse("deactivate_volunteers")
+        url = "/Second%20Session" + url
+        response = self.client.get(url)
+
+        self.assertEqual(User.objects.filter(is_active=False).count(), 0)
+        u = User.objects.get(email="marker@example.org")
+        self.assertTrue(u.is_active)
+        u2 = User.objects.get(email="other_marker@example.org")
+        self.assertTrue(u2.is_active)
+        response = self.client.post(
+            url,
+            data={"stage": "First Mark"},
+        )
+
+        self.assertRedirects(response, f"/Second%20Session{reverse('list_volunteers')}")
+        self.assertEqual(User.objects.filter(is_active=False).count(), 1)
+
+        u = User.objects.get(email="marker@example.org")
+        self.assertTrue(u.is_active)
+        u2 = User.objects.get(email="other_marker@example.org")
+        self.assertFalse(u2.is_active)

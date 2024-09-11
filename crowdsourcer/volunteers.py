@@ -2,11 +2,13 @@ from collections import defaultdict
 
 from django.conf import settings
 from django.contrib.auth.forms import PasswordResetForm
+from django.contrib.auth.models import User
+from django.db.models import Q
 from django.http import HttpRequest
 
 import pandas as pd
 
-from crowdsourcer.models import Assigned, PublicAuthority, Section
+from crowdsourcer.models import Assigned, Marker, PublicAuthority, Section
 
 
 def check_bulk_assignments(df, rt, ms, num_assignments, always_assign=False):
@@ -99,3 +101,15 @@ def send_registration_email(user, server_name):
             subject_template_name=subject_template,
             email_template_name=email_template,
         )
+
+
+def deactivate_stage_volunteers(stage, session):
+    users = User.objects.filter(
+        id__in=Marker.objects.filter(
+            marking_session=session, response_type=stage
+        ).values_list("user_id"),
+    ).exclude(Q(is_staff=True) | Q(is_superuser=True))
+
+    for user in users:
+        user.is_active = False
+        user.save()

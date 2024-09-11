@@ -15,6 +15,7 @@ from crowdsourcer.forms import (
     UserForm,
     VolunteerAssignmentFormset,
     VolunteerBulkAssignForm,
+    VolunteerDeactivateForm,
 )
 from crowdsourcer.models import (
     Assigned,
@@ -24,7 +25,7 @@ from crowdsourcer.models import (
     ResponseType,
     Section,
 )
-from crowdsourcer.volunteers import send_registration_email
+from crowdsourcer.volunteers import deactivate_stage_volunteers, send_registration_email
 
 logger = logging.getLogger(__name__)
 
@@ -257,6 +258,33 @@ class AvailableAssignmentAuthorities(VolunteerAccessMixin, ListView):
             data.append({"name": a.name, "id": a.id})
 
         return JsonResponse({"results": data})
+
+
+class DeactivateVolunteers(VolunteerAccessMixin, FormView):
+    template_name = "crowdsourcer/volunteers/deactivate.html"
+    form_class = VolunteerDeactivateForm
+
+    def get_form(self, form_class=None):
+        if form_class is None:
+            form_class = self.form_class
+
+        return form_class(
+            [(rt.type, rt.type) for rt in ResponseType.objects.all()],
+            **self.get_form_kwargs()
+        )
+
+    def get_success_url(self):
+        return reverse(
+            "session_urls:list_volunteers",
+            kwargs={"marking_session": self.request.current_session.label},
+        )
+
+    def form_valid(self, form):
+        ms = self.request.current_session
+        rt = ResponseType.objects.get(type=form.cleaned_data.get("stage"))
+
+        deactivate_stage_volunteers(rt, ms)
+        return super().form_valid(form)
 
 
 class BulkAssignVolunteer(VolunteerAccessMixin, FormView):
