@@ -40,5 +40,7 @@
           {% endfor %}
         </tbody>
     </table>
+
+    <a href="{% session_url 'authority_ror_download' authority_name %}">Download</a>
 {% endif %}
 {% endblock %}
