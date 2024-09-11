@@ -3,6 +3,7 @@ from io import StringIO
 from unittest import skip
 
 from django.contrib.auth.models import User
+from django.core import mail
 from django.core.management import call_command
 from django.test import TestCase
 
@@ -516,3 +517,93 @@ class AssignAutomaticPoints(BaseCommandTestCase):
         self.assertIsNotNone(r.multi_option)
 
         self.assertEquals(r.multi_option.all()[0].description, "Car share")
+
+
+class SendWelcomeEmails(BaseCommandTestCase):
+    fixtures = [
+        "basics.json",
+        "authorities.json",
+        "users.json",
+        "welcome_email_users.json",
+    ]
+
+    def test_basic_run(self):
+        self.assertEquals(len(mail.outbox), 0)
+        self.call_command(
+            "send_welcome_emails",
+        )
+        self.assertEquals(len(mail.outbox), 0)
+
+        self.call_command(
+            "send_welcome_emails",
+            send_emails=True,
+        )
+        self.assertEquals(len(mail.outbox), 2)
+
+        self.call_command(
+            "send_welcome_emails",
+            send_emails=True,
+        )
+        self.assertEquals(len(mail.outbox), 2)
+
+    def test_only_sends_if_flag_set(self):
+        marker = Marker.objects.get(user__email="new_marker@example.org")
+        marker.send_welcome_email = False
+        marker.save()
+
+        self.assertEquals(len(mail.outbox), 0)
+
+        self.call_command(
+            "send_welcome_emails",
+            send_emails=True,
+        )
+        self.assertEquals(len(mail.outbox), 1)
+        email = mail.outbox[0]
+        self.assertEquals(email.to, ["already@example.org"])
+
+    def test_email_comtent(self):
+        self.call_command(
+            "send_welcome_emails",
+            send_emails=True,
+        )
+
+        emails = mail.outbox
+
+        text = "your previous password"
+        for m in emails:
+            if m.to[0] == "already@example.org":
+                self.assertTrue(m.body.rfind(text) >= 0)
+            else:
+                self.assertTrue(m.body.rfind(text) == -1)
+
+    def test_limit_stage(self):
+        self.assertEquals(len(mail.outbox), 0)
+        self.call_command(
+            "send_welcome_emails",
+            send_emails=True,
+            stage="Audit",
+        )
+        self.assertEquals(len(mail.outbox), 0)
+
+        self.call_command(
+            "send_welcome_emails",
+            send_emails=True,
+            stage="First Mark",
+        )
+        self.assertEquals(len(mail.outbox), 2)
+
+    def test_limit_session(self):
+        self.assertEquals(len(mail.outbox), 0)
+        self.call_command(
+            "send_welcome_emails",
+            send_emails=True,
+            session="Second Session",
+        )
+        self.assertEquals(len(mail.outbox), 0)
+
+        self.call_command(
+            "send_welcome_emails",
+            send_emails=True,
+            session="Default",
+        )
+        self.assertEquals(len(mail.outbox), 2)

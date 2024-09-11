@@ -1,0 +1,59 @@
+[
+{
+  "model": "auth.user",
+  "pk": 101,
+  "fields": {
+    "password": "thisisasecret",
+    "last_login": null,
+    "is_superuser": true,
+    "username": "already_registered",
+    "first_name": "",
+    "last_name": "",
+    "email": "already@example.org",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2022-12-19T13:40:36.075Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "pk": 102,
+  "fields": {
+    "password": "",
+    "last_login": null,
+    "is_superuser": false,
+    "username": "new_marker",
+    "first_name": "Anew",
+    "last_name": "Marker",
+    "email": "new_marker@example.org",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2022-12-19T13:40:36.075Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "crowdsourcer.marker",
+  "pk": 101,
+  "fields": {
+    "user_id": 101,
+    "response_type_id": 1,
+    "authority_id": 2,
+    "send_welcome_email": true,
+    "marking_session": [1]
+  }
+},
+{
+  "model": "crowdsourcer.marker",
+  "pk": 102,
+  "fields": {
+    "user_id": 102,
+    "response_type_id": 1,
+    "send_welcome_email": true,
+    "marking_session": [1]
+  }
+}
+]
