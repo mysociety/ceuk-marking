@@ -213,6 +213,7 @@ class Command(BaseCommand):
                     user=u,
                     defaults={
                         "response_type": rt,
+                        "send_welcome_email": True,
                     },
                 )
                 m.marking_session.set([session])
