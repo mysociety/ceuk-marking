@@ -21,6 +21,7 @@ jobs:
         with:
           use_dev_image: false
           run: |
+            cp conf/settings.py-example conf/settings.py
             mkdir -p data
             mkdir -p applogs
             script/bootstrap

@@ -10,3 +10,4 @@ conf/env
 conf/env.deployed
 conf/httpd.conf
 conf/httpd.conf.deployed
+conf/settings.py

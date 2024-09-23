@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_comma_separated_integer_list
@@ -63,6 +64,19 @@ class ResponseForm(ModelForm):
         self.fields["multi_option"].queryset = Option.objects.filter(
             question=self.question_obj
         )
+
+        form_labels = settings.FORM_LABELS.get(
+            self.question_obj.section.marking_session.label, {}
+        )
+        form_hints = settings.FORM_HINTS.get(
+            self.question_obj.section.marking_session.label, {}
+        )
+
+        for field in self.fields.keys():
+            if form_labels.get(field):
+                self.fields[field].label = form_labels[field]
+            if form_hints.get(field):
+                self.fields[field].help_text = form_hints[field]
 
     def clean_page_number(self):
         page_number = self.cleaned_data["page_number"]
@@ -147,7 +161,7 @@ class ResponseForm(ModelForm):
                     # "placeholder": False,
                     "inputmode": "numeric",
                     "pattern": "[0-9,]*",
-                }
+                },
             ),
             "private_notes": Textarea(
                 attrs={

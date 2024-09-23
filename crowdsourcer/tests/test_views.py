@@ -1,7 +1,7 @@
 import io
 
 from django.contrib.auth.models import User
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.urls import reverse
 
 import pandas as pd
@@ -394,6 +394,36 @@ class TestSaveView(BaseTestCase):
 
         self.assertRegex(response.content, rb"Second Session")
         self.assertNotRegex(response.content, rb"vehicle fleet")
+
+    """
+    @override_settings(
+        FORM_LABELS={
+            "Second Session": {
+                "page_number": "We have overridden a label",
+            }
+        },
+        FORM_HINTS={
+            "Second Session": {
+                "public_notes": "We have overridden a hint",
+                "private_notes": "",
+            }
+        },
+    )
+    def test_label_override(self):
+        u = User.objects.get(username="other_marker")
+        self.client.force_login(u)
+
+        url = reverse(
+            "session_urls:authority_question_edit",
+            args=("Second Session", "Aberdeenshire Council", "Transport"),
+        )
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+
+        self.assertRegex(response.content, rb"overridden a label")
+        self.assertRegex(response.content, rb"overridden a hint")
+        self.assertNotRegex(response.content, rb"These will note be made public")
+    """
 
     def test_save(self):
         url = reverse(

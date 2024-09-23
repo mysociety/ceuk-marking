@@ -17,6 +17,8 @@ from pathlib import Path
 
 import environ
 
+import conf.settings as local_config
+
 TEST_MODE = False
 # turn off logging during tests as otherwise we get file not found errors
 if len(sys.argv) > 1 and sys.argv[1] == "test":
@@ -45,6 +47,13 @@ LOG_LEVEL = env("LOG_LEVEL")
 BRAND = env("BRAND")
 
 BRAND_TEMPLATES = BASE_DIR / "cobrands" / BRAND
+FORM_LABELS = {}
+if hasattr(local_config, "FORM_LABELS"):
+    FORM_LABELS = local_config.FORM_LABELS
+
+FORM_HINTS = {}
+if hasattr(local_config, "FORM_HINTS"):
+    FORM_HINTS = local_config.FORM_HINTS
 
 # make sure CSRF checking still works behind load balancers
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
