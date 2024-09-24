@@ -146,6 +146,12 @@ class AuthorityRORSectionQuestions(BaseQuestionView):
     title_start = "Right of Reply - "
     how_marked_in = ["volunteer", "national_volunteer", "foi"]
 
+    def get_template_names(self):
+        if self.has_previous_questions:
+            return ["crowdsourcer/authority_ror_questions_with_previous.html"]
+        else:
+            return [self.template_name]
+
     def get_initial_obj(self):
         initial = super().get_initial_obj()
 
@@ -159,6 +165,10 @@ class AuthorityRORSectionQuestions(BaseQuestionView):
             data["original_response"] = r
 
             initial[r.question.id] = data
+
+        if self.has_previous():
+            ror_rt = ResponseType.objects.get(type="Right of Reply")
+            initial = self.add_previous(initial, ror_rt)
 
         return initial
 

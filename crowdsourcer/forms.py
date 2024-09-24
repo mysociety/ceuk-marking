@@ -214,6 +214,7 @@ class RORResponseForm(ModelForm):
 
         self.authority_obj = self.initial.get("authority", None)
         self.question_obj = self.initial.get("question", None)
+        self.previous_response = self.initial.get("previous_response", None)
         self.orig = self.initial.get("original_response", None)
 
     def clean(self):

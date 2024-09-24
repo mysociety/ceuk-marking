@@ -1,0 +1,166 @@
+{% extends 'crowdsourcer/base.html' %}
+
+{% load django_bootstrap5 %}
+{% load neighbourhood_filters %}
+
+{% block content %}
+    <h1 class="mb-3 mb-md-4">
+        {% if authority.website %}
+            <a href="{{ authority.website }}">{{ authority_name }}</a>:
+        {% else %}
+            {{ authority_name }}:
+        {% endif %}
+        {{section_title}}
+    </h1>
+
+    <div class="sticky-top py-3 bg-white border-bottom" style="margin-bottom: -1px;">
+        <div class="dropdown">
+            <button class="btn btn-outline-secondary dropdown-toggle" id="navbarDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                Skip to question
+            </button>
+            <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+              {% for q_form in form %}
+                <li><a class="dropdown-item d-flex" style="max-width: 30em; white-space: normal;" href="#q{{q_form.question_obj.number_and_part}}">
+                    <span style="width: 2em; flex: 0 0 auto;">Q{{q_form.question_obj.number_and_part}}</span>
+                    <span class="text-muted fs-7 ms-3">{{ q_form.question_obj.description }}</span>
+                </a></li>
+              {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+    {% if message %}
+      <h3 class="mb-4 mb-md-5 text-success">
+        {{ message }}
+      </h3>
+    {% endif %}
+
+    <form method="POST">
+        {% csrf_token %}
+        {% if form.total_error_count > 0 %}
+          <div class="mb-4">
+              <div class="col-md-7 text-danger">
+                  <strong>Changes not saved</strong>. There were some errors which are highlighted in red below. Your progress <b>will not be saved</b> until you correct these.
+              </div>
+          </div>
+        {% endif %}
+        {{ form.management_form }}
+      {% for q_form in form %}
+        <fieldset class="py-4 py-md-5 border-top">
+            <div class="row">
+                <div class="col-md-7">
+                    <legend id="q{{q_form.question_obj.number_and_part}}" class="h4 mb-3 mb-sm-4">
+                        {{q_form.question_obj.number_and_part}}. {{ q_form.question_obj.description }}
+                        {% if q_form.question_obj.how_marked == "foi" %}(FOI){% endif %}
+                    </legend>
+                    <details class="text-muted">
+                        <summary class="fw-bold mb-2">Criteria</summary>
+                        {% autoescape off %}
+                        {{q_form.question_obj.criteria|linebreaks }}
+                        {% endautoescape %}
+                    </details>
+                    <details class="text-muted">
+                        <summary class="fw-bold mb-2">Clarifications</summary>
+                        {% autoescape off %}
+                        {{q_form.question_obj.clarifications|linebreaks }}
+                        {% endautoescape %}
+                    </details>
+                </div>
+            </div>
+            <div class="row gx-xl-5">
+                <div class="col-lg-4 mt-5">
+                    <h4 class="h5">Your 2023 Scorecards Right of Reply response</h4>
+                    <p class="text-muted mb-3 mb-lg-4">This is what you or someone from your council supplied when responding to the equivalent question in the 2023 Scorecards Right of Reply, in Spring 2023. <strong>This is for your information only.</strong></p>
+
+                    <h5 class="form-label fs-6">Agree with response</h5>
+                    <div class="read-only-answer mb-3 mb-md-4">
+                      {% if q_form.previous_response.agree_with_response %}
+                        Yes
+                      {% elif q_form.previous_response.agree_with_response == False %}
+                        No
+                      {% else %}
+                        (none)
+                      {% endif %}
+                    </div>
+
+                    <h5 class="form-label fs-6">Links to evidence</h5>
+                    <div class="read-only-answer mb-3 mb-md-4">
+                        {{ q_form.previous_response.evidence|default:"(none)" }}
+                    </div>
+
+                    <h5 class="form-label fs-6">Additional notes</h5>
+                    <div class="read-only-answer mb-3 mb-md-4">
+                        {{ q_form.previous_response.private_notes|default:"(none)"|linebreaks }}
+                    </div>
+                </div>
+                <div class="col-lg-4 mt-5">
+                    <h4 class="h5 mb-3 mb-lg-4">2025 Scorecards First Mark assessment</h4>
+
+                    <h5 class="form-label fs-6">Marker’s answer</h5>
+                    <div class="read-only-answer mb-3 mb-md-4">
+                      {% if q_form.orig.multi_option.values %}
+                        <p>
+                          {% for option in q_form.orig.multi_option.values %}
+                            {{ option.description }},
+                          {% empty %}
+                            (none)
+                          {% endfor %}
+                        </p>
+                      {% else %}
+                        {{ q_form.orig.option|default:"(none)"|linebreaks }}
+                      {% endif %}
+                    </div>
+
+                    {% if q_form.question_obj.how_marked == 'foi' %}
+                    <h5 class="form-label fs-6">FOI request</h5>
+                    <div class="read-only-answer mb-3 mb-md-4">
+                        {{ q_form.orig.evidence|urlize }}
+                    </div>
+                    {% else %}
+                    <h5 class="form-label fs-6">Marker’s evidence of criteria met</h5>
+                    <div class="read-only-answer mb-3 mb-md-4">
+                        {{ q_form.orig.evidence|default:"(none)"|linebreaks }}
+                    </div>
+                    {% endif %}
+
+                    {% if q_form.question_obj.how_marked != 'foi' %}
+                    <h5 class="form-label fs-6">Links to evidence</h5>
+                    <div class="read-only-answer mb-3 mb-md-4">
+                        {{ q_form.orig.public_notes|default:"(none)"|urlize|linebreaks }}
+                    </div>
+
+                    <h5 class="form-label fs-6">Page number</h5>
+                    <div class="read-only-answer mb-3 mb-md-4">
+                        {{ q_form.orig.page_number|default:"(none)" }}<br>
+                    </div>
+                    {% endif %}
+
+                    <h5 class="form-label fs-6">Marker’s additional notes</h5>
+                    <div class="read-only-answer mb-3 mb-md-4">
+                        {{ q_form.orig.private_notes|default:"(none)"|linebreaks }}
+                    </div>
+                </div>
+                <div class="col-lg-4 mt-5">
+                    <h4 class="h5">Your 2025 Scorecards Right of Reply response</h4>
+                    <p class="text-muted mb-3 mb-lg-4">Please provide your response here on the 2025 Scorecards First Mark assessment.</p>
+
+                    {% bootstrap_field q_form.agree_with_response %}
+
+                    {% bootstrap_field q_form.evidence %}
+
+                    {% bootstrap_field q_form.private_notes %}
+
+                    {{ q_form.authority }}
+                    {{ q_form.question }}
+                    {{ q_form.id }}
+                </div>
+            </div>
+        </fieldset>
+      {% endfor %}
+
+      <div class="sticky-bottom py-3 bg-white border-top" style="margin-top: -1px;">
+          <input type="submit" class="btn btn-primary" value="Save answers">
+      </div>
+    </form>
+
+{% endblock %}
