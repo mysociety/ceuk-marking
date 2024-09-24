@@ -1,0 +1,5 @@
+,firstName,surname,council,councilInternalName,gssNumber,email,official-name
+0,Armagh,Staff,"Armagh, Banbridge and Craigavon","Armagh City, Banbridge and Craigavon Borough Council",N09000002,armagh@example.org,"Armagh City, Banbridge and Craigavon Borough Council"
+1,Aberdeen,Staff,Aberdeenshire,Aberdeenshire Council,S12000034,aberdeenshire@example.org,Aberdeenshire Council
+2,Aberdeen,Staff,Aberdeen City,Aberdeen City Council,S12000033,aberdeen@example.org,Aberdeen City Council
+3,Adur,Staff,Adur,Adur District Council,E07000223,adur@example.org,Adur District Council
