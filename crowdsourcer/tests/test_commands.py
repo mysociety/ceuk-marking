@@ -1,6 +1,5 @@
 import pathlib
 from io import StringIO
-from unittest import skip
 
 from django.contrib.auth.models import User
 from django.core import mail
@@ -103,7 +102,6 @@ class UnassignInactiveTestCase(BaseCommandTestCase):
         )
 
 
-@skip("need to fix adding marking session with assigment")
 class ImportCouncilsTestCase(BaseCommandTestCase):
     fixtures = [
         "authorities.json",
@@ -115,7 +113,7 @@ class ImportCouncilsTestCase(BaseCommandTestCase):
             pathlib.Path(__file__).parent.resolve() / "data" / "merged_contacts.csv"
         )
 
-        self.call_command("import_councils", council_list=data_file)
+        self.call_command("import_councils", session="Default", council_list=data_file)
 
         self.assertEquals(0, Assigned.objects.count())
         self.assertEquals(0, Marker.objects.count())
@@ -125,7 +123,12 @@ class ImportCouncilsTestCase(BaseCommandTestCase):
             pathlib.Path(__file__).parent.resolve() / "data" / "merged_contacts.csv"
         )
 
-        self.call_command("import_councils", add_users=True, council_list=data_file)
+        self.call_command(
+            "import_councils",
+            session="Default",
+            add_users=True,
+            council_list=data_file,
+        )
 
         self.assertEquals(2, User.objects.count())
         self.assertEquals(2, Assigned.objects.count())
@@ -150,6 +153,252 @@ class ImportCouncilsTestCase(BaseCommandTestCase):
         )
 
         self.assertFalse(User.objects.filter(username="armagh@example.org").exists())
+
+    def test_import_for_new_session_all_same_users(self):
+        data_file = (
+            pathlib.Path(__file__).parent.resolve() / "data" / "merged_contacts.csv"
+        )
+
+        self.call_command(
+            "import_councils",
+            session="Default",
+            add_users=True,
+            council_list=data_file,
+        )
+
+        self.assertEquals(2, User.objects.count())
+        self.assertEquals(2, Assigned.objects.count())
+        self.assertEquals(
+            2, Marker.objects.filter(marking_session__label="Default").count()
+        )
+
+        self.call_command(
+            "import_councils",
+            session="Second Session",
+            add_users=True,
+            council_list=data_file,
+        )
+
+        self.assertEquals(2, User.objects.count())
+        self.assertEquals(4, Assigned.objects.count())
+        self.assertEquals(
+            2, Assigned.objects.filter(marking_session__label="Default").count()
+        )
+        self.assertEquals(
+            2, Assigned.objects.filter(marking_session__label="Second Session").count()
+        )
+        self.assertEquals(
+            0, Marker.objects.filter(marking_session__label="Default").count()
+        )
+        self.assertEquals(
+            2, Marker.objects.filter(marking_session__label="Second Session").count()
+        )
+        self.assertTrue(
+            Marker.objects.filter(
+                marking_session__label="Second Session",
+                user__email="aberdeen@example.org",
+                authority__isnull=True,
+            ).exists()
+        )
+        self.assertTrue(
+            Marker.objects.filter(
+                marking_session__label="Second Session",
+                user__email="adur@example.org",
+                authority__name="Adur District Council",
+            ).exists()
+        )
+
+    def test_import_for_new_session_new_users(self):
+        data_file = (
+            pathlib.Path(__file__).parent.resolve() / "data" / "merged_contacts.csv"
+        )
+
+        self.call_command(
+            "import_councils",
+            session="Default",
+            add_users=True,
+            council_list=data_file,
+        )
+
+        self.assertEquals(2, User.objects.count())
+        self.assertEquals(2, Assigned.objects.count())
+        self.assertEquals(
+            2, Marker.objects.filter(marking_session__label="Default").count()
+        )
+        data_file = (
+            pathlib.Path(__file__).parent.resolve() / "data" / "council_new_users.csv"
+        )
+
+        self.call_command(
+            "import_councils",
+            session="Second Session",
+            add_users=True,
+            council_list=data_file,
+        )
+
+        self.assertEquals(3, User.objects.count())
+        self.assertEquals(3, Marker.objects.count())
+        self.assertEquals(4, Assigned.objects.count())
+        self.assertEquals(
+            2, Assigned.objects.filter(marking_session__label="Default").count()
+        )
+        for council in ["Aberdeen City Council", "Aberdeenshire Council"]:
+            self.assertTrue(
+                Assigned.objects.filter(
+                    user__email="aberdeen@example.org",
+                    marking_session__label="Default",
+                    authority__name=council,
+                ).exists()
+            )
+        self.assertEquals(
+            2, Assigned.objects.filter(marking_session__label="Second Session").count()
+        )
+        for council in ["Aberdeen City Council", "Aberdeenshire Council"]:
+            self.assertTrue(
+                Assigned.objects.filter(
+                    user__email="aberdeen@example.org",
+                    marking_session__label="Second Session",
+                    authority__name=council,
+                ).exists()
+            )
+        self.assertEquals(
+            2, Marker.objects.filter(marking_session__label="Second Session").count()
+        )
+        self.assertTrue(
+            Marker.objects.filter(
+                marking_session__label="Second Session",
+                user__email="aberdeen@example.org",
+                authority__isnull=True,
+            ).exists()
+        )
+        self.assertTrue(
+            Marker.objects.filter(
+                marking_session__label="Second Session",
+                user__email="new_adur@example.org",
+                authority__name="Adur District Council",
+            ).exists()
+        )
+        self.assertTrue(
+            Marker.objects.filter(
+                marking_session__label="Default",
+                user__email="adur@example.org",
+                authority__name="Adur District Council",
+            ).exists()
+        )
+
+    def test_import_for_new_session_council_split_users(self):
+        data_file = (
+            pathlib.Path(__file__).parent.resolve() / "data" / "merged_contacts.csv"
+        )
+
+        self.call_command(
+            "import_councils",
+            session="Default",
+            add_users=True,
+            council_list=data_file,
+        )
+
+        self.assertEquals(2, User.objects.count())
+        self.assertEquals(2, Assigned.objects.count())
+        self.assertEquals(
+            2, Marker.objects.filter(marking_session__label="Default").count()
+        )
+        data_file = (
+            pathlib.Path(__file__).parent.resolve() / "data" / "council_split_users.csv"
+        )
+
+        self.call_command(
+            "import_councils",
+            session="Second Session",
+            add_users=True,
+            council_list=data_file,
+        )
+
+        self.assertEquals(3, User.objects.count())
+        self.assertEquals(3, Marker.objects.count())
+        self.assertEquals(2, Assigned.objects.count())
+        self.assertEquals(
+            2, Assigned.objects.filter(marking_session__label="Default").count()
+        )
+        self.assertEquals(
+            0, Assigned.objects.filter(marking_session__label="Second Session").count()
+        )
+        self.assertEquals(
+            3, Marker.objects.filter(marking_session__label="Second Session").count()
+        )
+
+    def test_import_for_new_session_council_new_joint_users(self):
+        data_file = (
+            pathlib.Path(__file__).parent.resolve() / "data" / "merged_contacts.csv"
+        )
+
+        self.call_command(
+            "import_councils",
+            session="Default",
+            add_users=True,
+            council_list=data_file,
+        )
+
+        self.assertEquals(2, User.objects.count())
+        self.assertEquals(2, Assigned.objects.count())
+        self.assertEquals(
+            2, Marker.objects.filter(marking_session__label="Default").count()
+        )
+        data_file = (
+            pathlib.Path(__file__).parent.resolve()
+            / "data"
+            / "council_new_joint_users.csv"
+        )
+
+        self.call_command(
+            "import_councils",
+            session="Second Session",
+            add_users=True,
+            council_list=data_file,
+        )
+
+        self.assertEquals(3, User.objects.count())
+        self.assertEquals(3, Marker.objects.count())
+        self.assertEquals(4, Assigned.objects.count())
+        self.assertEquals(
+            2, Assigned.objects.filter(marking_session__label="Default").count()
+        )
+        for council in ["Aberdeen City Council", "Aberdeenshire Council"]:
+            self.assertTrue(
+                Assigned.objects.filter(
+                    user__email="aberdeen@example.org",
+                    marking_session__label="Default",
+                    authority__name=council,
+                ).exists()
+            )
+        self.assertEquals(
+            2, Assigned.objects.filter(marking_session__label="Second Session").count()
+        )
+        for council in ["Aberdeen City Council", "Aberdeenshire Council"]:
+            self.assertTrue(
+                Assigned.objects.filter(
+                    user__email="aberdeenshire@example.org",
+                    marking_session__label="Second Session",
+                    authority__name=council,
+                ).exists()
+            )
+        self.assertEquals(
+            2, Marker.objects.filter(marking_session__label="Second Session").count()
+        )
+        self.assertTrue(
+            Marker.objects.filter(
+                marking_session__label="Second Session",
+                user__email="aberdeenshire@example.org",
+                authority__isnull=True,
+            ).exists()
+        )
+        self.assertTrue(
+            Marker.objects.filter(
+                marking_session__label="Second Session",
+                user__email="adur@example.org",
+                authority__name="Adur District Council",
+            ).exists()
+        )
 
 
 class RemoveIdenticalDuplicatesTestCase(BaseCommandTestCase):
