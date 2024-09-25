@@ -1,5 +1,6 @@
 import logging
 
+from django.conf import settings
 from django.contrib.auth.mixins import UserPassesTestMixin
 from django.core.exceptions import PermissionDenied
 from django.core.mail import mail_admins
@@ -166,6 +167,8 @@ class BaseQuestionView(TemplateView):
         context["has_previous_questions"] = self.has_previous_questions
 
         context["council_minutes"] = self.authority.get_data("council_minutes")
+        if settings.SHOW_CRITERIA.get(self.request.current_session.label):
+            context["show_criteria"] = True
         return context
 
 

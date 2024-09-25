@@ -59,6 +59,10 @@ MANDATORY_FIELDS = {}
 if hasattr(local_config, "MANDATORY_FIELDS"):
     MANDATORY_FIELDS = local_config.MANDATORY_FIELDS
 
+SHOW_CRITERIA = {}
+if hasattr(local_config, "SHOW_CRITERIA"):
+    SHOW_CRITERIA = local_config.SHOW_CRITERIA
+
 # make sure CSRF checking still works behind load balancers
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
