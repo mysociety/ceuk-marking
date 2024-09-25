@@ -73,7 +73,7 @@ class OptionAdmin(admin.ModelAdmin):
 @admin.register(PublicAuthority)
 class PublicAuthorityAdmin(admin.ModelAdmin):
     list_display = ("name", "questiongroup")
-    list_filter = ["questiongroup", "do_not_mark"]
+    list_filter = ["questiongroup", "do_not_mark", "marking_session"]
     search_fields = ["name"]
     ordering = ["name"]
 
