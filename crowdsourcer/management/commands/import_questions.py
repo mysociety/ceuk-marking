@@ -79,7 +79,7 @@ class Command(BaseCommand):
             df = pd.read_excel(
                 self.question_file,
                 sheet_name=section.title,
-                header=1,
+                header=0,
             )
 
             df = df.dropna(axis="index", how="all")
@@ -92,6 +92,7 @@ class Command(BaseCommand):
 
             df.columns = columns
 
+            aleph = ("", "a", "b", "c", "d", "e", "f")
             for index, row in df.iterrows():
                 q_no = row["question_no"]
                 q_part = None
@@ -101,7 +102,14 @@ class Command(BaseCommand):
                 if pd.isna(row["question"]):
                     continue
 
-                if type(q_no) is not int:
+                if type(q_no) is float:
+                    q_no = str(q_no)
+                    q_parts = re.search(r"(\d+).(\d?)", q_no).groups()
+                    q_no = q_parts[0]
+                    if len(q_parts) == 2:
+                        q_part = aleph[int(q_parts[1])]
+
+                elif type(q_no) is not int:
                     q_parts = re.search(r"(\d+)([a-z]?)", q_no).groups()
                     q_no = q_parts[0]
                     if len(q_parts) == 2:
