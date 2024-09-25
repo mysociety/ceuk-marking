@@ -551,6 +551,55 @@ class TestSaveView(BaseTestCase):
 
         self.assertEquals(answers.count(), 0)
 
+    @override_settings(
+        MANDATORY_FIELDS={
+            "Default": {
+                "mandatory_if_response": ["public_notes", "evidence", "private_notes"],
+                "mandatory_if_no": ["private_notes"],
+            }
+        }
+    )
+    def test_configurable_validation_all_questions(self):
+        url = reverse(
+            "authority_question_edit", args=("Adur District Council", "Transport")
+        )
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+
+        response = self.client.post(
+            url,
+            data={
+                "form-INITIAL_FORMS": 2,
+                "form-MAX_NUM_FORMS": 2,
+                "form-MIN_NUM_FORMS": 2,
+                "form-TOTAL_FORMS": 2,
+                "form-0-authority": 3,
+                "form-0-evidence": "foo",
+                "form-0-option": "14",
+                "form-0-page_number": "",
+                "form-0-private_notes": "qux",
+                "form-0-public_notes": "bar",
+                "form-0-question": "281",
+                "form-1-authority": 3,
+                "form-1-question": "282",
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        msg = response.context.get("message", "")
+        self.assertEquals(msg, "Your answers have been saved.")
+        errors = response.context["form"].errors
+        self.assertEquals(len(errors), 2)
+        self.assertEquals(len(errors[0]), 0)
+        self.assertEquals(len(errors[1]), 0)
+
+        answers = Response.objects.filter(
+            authority__name="Adur District Council",
+            question__section__title="Transport",
+        ).order_by("question__number")
+
+        self.assertEquals(answers.count(), 1)
+
     def test_missed_answer(self):
         url = reverse(
             "authority_question_edit", args=("Adur District Council", "Transport")
@@ -573,7 +622,6 @@ class TestSaveView(BaseTestCase):
                 "form-0-public_notes": "bar",
                 "form-0-question": "281",
                 "form-1-authority": 3,
-                "form-1-question": "282",
             },
         )
 

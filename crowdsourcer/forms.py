@@ -78,6 +78,16 @@ class ResponseForm(ModelForm):
             if form_hints.get(field):
                 self.fields[field].help_text = form_hints[field]
 
+        mandatory_fields = settings.MANDATORY_FIELDS.get(
+            self.question_obj.section.marking_session.label, {}
+        )
+
+        if mandatory_fields.get("mandatory_if_response") is not None:
+            self.mandatory_if_response = mandatory_fields["mandatory_if_response"]
+
+        if mandatory_fields.get("mandatory_if_no") is not None:
+            self.mandatory_if_no = mandatory_fields["mandatory_if_no"]
+
     def clean_page_number(self):
         page_number = self.cleaned_data["page_number"]
         if page_number == "" or page_number is None:

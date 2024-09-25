@@ -55,6 +55,10 @@ FORM_HINTS = {}
 if hasattr(local_config, "FORM_HINTS"):
     FORM_HINTS = local_config.FORM_HINTS
 
+MANDATORY_FIELDS = {}
+if hasattr(local_config, "MANDATORY_FIELDS"):
+    MANDATORY_FIELDS = local_config.MANDATORY_FIELDS
+
 # make sure CSRF checking still works behind load balancers
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
