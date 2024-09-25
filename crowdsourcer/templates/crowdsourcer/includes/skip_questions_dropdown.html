@@ -1,0 +1,13 @@
+<div class="dropdown">
+    <button class="btn btn-outline-secondary dropdown-toggle" id="navbarDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+        Skip to question
+    </button>
+    <ul class="dropdown-menu" aria-labelledby="navbarDropdown" style="max-height: 60dvh; overflow-y: auto;">
+      {% for q_form in form %}
+        <li><a class="dropdown-item d-flex" style="max-width: 30em; white-space: normal;" href="#q{{q_form.question_obj.number_and_part}}">
+            <span style="width: 2em; flex: 0 0 auto;">Q{{q_form.question_obj.number_and_part}}</span>
+            <span class="text-muted fs-7 ms-3">{{ q_form.question_obj.description }}</span>
+        </a></li>
+      {% endfor %}
+    </ul>
+</div>
