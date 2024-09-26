@@ -51,7 +51,8 @@ $(function(){
       return;
     }
 
-    let url = window.location + data["question"] + "/";
+    let url_parts = [window.location.protocol, '//', window.location.host, window.location.pathname, data["question"], "/"];
+    let url = url_parts.join("");
 
     $.post({ url: url, data: data, traditional: true, success: function(r_data) {
       if (r_data["success"] != 1) {
