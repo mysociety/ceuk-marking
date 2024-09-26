@@ -63,6 +63,10 @@ SHOW_CRITERIA = {}
 if hasattr(local_config, "SHOW_CRITERIA"):
     SHOW_CRITERIA = local_config.SHOW_CRITERIA
 
+NO_RESPONSE_OPTIONS = {}
+if hasattr(local_config, "NO_RESPONSE_OPTIONS"):
+    NO_RESPONSE_OPTIONS = local_config.NO_RESPONSE_OPTIONS
+
 # make sure CSRF checking still works behind load balancers
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 

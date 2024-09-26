@@ -56,6 +56,7 @@ class ResponseForm(ModelForm):
         self.authority_obj = self.initial.get("authority", None)
         self.question_obj = self.initial.get("question", None)
         self.previous_response = self.initial.get("previous_response", None)
+        self.session = self.question_obj.section.marking_session
 
         self.fields["option"].queryset = Option.objects.filter(
             question=self.question_obj
@@ -78,9 +79,7 @@ class ResponseForm(ModelForm):
             if form_hints.get(field):
                 self.fields[field].help_text = form_hints[field]
 
-        mandatory_fields = settings.MANDATORY_FIELDS.get(
-            self.question_obj.section.marking_session.label, {}
-        )
+        mandatory_fields = settings.MANDATORY_FIELDS.get(self.session.label, {})
 
         if mandatory_fields.get("mandatory_if_response") is not None:
             self.mandatory_if_response = mandatory_fields["mandatory_if_response"]
@@ -97,6 +96,15 @@ class ResponseForm(ModelForm):
 
     def clean(self):
         cleaned_data = super().clean()
+
+        no_response_options = [
+            "No",
+            "None",
+            "No evidence found",
+            "Evidence doesn't meet criteria",
+        ]
+        if settings.NO_RESPONSE_OPTIONS.get(self.session.label):
+            no_response_options = settings.NO_RESPONSE_OPTIONS[self.session.label]
 
         option_field = "option"
         if self.question_obj.question_type == "multiple_choice":
@@ -121,12 +129,7 @@ class ResponseForm(ModelForm):
                 self.add_error(option_field, "This field is required")
 
         else:
-            if str(response) in [
-                "No",
-                "None",
-                "No evidence found",
-                "Evidence doesn't meet criteria",
-            ]:
+            if str(response) in no_response_options:
                 mandatory = self.mandatory_if_no
             else:
                 mandatory = self.mandatory_if_response
