@@ -17,7 +17,7 @@ class Command(BaseCommand):
     groups = ["MP"]
 
     sections = [
-        "Who Funds Them",
+        "MPs",
     ]
 
     session = "WhoFundsThem 2024"
@@ -77,3 +77,4 @@ class Command(BaseCommand):
                 unique_id=mp["twfyid"],
                 defaults=defaults,
             )
+            a.marking_session.set([session])
