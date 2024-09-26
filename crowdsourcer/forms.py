@@ -50,6 +50,18 @@ class ResponseForm(ModelForm):
     mandatory_if_no = ["private_notes"]
     mandatory_if_response = ["public_notes", "page_number", "evidence", "private_notes"]
 
+    def get_mandatory_fields(self):
+        mandatory_fields = settings.MANDATORY_FIELDS.get(self.session.label, {})
+
+        if mandatory_fields.get(self.question_obj.number_and_part):
+            mandatory_fields = mandatory_fields[self.question_obj.number_and_part]
+
+        if mandatory_fields.get("mandatory_if_response") is not None:
+            self.mandatory_if_response = mandatory_fields["mandatory_if_response"]
+
+        if mandatory_fields.get("mandatory_if_no") is not None:
+            self.mandatory_if_no = mandatory_fields["mandatory_if_no"]
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -79,13 +91,7 @@ class ResponseForm(ModelForm):
             if form_hints.get(field):
                 self.fields[field].help_text = form_hints[field]
 
-        mandatory_fields = settings.MANDATORY_FIELDS.get(self.session.label, {})
-
-        if mandatory_fields.get("mandatory_if_response") is not None:
-            self.mandatory_if_response = mandatory_fields["mandatory_if_response"]
-
-        if mandatory_fields.get("mandatory_if_no") is not None:
-            self.mandatory_if_no = mandatory_fields["mandatory_if_no"]
+        self.get_mandatory_fields()
 
     def clean_page_number(self):
         page_number = self.cleaned_data["page_number"]
