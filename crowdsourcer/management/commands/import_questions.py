@@ -103,7 +103,7 @@ class Command(BaseCommand):
             )
 
             df = df.dropna(axis="index", how="all")
-            df = df.iloc[:, :14]
+            df = df.iloc[:, :15]
 
             columns = list(self.column_names)
             options = len(df.columns) - len(self.column_names) + 1
@@ -201,6 +201,8 @@ class Command(BaseCommand):
                         desc = row[f"option_{i}"]
                         if pd.isna(desc) or desc.strip() == "":
                             continue
+
+                        desc = desc.strip()
 
                         score = 1
                         ordering = i
