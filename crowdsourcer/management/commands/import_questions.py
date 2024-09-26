@@ -36,11 +36,29 @@ class Command(BaseCommand):
         )
 
         parser.add_argument(
-            "--session", action="store", help="Marking session to use questions with"
+            "--create_multi_choice_defaults",
+            action="store_true",
+            help="Add a 0 mark None option to all multi choice questions",
         )
 
         parser.add_argument(
-            "--file", action="store", help="Excel file containing the questions"
+            "--session",
+            required=True,
+            action="store",
+            help="Marking session to use questions with",
+        )
+
+        parser.add_argument(
+            "--file",
+            required=True,
+            action="store",
+            help="Excel file containing the questions",
+        )
+
+        parser.add_argument(
+            "--delete_options",
+            action="store_true",
+            help="remove all options and recreate",
         )
 
     def clean_extra(self, extra):
@@ -51,6 +69,8 @@ class Command(BaseCommand):
 
     def handle(self, *args, **kwargs):
         file = kwargs.get("file", None)
+        delete_options = kwargs.get("delete_options", False)
+        create_defaults = kwargs.get("create_multi_choice_defaults", False)
 
         if file is None:
             self.stderr.write("please supply a file name")
@@ -167,12 +187,16 @@ class Command(BaseCommand):
                 if kwargs["text_only"] or kwargs["weighting_only"]:
                     continue
 
+                if delete_options:
+                    Option.objects.filter(question=q).delete()
+
                 if q.question_type in ["select_one", "tiered", "multiple_choice"]:
-                    o, c = Option.objects.update_or_create(
-                        question=q,
-                        description="None",
-                        defaults={"score": 0, "ordering": 100},
-                    )
+                    if create_defaults:
+                        o, c = Option.objects.update_or_create(
+                            question=q,
+                            description="None",
+                            defaults={"score": 0, "ordering": 100},
+                        )
                     for i in range(1, options):
                         desc = row[f"option_{i}"]
                         if pd.isna(desc) or desc.strip() == "":
