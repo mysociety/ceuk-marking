@@ -326,7 +326,9 @@ class BulkAssignVolunteer(VolunteerAccessMixin, FormView):
             )
             u.save()
 
-            m, c = Marker.objects.update_or_create(user=u, response_type=rt)
+            m, c = Marker.objects.update_or_create(
+                user=u, defaults={"response_type": rt, "send_welcome_email": True}
+            )
             m.marking_session.add(ms)
 
             max_assignments = form.cleaned_data["num_assignments"]

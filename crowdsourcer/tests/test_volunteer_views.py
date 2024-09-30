@@ -199,6 +199,7 @@ class TestBulkAssign(BaseTestCase):
         self.assertEqual(
             Assigned.objects.filter(marking_session__label="Second Session").count(), 1
         )
+        self.assertEquals(User.objects.count(), 6)
 
         volunteer_file = (
             pathlib.Path(__file__).parent.resolve() / "data" / "test_volunteers.xlsx"
@@ -222,6 +223,22 @@ class TestBulkAssign(BaseTestCase):
         self.assertEqual(
             Assigned.objects.filter(marking_session__label="Second Session").count(), 1
         )
+        self.assertEquals(User.objects.count(), 7)
+        user = User.objects.get(username="test_marker@example.org")
+        self.assertEquals(user.password, "")
+        self.assertEquals(user.is_active, True)
+
+        marker = Marker.objects.get(user=user)
+        self.assertEquals(marker.send_welcome_email, True)
+        self.assertEquals(marker.response_type.type, "First Mark")
+        self.assertEquals(marker.marking_session.count(), 1)
+        self.assertEquals(marker.marking_session.first().label, "Default")
+
+        user_assignments = Assigned.objects.filter(user=user)
+        self.assertEquals(user_assignments.count(), 2)
+        self.assertEquals(user_assignments.first().section.title, "Transport")
+        self.assertEquals(user_assignments.first().response_type.type, "First Mark")
+        self.assertEquals(user_assignments.first().marking_session.label, "Default")
 
     def test_force_assignments(self):
         url = reverse("bulk_assign_volunteer")
