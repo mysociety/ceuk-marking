@@ -52,9 +52,13 @@ class ResponseForm(ModelForm):
 
     def get_mandatory_fields(self):
         mandatory_fields = settings.MANDATORY_FIELDS.get(self.session.label, {})
+        section = self.question_obj.section.title
 
-        if mandatory_fields.get(self.question_obj.number_and_part):
-            mandatory_fields = mandatory_fields[self.question_obj.number_and_part]
+        if mandatory_fields.get(section):
+            if mandatory_fields[section].get(self.question_obj.number_and_part):
+                mandatory_fields = mandatory_fields[section][
+                    self.question_obj.number_and_part
+                ]
 
         if mandatory_fields.get("mandatory_if_response") is not None:
             self.mandatory_if_response = mandatory_fields["mandatory_if_response"]

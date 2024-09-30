@@ -610,13 +610,15 @@ class TestSaveView(BaseTestCase):
                     "private_notes",
                 ],
                 "mandatory_if_no": ["private_notes"],
-                "1": {
-                    "mandatory_if_response": [
-                        "public_notes",
-                        "evidence",
-                        "private_notes",
-                    ],
-                    "mandatory_if_no": ["private_notes"],
+                "Transport": {
+                    "1": {
+                        "mandatory_if_response": [
+                            "public_notes",
+                            "evidence",
+                            "private_notes",
+                        ],
+                        "mandatory_if_no": ["private_notes"],
+                    },
                 },
             }
         }
