@@ -1,5 +1,6 @@
 from time import sleep
 
+from django.conf import settings
 from django.contrib.auth.forms import PasswordResetForm
 from django.core.management.base import BaseCommand
 from django.http import HttpRequest
@@ -27,8 +28,15 @@ class Command(BaseCommand):
         parser.add_argument(
             "--session",
             action="store",
-            help="Only send emails to people in this session",
+            required=True,
+            help="Use this session config and only send emails to people in this session",
         )
+
+    def get_config(self, session):
+        if settings.WELCOME_EMAIL.get(session):
+            return settings.WELCOME_EMAIL[session]
+
+        return None
 
     def handle(self, *args, **kwargs):
         if not kwargs["send_emails"]:
@@ -48,13 +56,21 @@ class Command(BaseCommand):
 
         if kwargs["session"]:
             try:
-                rt = MarkingSession.objects.get(label=kwargs["session"])
-                users = users.filter(marking_session=rt)
+                session = MarkingSession.objects.get(label=kwargs["session"])
+                users = users.filter(marking_session=session)
             except ResponseType.NotFoundException:
                 self.stderr.write(
                     f"{YELLOW}No such session: {kwargs['session']}{NOBOLD}"
                 )
                 return
+
+        config = self.get_config(kwargs["session"])
+
+        if not config or len(config) == 0:
+            self.stderr.write(
+                f"{YELLOW}No config found for session: {kwargs['session']}{NOBOLD}"
+            )
+            return
 
         user_count = users.count()
         self.stdout.write(f"Sending emails for {user_count} users")
@@ -65,26 +81,24 @@ class Command(BaseCommand):
                 if user.email:
                     self.stdout.write(f"Sending email for to this email: {user.email}")
                     if kwargs["send_emails"]:
-                        template = self.new_user_template
+                        template = config["new_user_template"]
                         if user.password == "":
                             user.set_password(get_random_string(length=20))
                             user.save()
                         else:
-                            template = self.previous_user_template
+                            template = config["previous_user_template"]
 
                         form = PasswordResetForm({"email": user.email})
                         assert form.is_valid()
                         request = HttpRequest()
-                        request.META["SERVER_NAME"] = (
-                            "marking.councilclimatescorecards.uk"
-                        )
+                        request.META["SERVER_NAME"] = config["server_name"]
                         request.META["SERVER_PORT"] = 443
                         form.save(
                             request=request,
-                            domain_override="marking.councilclimatescorecards.uk",
+                            domain_override=config["server_name"],
                             use_https=True,
-                            from_email="CEUK Scorecards Marking <climate-right-of-reply@mysociety.org>",
-                            subject_template_name="registration/initial_password_email_subject.txt",
+                            from_email=config["from_email"],
+                            subject_template_name=config["subject_template"],
                             email_template_name=template,
                         )
                         marker.send_welcome_email = False

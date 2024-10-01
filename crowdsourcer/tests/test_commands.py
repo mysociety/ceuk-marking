@@ -5,7 +5,8 @@ from unittest import skip
 from django.contrib.auth.models import User
 from django.core import mail
 from django.core.management import call_command
-from django.test import TestCase
+from django.core.management.base import CommandError
+from django.test import TestCase, override_settings
 
 from crowdsourcer.models import (
     Assigned,
@@ -20,15 +21,16 @@ from crowdsourcer.models import (
 
 class BaseCommandTestCase(TestCase):
     def call_command(self, command, *args, **kwargs):
-        out = StringIO()
+        stdout = StringIO()
+        stderr = StringIO()
         call_command(
             command,
             *args,
-            stdout=out,
-            stderr=StringIO(),
+            stdout=stdout,
+            stderr=stderr,
             **kwargs,
         )
-        return out.getvalue()
+        return (stdout.getvalue(), stderr.getvalue())
 
 
 class UnassignInactiveTestCase(BaseCommandTestCase):
@@ -221,7 +223,7 @@ class UpdateExMultiOptionQs(BaseCommandTestCase):
         self.assertEquals(r.option_id, 161)
         self.assertEquals(r.multi_option.count(), 1)
 
-        out = self.call_command(
+        out, _ = self.call_command(
             "update_ex_multi_option_qs", commit=True, session="Default"
         )
 
@@ -519,6 +521,24 @@ class AssignAutomaticPoints(BaseCommandTestCase):
         self.assertEquals(r.multi_option.all()[0].description, "Car share")
 
 
+@override_settings(
+    WELCOME_EMAIL={
+        "Default": {
+            "server_name": "example.org",
+            "from_email": "Default From <default@example.org>",
+            "subject_template": "registration/initial_password_email_subject.txt",
+            "new_user_template": "registration/initial_password_email.html",
+            "previous_user_template": "registration/repeat_password_email.html",
+        },
+        "Second Session": {
+            "server_name": "example.com",
+            "from_email": "Second From <second@example.com>",
+            "subject_template": "registration/initial_password_email_subject.txt",
+            "new_user_template": "registration/initial_password_email.html",
+            "previous_user_template": "registration/repeat_password_email.html",
+        },
+    }
+)
 class SendWelcomeEmails(BaseCommandTestCase):
     fixtures = [
         "basics.json",
@@ -527,21 +547,34 @@ class SendWelcomeEmails(BaseCommandTestCase):
         "welcome_email_users.json",
     ]
 
+    def test_required_args(self):
+        self.assertEquals(len(mail.outbox), 0)
+        with self.assertRaisesRegex(
+            CommandError, r"following arguments are required: --session"
+        ):
+            self.call_command(
+                "send_welcome_emails",
+            )
+        self.assertEquals(len(mail.outbox), 0)
+
     def test_basic_run(self):
         self.assertEquals(len(mail.outbox), 0)
         self.call_command(
             "send_welcome_emails",
+            session="Default",
         )
         self.assertEquals(len(mail.outbox), 0)
 
         self.call_command(
             "send_welcome_emails",
+            session="Default",
             send_emails=True,
         )
         self.assertEquals(len(mail.outbox), 2)
 
         self.call_command(
             "send_welcome_emails",
+            session="Default",
             send_emails=True,
         )
         self.assertEquals(len(mail.outbox), 2)
@@ -555,15 +588,18 @@ class SendWelcomeEmails(BaseCommandTestCase):
 
         self.call_command(
             "send_welcome_emails",
+            session="Default",
             send_emails=True,
         )
         self.assertEquals(len(mail.outbox), 1)
         email = mail.outbox[0]
+        self.assertEquals(email.from_email, "Default From <default@example.org>")
         self.assertEquals(email.to, ["already@example.org"])
 
     def test_email_comtent(self):
         self.call_command(
             "send_welcome_emails",
+            session="Default",
             send_emails=True,
         )
 
@@ -582,6 +618,7 @@ class SendWelcomeEmails(BaseCommandTestCase):
             "send_welcome_emails",
             send_emails=True,
             stage="Audit",
+            session="Default",
         )
         self.assertEquals(len(mail.outbox), 0)
 
@@ -589,6 +626,7 @@ class SendWelcomeEmails(BaseCommandTestCase):
             "send_welcome_emails",
             send_emails=True,
             stage="First Mark",
+            session="Default",
         )
         self.assertEquals(len(mail.outbox), 2)
 
@@ -607,3 +645,39 @@ class SendWelcomeEmails(BaseCommandTestCase):
             session="Default",
         )
         self.assertEquals(len(mail.outbox), 2)
+
+    def test_config_loading(self):
+        marker = Marker.objects.get(user__email="new_marker@example.org")
+        session = MarkingSession.objects.get(label="Second Session")
+        marker.marking_session.set([session])
+
+        self.assertEquals(len(mail.outbox), 0)
+        self.call_command(
+            "send_welcome_emails",
+            send_emails=True,
+            session="Second Session",
+        )
+        self.assertEquals(len(mail.outbox), 1)
+        email = mail.outbox[0]
+        self.assertEquals(email.from_email, "Second From <second@example.com>")
+
+        mail.outbox = []
+        self.call_command(
+            "send_welcome_emails",
+            send_emails=True,
+            session="Default",
+        )
+        self.assertEquals(len(mail.outbox), 1)
+        email = mail.outbox[0]
+        self.assertEquals(email.from_email, "Default From <default@example.org>")
+
+    @override_settings(WELCOME_EMAIL={})
+    def test_error_if_no_config(self):
+        self.assertEquals(len(mail.outbox), 0)
+        _, err = self.call_command(
+            "send_welcome_emails",
+            send_emails=True,
+            session="Default",
+        )
+        self.assertEquals(len(mail.outbox), 0)
+        self.assertRegex(err, r"No config found for session: Default")

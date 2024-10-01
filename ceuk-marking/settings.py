@@ -47,25 +47,13 @@ LOG_LEVEL = env("LOG_LEVEL")
 BRAND = env("BRAND")
 
 BRAND_TEMPLATES = BASE_DIR / "cobrands" / BRAND
-FORM_LABELS = {}
-if hasattr(local_config, "FORM_LABELS"):
-    FORM_LABELS = local_config.FORM_LABELS
 
-FORM_HINTS = {}
-if hasattr(local_config, "FORM_HINTS"):
-    FORM_HINTS = local_config.FORM_HINTS
-
-MANDATORY_FIELDS = {}
-if hasattr(local_config, "MANDATORY_FIELDS"):
-    MANDATORY_FIELDS = local_config.MANDATORY_FIELDS
-
-SHOW_CRITERIA = {}
-if hasattr(local_config, "SHOW_CRITERIA"):
-    SHOW_CRITERIA = local_config.SHOW_CRITERIA
-
-NO_RESPONSE_OPTIONS = {}
-if hasattr(local_config, "NO_RESPONSE_OPTIONS"):
-    NO_RESPONSE_OPTIONS = local_config.NO_RESPONSE_OPTIONS
+FORM_LABELS = getattr(local_config, "FORM_LABELS", {})
+FORM_HINTS = getattr(local_config, "FORM_HINTS", {})
+MANDATORY_FIELDS = getattr(local_config, "MANDATORY_FIELDS", {})
+SHOW_CRITERIA = getattr(local_config, "SHOW_CRITERIA", {})
+NO_RESPONSE_OPTIONS = getattr(local_config, "NO_RESPONSE_OPTIONS", {})
+WELCOME_EMAIL = getattr(local_config, "WELCOME_EMAIL", {})
 
 # make sure CSRF checking still works behind load balancers
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
