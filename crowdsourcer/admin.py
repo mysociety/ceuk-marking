@@ -106,7 +106,7 @@ class QuestionGroupAdmin(admin.ModelAdmin):
 class MarkerAdmin(admin.ModelAdmin):
     list_display = ("user", "response_type", "authority")
     search_fields = ["user__username"]
-    list_filter = ["response_type"]
+    list_filter = ["response_type", "marking_session"]
 
 
 @admin.register(Response)
