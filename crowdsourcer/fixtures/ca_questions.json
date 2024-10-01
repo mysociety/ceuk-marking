@@ -12,6 +12,8 @@
     "topic": "Council buildings - retrofit",
     "how_marked": "volunteer",
     "question_type": "multiple_choice",
+    "last_update": "2022-12-19T13:40:36.0Z",
+    "created": "2022-12-19T13:40:36.075Z",
     "questiongroup": [
       5
     ]
@@ -30,6 +32,8 @@
     "topic": "Council Fleet",
     "how_marked": "volunteer",
     "question_type": "yes_no",
+    "last_update": "2022-12-19T13:40:36.0Z",
+    "created": "2022-12-19T13:40:36.075Z",
     "questiongroup": [
       5
     ]
@@ -48,6 +52,8 @@
     "topic": "Net-zero in Local Plan",
     "how_marked": "volunteer",
     "question_type": "yes_no",
+    "last_update": "2022-12-19T13:40:36.0Z",
+    "created": "2022-12-19T13:40:36.075Z",
     "questiongroup": [
       5
     ]
@@ -66,6 +72,8 @@
     "topic": "Net Zero Embedded in Corporate Plan",
     "how_marked": "volunteer",
     "question_type": "yes_no",
+    "last_update": "2022-12-19T13:40:36.0Z",
+    "created": "2022-12-19T13:40:36.075Z",
     "questiongroup": [
       5
     ]
@@ -84,6 +92,8 @@
     "topic": "Council website - information for residents",
     "how_marked": "volunteer",
     "question_type": "yes_no",
+    "last_update": "2022-12-19T13:40:36.0Z",
+    "created": "2022-12-19T13:40:36.075Z",
     "questiongroup": [
       5
     ]
@@ -96,6 +106,8 @@
     "question": 350,
     "score": 0,
     "description": "None",
+    "last_update": "2022-12-19T13:40:36.0Z",
+    "created": "2022-12-19T13:40:36.075Z",
     "ordering": 100
   }
 },
@@ -106,6 +118,8 @@
     "question": 350,
     "score": 1,
     "description": "One or more significant building have been retrofitted",
+    "last_update": "2022-12-19T13:40:36.0Z",
+    "created": "2022-12-19T13:40:36.075Z",
     "ordering": 1
   }
 },
@@ -116,6 +130,8 @@
     "question": 350,
     "score": 2,
     "description": "One or more buildings have been retrofitted to a recognised standard",
+    "last_update": "2022-12-19T13:40:36.0Z",
+    "created": "2022-12-19T13:40:36.075Z",
     "ordering": 2
   }
 },
@@ -126,6 +142,8 @@
     "question": 351,
     "score": 1,
     "description": "Yes",
+    "last_update": "2022-12-19T13:40:36.0Z",
+    "created": "2022-12-19T13:40:36.075Z",
     "ordering": 1
   }
 },
@@ -136,6 +154,8 @@
     "question": 351,
     "score": 0,
     "description": "No",
+    "last_update": "2022-12-19T13:40:36.0Z",
+    "created": "2022-12-19T13:40:36.075Z",
     "ordering": 100
   }
 },
@@ -146,6 +166,8 @@
     "question": 352,
     "score": 1,
     "description": "Yes",
+    "last_update": "2022-12-19T13:40:36.0Z",
+    "created": "2022-12-19T13:40:36.075Z",
     "ordering": 1
   }
 },
@@ -156,6 +178,8 @@
     "question": 352,
     "score": 0,
     "description": "No",
+    "last_update": "2022-12-19T13:40:36.0Z",
+    "created": "2022-12-19T13:40:36.075Z",
     "ordering": 100
   }
 },
@@ -166,6 +190,8 @@
     "question": 353,
     "score": 1,
     "description": "Yes",
+    "last_update": "2022-12-19T13:40:36.0Z",
+    "created": "2022-12-19T13:40:36.075Z",
     "ordering": 1
   }
 },
@@ -176,6 +202,8 @@
     "question": 353,
     "score": 0,
     "description": "No",
+    "last_update": "2022-12-19T13:40:36.0Z",
+    "created": "2022-12-19T13:40:36.075Z",
     "ordering": 100
   }
 },
@@ -186,6 +214,8 @@
     "question": 354,
     "score": 1,
     "description": "Yes",
+    "last_update": "2022-12-19T13:40:36.0Z",
+    "created": "2022-12-19T13:40:36.075Z",
     "ordering": 1
   }
 },
@@ -196,6 +226,8 @@
     "question": 354,
     "score": 0,
     "description": "No",
+    "last_update": "2022-12-19T13:40:36.0Z",
+    "created": "2022-12-19T13:40:36.075Z",
     "ordering": 100
   }
 }

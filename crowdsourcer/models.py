@@ -91,6 +91,8 @@ class Question(models.Model):
     previous_question = models.ForeignKey(
         "Question", blank=True, null=True, on_delete=models.SET_NULL
     )
+    created = models.DateTimeField(auto_now_add=True)
+    last_update = models.DateTimeField(auto_now=True)
 
     @property
     def number_and_part(self):
@@ -227,6 +229,8 @@ class Option(models.Model):
     score = models.IntegerField()
     description = models.TextField(max_length=200)
     ordering = models.IntegerField(blank=True, null=True)
+    created = models.DateTimeField(auto_now_add=True)
+    last_update = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.description
@@ -333,6 +337,8 @@ class Assigned(models.Model):
         ResponseType, on_delete=models.CASCADE, null=True, blank=True
     )
     marking_session = models.ForeignKey(MarkingSession, on_delete=models.CASCADE)
+    created = models.DateTimeField(auto_now_add=True)
+    last_update = models.DateTimeField(auto_now=True)
     history = HistoricalRecords()
 
     def __str__(self):
@@ -406,6 +412,8 @@ class Marker(models.Model):
     )
     marking_session = models.ManyToManyField(MarkingSession, blank=True)
     send_welcome_email = models.BooleanField(default=False)
+    created = models.DateTimeField(auto_now_add=True)
+    last_update = models.DateTimeField(auto_now=True)
 
     class Meta:
         permissions = [

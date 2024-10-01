@@ -9,6 +9,8 @@
     "authority": 1,
     "active": true,
     "response_type": 1,
+    "last_update": "2022-12-19T13:40:36.0Z",
+    "created": "2022-12-19T13:40:36.075Z",
     "question": null
   }
 },
@@ -22,6 +24,8 @@
     "authority": 2,
     "active": true,
     "response_type": 1,
+    "last_update": "2022-12-19T13:40:36.0Z",
+    "created": "2022-12-19T13:40:36.075Z",
     "question": null
   }
 },
@@ -35,6 +39,8 @@
     "authority": 3,
     "active": true,
     "response_type": 1,
+    "last_update": "2022-12-19T13:40:36.0Z",
+    "created": "2022-12-19T13:40:36.075Z",
     "question": null
   }
 },
@@ -47,6 +53,8 @@
     "section": 3,
     "authority": 4,
     "response_type": 3,
+    "last_update": "2022-12-19T13:40:36.0Z",
+    "created": "2022-12-19T13:40:36.075Z",
     "question": null
   }
 },
@@ -59,6 +67,8 @@
     "section": 3,
     "authority": 3,
     "response_type": 3,
+    "last_update": "2022-12-19T13:40:36.0Z",
+    "created": "2022-12-19T13:40:36.075Z",
     "question": null
   }
 },
@@ -71,6 +81,8 @@
     "section": 4,
     "authority": 3,
     "response_type": 3,
+    "last_update": "2022-12-19T13:40:36.0Z",
+    "created": "2022-12-19T13:40:36.075Z",
     "question": null
   }
 }

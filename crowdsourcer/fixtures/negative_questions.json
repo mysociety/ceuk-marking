@@ -13,6 +13,8 @@
     "how_marked": "national_data",
     "question_type": "negative",
     "weighting": "unweighted",
+    "last_update": "2022-12-19T13:40:36.0Z",
+    "created": "2022-12-19T13:40:36.075Z",
     "questiongroup": [
       1,
       2,
@@ -28,6 +30,8 @@
     "question": 355,
     "score": 0,
     "description": "No",
+    "last_update": "2022-12-19T13:40:36.0Z",
+    "created": "2022-12-19T13:40:36.075Z",
     "ordering": 100
   }
 },
@@ -38,6 +42,8 @@
     "question": 355,
     "score": 0,
     "description": "Yes",
+    "last_update": "2022-12-19T13:40:36.0Z",
+    "created": "2022-12-19T13:40:36.075Z",
     "ordering": 100
   }
 }

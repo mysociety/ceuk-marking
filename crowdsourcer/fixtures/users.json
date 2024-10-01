@@ -114,6 +114,8 @@
     "user_id": 3,
     "response_type_id": 2,
     "authority_id": 2,
+    "last_update": "2022-12-19T13:40:36.075Z",
+    "created": "2022-12-19T13:40:36.075Z",
     "marking_session": [1]
   }
 },
@@ -123,6 +125,8 @@
   "fields": {
     "user_id": 4,
     "response_type_id": 3,
+    "last_update": "2022-12-19T13:40:36.075Z",
+    "created": "2022-12-19T13:40:36.075Z",
     "marking_session": [1]
   }
 },
@@ -132,6 +136,8 @@
   "fields": {
     "user_id": 5,
     "response_type_id": 1,
+    "last_update": "2022-12-19T13:40:36.075Z",
+    "created": "2022-12-19T13:40:36.075Z",
     "marking_session": [2]
   }
 },
@@ -141,6 +147,8 @@
   "fields": {
     "user_id": 2,
     "response_type_id": 1,
+    "last_update": "2022-12-19T13:40:36.075Z",
+    "created": "2022-12-19T13:40:36.075Z",
     "marking_session": [1]
   }
 }

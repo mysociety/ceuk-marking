@@ -43,6 +43,8 @@
     "response_type_id": 1,
     "authority_id": 2,
     "send_welcome_email": true,
+    "last_update": "2022-12-19T13:40:36.0Z",
+    "created": "2022-12-19T13:40:36.075Z",
     "marking_session": [1]
   }
 },
@@ -53,6 +55,8 @@
     "user_id": 102,
     "response_type_id": 1,
     "send_welcome_email": true,
+    "last_update": "2022-12-19T13:40:36.0Z",
+    "created": "2022-12-19T13:40:36.075Z",
     "marking_session": [1]
   }
 }
