@@ -40,5 +40,14 @@
           {% endfor %}
         </tbody>
     </table>
+
+  {% if has_properties %}
+    <div class="my-5" style="max-width: 40rem">
+        <h2 class="mb-3 h4">Help us by providing optional feedback</h2>
+        <p>Help us improve the Scorecards process next year by answering a few optional questions. Your answers will have no effect on your council’s score.</p>
+        <a href="{% session_url "authority_properties" authority_name "Right of Reply" %}" class="btn btn-outline-primary">Complete optional questions</a>
+    </div>
+  {% endif %}
+
 {% endif %}
 {% endblock %}
