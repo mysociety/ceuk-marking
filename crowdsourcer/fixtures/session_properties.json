@@ -1,0 +1,28 @@
+[
+{
+  "model": "crowdsourcer.sessionproperties",
+  "pk": 1,
+  "fields": {
+    "marking_session": 1,
+    "stage": 1,
+    "property_type": "text",
+    "name": "first_property",
+    "label": "First Mark Property",
+    "active": true,
+    "order": 1
+  }
+},
+{
+  "model": "crowdsourcer.sessionproperties",
+  "pk": 2,
+  "fields": {
+    "marking_session": 1,
+    "stage": 2,
+    "property_type": "text",
+    "name": "ror_property",
+    "label": "Right of Reply Property",
+    "active": true,
+    "order": 1
+  }
+}
+]

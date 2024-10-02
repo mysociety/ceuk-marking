@@ -1,9 +1,12 @@
 import logging
 
-from django.shortcuts import redirect
+from django.core.exceptions import PermissionDenied
+from django.http import Http404
+from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
-from django.views.generic import ListView, TemplateView
+from django.views.generic import FormView, ListView, TemplateView
 
+from crowdsourcer.forms import SessionPropertyForm
 from crowdsourcer.models import (
     Assigned,
     MarkingSession,
@@ -11,6 +14,8 @@ from crowdsourcer.models import (
     Question,
     Response,
     ResponseType,
+    SessionProperties,
+    SessionPropertyValues,
 )
 from crowdsourcer.views.base import (
     BaseQuestionView,
@@ -295,3 +300,114 @@ class AuthoritySectionQuestions(BaseQuestionView):
 
 class AuthoritySectionJSONQuestion(BaseResponseJSONView):
     pass
+
+
+class SectionPropertiesView(FormView):
+    template_name = "crowdsourcer/authority_properties.html"
+    form = SessionPropertyForm
+
+    def check_permissions(self):
+        denied = True
+        user = self.request.user
+
+        if user.is_superuser:
+            return True
+
+        if user.is_anonymous:
+            raise PermissionDenied
+
+        if not user.marker.marking_session.filter(
+            pk=self.request.current_session.pk
+        ).exists():
+            raise PermissionDenied
+
+        stage = get_object_or_404(ResponseType, type=self.kwargs["stage"])
+        authority = get_object_or_404(PublicAuthority, name=self.kwargs["name"])
+
+        if (
+            user.marker.response_type == stage
+            and Assigned.objects.filter(
+                user=user,
+                response_type=stage,
+                marking_session=self.request.current_session,
+                authority=authority,
+            ).exists()
+        ):
+            denied = False
+        elif (
+            stage.type == "Right of Reply"
+            and user.marker.response_type == stage
+            and user.marker.authority == authority
+        ):
+            denied = False
+
+        if denied:
+            raise PermissionDenied
+
+    def get_initial(self):
+        kwargs = super().get_initial()
+        stage = ResponseType.objects.get(type=self.kwargs["stage"])
+        authority = PublicAuthority.objects.get(name=self.kwargs["name"])
+
+        properties = SessionProperties.objects.filter(
+            marking_session=self.request.current_session,
+            stage=stage,
+            active=True,
+        )
+        if not properties.exists():
+            raise Http404
+
+        properties = SessionPropertyValues.objects.filter(
+            property__in=properties,
+            authority=authority,
+        ).select_related("property")
+
+        for prop in properties:
+            kwargs[prop.property.name] = prop.value
+
+        return kwargs
+
+    def get_form(self):
+        self.check_permissions()
+
+        stage = self.kwargs["stage"]
+        properties = SessionProperties.objects.filter(
+            marking_session=self.request.current_session,
+            stage__type=stage,
+            active=True,
+        ).order_by("order")
+
+        self.properties = properties
+
+        form = self.form(properties=properties, **self.get_form_kwargs())
+
+        return form
+
+    def form_valid(self, form):
+        authority = PublicAuthority.objects.get(name=self.kwargs["name"])
+
+        cleaned_data = form.cleaned_data
+
+        for prop in self.properties:
+            if cleaned_data.get(prop.name):
+                SessionPropertyValues.objects.update_or_create(
+                    authority=authority,
+                    property=prop,
+                    defaults={"value": cleaned_data[prop.name]},
+                )
+
+        context = self.get_context_data()
+        context["message"] = "Your answers have been saved."
+        return self.render_to_response(context)
+
+    def get_success_url(self):
+        stage = ResponseType.objects.get(type=self.kwargs["stage"])
+        authority = PublicAuthority.objects.get(name=self.kwargs["authority"])
+        return reverse(
+            "session_urls:authority_properties",
+            kwargs={
+                "marking_session": self.request.current_session.label,
+                "stage": stage.type,
+                "authority": authority.name,
+            },
+        )

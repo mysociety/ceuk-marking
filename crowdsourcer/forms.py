@@ -17,6 +17,7 @@ from django.forms import (
     Select,
     Textarea,
     TextInput,
+    URLField,
     formset_factory,
     inlineformset_factory,
 )
@@ -551,3 +552,23 @@ class VolunteerDeactivateForm(Form):
     def __init__(self, stage_choices, **kwargs):
         super().__init__(**kwargs)
         self.fields["stage"].choices = stage_choices
+
+
+class SessionPropertyForm(Form):
+    def __init__(self, properties: {}, **kwargs):
+        super().__init__(**kwargs)
+
+        for prop in properties:
+            if prop.property_type == "url":
+                self.fields[prop.name] = URLField(
+                    label=prop.label,
+                    help_text=prop.description,
+                    required=False,
+                )
+            else:
+                self.fields[prop.name] = CharField(
+                    label=prop.label,
+                    help_text=prop.description,
+                    required=False,
+                    widget=Textarea,
+                )
