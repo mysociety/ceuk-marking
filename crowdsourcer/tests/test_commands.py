@@ -799,7 +799,7 @@ class SendWelcomeEmails(BaseCommandTestCase):
     def test_required_args(self):
         self.assertEquals(len(mail.outbox), 0)
         with self.assertRaisesRegex(
-            CommandError, r"following arguments are required: --session"
+            CommandError, r"following arguments are required: --stage, --session"
         ):
             self.call_command(
                 "send_welcome_emails",
@@ -810,12 +810,14 @@ class SendWelcomeEmails(BaseCommandTestCase):
         self.assertEquals(len(mail.outbox), 0)
         self.call_command(
             "send_welcome_emails",
+            stage="First Mark",
             session="Default",
         )
         self.assertEquals(len(mail.outbox), 0)
 
         self.call_command(
             "send_welcome_emails",
+            stage="First Mark",
             session="Default",
             send_emails=True,
         )
@@ -823,6 +825,7 @@ class SendWelcomeEmails(BaseCommandTestCase):
 
         self.call_command(
             "send_welcome_emails",
+            stage="First Mark",
             session="Default",
             send_emails=True,
         )
@@ -837,6 +840,7 @@ class SendWelcomeEmails(BaseCommandTestCase):
 
         self.call_command(
             "send_welcome_emails",
+            stage="First Mark",
             session="Default",
             send_emails=True,
         )
@@ -848,6 +852,7 @@ class SendWelcomeEmails(BaseCommandTestCase):
     def test_email_comtent(self):
         self.call_command(
             "send_welcome_emails",
+            stage="First Mark",
             session="Default",
             send_emails=True,
         )
@@ -883,6 +888,7 @@ class SendWelcomeEmails(BaseCommandTestCase):
         self.assertEquals(len(mail.outbox), 0)
         self.call_command(
             "send_welcome_emails",
+            stage="First Mark",
             send_emails=True,
             session="Second Session",
         )
@@ -890,6 +896,7 @@ class SendWelcomeEmails(BaseCommandTestCase):
 
         self.call_command(
             "send_welcome_emails",
+            stage="First Mark",
             send_emails=True,
             session="Default",
         )
@@ -903,6 +910,7 @@ class SendWelcomeEmails(BaseCommandTestCase):
         self.assertEquals(len(mail.outbox), 0)
         self.call_command(
             "send_welcome_emails",
+            stage="First Mark",
             send_emails=True,
             session="Second Session",
         )
@@ -913,6 +921,7 @@ class SendWelcomeEmails(BaseCommandTestCase):
         mail.outbox = []
         self.call_command(
             "send_welcome_emails",
+            stage="First Mark",
             send_emails=True,
             session="Default",
         )
@@ -920,11 +929,64 @@ class SendWelcomeEmails(BaseCommandTestCase):
         email = mail.outbox[0]
         self.assertEquals(email.from_email, "Default From <default@example.org>")
 
+    @override_settings(
+        WELCOME_EMAIL={
+            "Default": {
+                "server_name": "example.org",
+                "from_email": "Default From <default@example.org>",
+                "subject_template": "registration/initial_password_email_subject.txt",
+                "new_user_template": "registration/initial_password_email.html",
+                "previous_user_template": "registration/repeat_password_email.html",
+                "Right of Reply": {
+                    "subject_template": "registration/council_password_email_subject.txt",
+                    "new_user_template": "registration/council_password_email.html",
+                    "previous_user_template": "registration/council_repeat_password_email.html",
+                },
+            },
+        }
+    )
+    def test_template_loading(self):
+        marker = Marker.objects.get(user__email="new_marker@example.org")
+        rt = ResponseType.objects.get(type="Right of Reply")
+        marker.response_type = rt
+        marker.save()
+
+        self.assertEquals(len(mail.outbox), 0)
+        self.call_command(
+            "send_welcome_emails",
+            stage="First Mark",
+            send_emails=True,
+            session="Default",
+        )
+        self.assertEquals(len(mail.outbox), 1)
+        email = mail.outbox[0]
+        self.assertEquals(
+            email.subject,
+            "Registration link for CEUK Council Climate Scorecards Scoring System",
+        )
+        self.assertRegex(email.body, r"Thanks for volunteering")
+
+        mail.outbox = []
+        self.call_command(
+            "send_welcome_emails",
+            stage="Right of Reply",
+            send_emails=True,
+            session="Default",
+        )
+        self.assertEquals(len(mail.outbox), 1)
+        email = mail.outbox[0]
+        self.assertEquals(
+            email.subject,
+            "Registration link for CEUK Council Climate Scorecards Scoring System",
+        )
+        self.assertRegex(email.body, r"council’s contact to receive")
+
     @override_settings(WELCOME_EMAIL={})
     def test_error_if_no_config(self):
         self.assertEquals(len(mail.outbox), 0)
         _, err = self.call_command(
             "send_welcome_emails",
+            stage="First Mark",
             send_emails=True,
             session="Default",
         )
