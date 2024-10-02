@@ -12,6 +12,8 @@ from crowdsourcer.models import (
     Response,
     ResponseType,
     Section,
+    SessionProperties,
+    SessionPropertyValues,
 )
 
 
@@ -144,3 +146,24 @@ class SectionAdmin(admin.ModelAdmin):
 @admin.register(MarkingSession)
 class MarkingSessionAdmin(admin.ModelAdmin):
     pass
+
+
+@admin.register(SessionProperties)
+class SessionPropertiesAdmin(admin.ModelAdmin):
+    list_display = (
+        "label",
+        "marking_session",
+        "stage",
+    )
+
+    list_filter = ["marking_session", "stage"]
+
+
+@admin.register(SessionPropertyValues)
+class SessionPropertyValuesAdmin(admin.ModelAdmin):
+    list_display = (
+        "property",
+        "authority",
+    )
+    list_filter = ["property__marking_session", "property__stage"]
+    search_fields = ["authority__name"]
