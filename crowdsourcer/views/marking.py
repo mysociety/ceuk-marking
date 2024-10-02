@@ -383,6 +383,29 @@ class SectionPropertiesView(FormView):
 
         return form
 
+    def get_context_data(self, **kwargs):
+        context_data = super().get_context_data(**kwargs)
+
+        stage = self.kwargs["stage"]
+        name = self.kwargs["name"]
+        url_kwargs = {
+            "marking_session": self.request.current_session.label,
+            "name": name,
+        }
+
+        back_link = reverse(
+            "session_urls:home",
+            kwargs={"marking_session": self.request.current_session},
+        )
+
+        if stage == "Right of Reply":
+            back_link = reverse(
+                "session_urls:authority_ror_sections", kwargs=url_kwargs
+            )
+
+        context_data["back_link"] = back_link
+        return context_data
+
     def form_valid(self, form):
         authority = PublicAuthority.objects.get(name=self.kwargs["name"])
 

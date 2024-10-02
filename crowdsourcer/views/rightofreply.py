@@ -14,6 +14,7 @@ from crowdsourcer.models import (
     Response,
     ResponseType,
     Section,
+    SessionProperties,
 )
 from crowdsourcer.views.base import BaseQuestionView
 
@@ -127,6 +128,9 @@ class AuthorityRORSectionList(ListView):
                     section.complete = 0
 
         context["ror_user"] = True
+        context["has_properties"] = SessionProperties.objects.filter(
+            marking_session=self.request.current_session, stage=response_type
+        ).exists()
         return context
 
 
