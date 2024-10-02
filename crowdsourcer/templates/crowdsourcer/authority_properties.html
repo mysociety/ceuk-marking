@@ -7,8 +7,10 @@
     <h1 class="mb-4">Sign in</h1>
     <a href="{% url 'login' %}">Sign in</a>
 {% else %}
+    <p class="mb-4">
+        <a href="{{ back_link }}">Return to section list</a>
+    </p>
     <h1 class="mb-4">Optional Information</h1>
-
     {% if message %}
       <h3 class="mb-4 mb-md-5 text-success">
         {{ message }}
