@@ -26,6 +26,48 @@ class MarkingSession(models.Model):
         return self.label
 
 
+class SessionProperties(models.Model):
+    """Used to define extra properties that can be added as part of marking"""
+
+    PROPERTY_TYPES = [
+        ("text", "Text"),
+        ("url", "URL"),
+    ]
+
+    marking_session = models.ForeignKey(MarkingSession, on_delete=models.CASCADE)
+    stage = models.ForeignKey("ResponseType", null=True, on_delete=models.SET_NULL)
+    name = models.CharField(max_length=200, help_text="Keyname in database")
+    label = models.CharField(max_length=200, help_text="Form label")
+    description = models.TextField(
+        help_text="Displayed under field to describe content", null=True, blank=True
+    )
+    property_type = models.CharField(max_length=200, choices=PROPERTY_TYPES)
+    active = models.BooleanField(default=True)
+    order = models.IntegerField(default=0)
+
+    def __str__(self):
+        return f"{self.label} ({self.marking_session}, {self.stage})"
+
+    class Meta:
+        verbose_name_plural = "Session Properties"
+
+
+class SessionPropertyValues(models.Model):
+    """For storing extra session properties"""
+
+    authority = models.ForeignKey(
+        "PublicAuthority", null=True, on_delete=models.SET_NULL
+    )
+    property = models.ForeignKey(SessionProperties, on_delete=models.CASCADE)
+    value = models.TextField()
+
+    def __str__(self):
+        return f"{self.property} {self.authority} - {self.value}"
+
+    class Meta:
+        verbose_name_plural = "Session Property Values"
+
+
 class Section(models.Model):
     """Used to group questions with a similar theme"""
 
