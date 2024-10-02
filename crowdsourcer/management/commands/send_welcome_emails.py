@@ -32,6 +32,10 @@ class Command(BaseCommand):
             help="Use this session config and only send emails to people in this session",
         )
 
+        parser.add_argument(
+            "--test_email", action="store", help="send a test email to this address"
+        )
+
     def get_config(self, session):
         if settings.WELCOME_EMAIL.get(session):
             return settings.WELCOME_EMAIL[session]
@@ -44,25 +48,34 @@ class Command(BaseCommand):
                 f"{YELLOW}Not sending emails. Call with --send_emails to send{NOBOLD}"
             )
 
-        users = Marker.objects.filter(send_welcome_email=True).select_related("user")
+        if kwargs["test_email"]:
+            users = Marker.objects.filter(
+                user__email=kwargs["test_email"]
+            ).select_related("user")
+        else:
+            users = Marker.objects.filter(send_welcome_email=True).select_related(
+                "user"
+            )
 
-        if kwargs["stage"]:
-            try:
-                rt = ResponseType.objects.get(type=kwargs["stage"])
-                users = users.filter(response_type=rt)
-            except ResponseType.NotFoundException:
-                self.stderr.write(f"{YELLOW}No such stage: {kwargs['stage']}{NOBOLD}")
-                return
+            if kwargs["stage"]:
+                try:
+                    rt = ResponseType.objects.get(type=kwargs["stage"])
+                    users = users.filter(response_type=rt)
+                except ResponseType.NotFoundException:
+                    self.stderr.write(
+                        f"{YELLOW}No such stage: {kwargs['stage']}{NOBOLD}"
+                    )
+                    return
 
-        if kwargs["session"]:
-            try:
-                session = MarkingSession.objects.get(label=kwargs["session"])
-                users = users.filter(marking_session=session)
-            except ResponseType.NotFoundException:
-                self.stderr.write(
-                    f"{YELLOW}No such session: {kwargs['session']}{NOBOLD}"
-                )
-                return
+            if kwargs["session"]:
+                try:
+                    session = MarkingSession.objects.get(label=kwargs["session"])
+                    users = users.filter(marking_session=session)
+                except ResponseType.NotFoundException:
+                    self.stderr.write(
+                        f"{YELLOW}No such session: {kwargs['session']}{NOBOLD}"
+                    )
+                    return
 
         config = self.get_config(kwargs["session"])
 
