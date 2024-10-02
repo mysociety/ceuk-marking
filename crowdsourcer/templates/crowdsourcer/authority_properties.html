@@ -1,0 +1,36 @@
+{% extends 'crowdsourcer/base.html' %}
+
+{% load crowdsourcer_tags django_bootstrap5 %}
+
+{% block content %}
+{% if show_login %}
+    <h1 class="mb-4">Sign in</h1>
+    <a href="{% url 'login' %}">Sign in</a>
+{% else %}
+    <h1 class="mb-4">Optional Information</h1>
+
+    {% if message %}
+      <h3 class="mb-4 mb-md-5 text-success">
+        {{ message }}
+      </h3>
+    {% endif %}
+
+    <form action="" method="POST">
+        {% if form.total_error_count > 0 %}
+          <div class="mb-4">
+              <div class="col-md-7 text-danger">
+                <strong>Changes Not Saved</strong>. There were some errors which are highlighted in red below.
+              </div>
+          </div>
+        {% endif %}
+
+        {% csrf_token %}
+        {% bootstrap_form form %}
+
+        <div class="sticky-bottom py-3 bg-white border-top" style="margin-top: -1px;">
+            <input type="submit" class="btn btn-primary" value="Save answers">
+        </div>
+    </form>
+
+{% endif %}
+{% endblock %}

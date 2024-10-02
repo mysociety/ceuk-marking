@@ -119,6 +119,12 @@ session_patterns = [
         progress.AuthorityContactCSVView.as_view(),
         name="authority_contacts_report",
     ),
+    # properties
+    path(
+        "authorities/properties/<name>/<stage>/",
+        marking.SectionPropertiesView.as_view(),
+        name="authority_properties",
+    ),
     # stats
     path(
         "stats/",
