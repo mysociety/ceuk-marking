@@ -8,6 +8,11 @@
     <a href="{% url 'login' %}">Sign in</a>
 {% else %}
     <h1 class="mb-4">Sections</h1>
+    {% if has_properties %}
+      <h4>
+        <a href="{% session_url "authority_properties" authority_name "Right of Reply" %}">Optional feedback</a>
+      </h4>
+    {% endif %}
     <table class="table">
         <thead>
             <tr>
