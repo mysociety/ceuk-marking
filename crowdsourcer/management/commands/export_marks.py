@@ -141,7 +141,9 @@ class Command(BaseCommand):
         answer_data = None
         if output_answers or questions_only:
             if not questions_only:
-                answer_data = get_all_question_data(scoring)
+                answer_data = get_all_question_data(
+                    scoring, marking_session=session.label
+                )
 
             questions = (
                 Question.objects.filter(section__marking_session=session)

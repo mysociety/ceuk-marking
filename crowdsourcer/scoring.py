@@ -4,6 +4,7 @@ from copy import deepcopy
 from django.db.models import Count, Max, OuterRef, Q, Subquery, Sum
 
 from crowdsourcer.models import (
+    MarkingSession,
     Option,
     PublicAuthority,
     Question,
@@ -707,10 +708,13 @@ def get_response_data(
     return data
 
 
-def get_all_question_data(scoring, response_type="Audit"):
+def get_all_question_data(scoring, marking_session=None, response_type="Audit"):
     rt = ResponseType.objects.get(type=response_type)
+    session = MarkingSession.objects.get(label=marking_session)
     responses = (
-        Response.objects.filter(response_type=rt)
+        Response.objects.filter(
+            response_type=rt, question__section__marking_session=session
+        )
         .annotate(multi_count=Count("multi_option__pk"))
         .order_by(
             "authority__name",

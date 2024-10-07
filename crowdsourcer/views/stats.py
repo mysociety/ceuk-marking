@@ -380,8 +380,15 @@ class AllAnswerDataView(BaseScoresView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
+        args = {}
+        if self.request.GET.get("stage"):
+            args["response_type"] = self.request.GET["stage"]
+            self.file_name = f"all_answer_data_{slugify(args['response_type'])}.csv"
+
         self.get_scores()
-        context["rows"] = get_all_question_data(self.scoring)
+        context["rows"] = get_all_question_data(
+            self.scoring, marking_session=self.request.current_session.label, **args
+        )
 
         return context
 
