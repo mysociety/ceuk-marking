@@ -89,6 +89,11 @@ session_patterns = [
         name="authority_ror",
     ),
     path(
+        "authorities/<name>/ror/download/",
+        rightofreply.AuthorityRORCSVView.as_view(),
+        name="authority_ror_download",
+    ),
+    path(
         "authority_ror_authorities/",
         rightofreply.AuthorityRORList.as_view(),
         name="authority_ror_authorities",

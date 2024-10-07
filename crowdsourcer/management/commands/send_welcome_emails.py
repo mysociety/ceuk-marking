@@ -22,7 +22,10 @@ class Command(BaseCommand):
         parser.add_argument("--send_emails", action="store_true", help="Send emails")
 
         parser.add_argument(
-            "--stage", action="store", help="Only send emails to people in this stage"
+            "--stage",
+            required=True,
+            action="store",
+            help="Use template for this stage and only send emails to people in this stage",
         )
 
         parser.add_argument(
@@ -41,6 +44,16 @@ class Command(BaseCommand):
             return settings.WELCOME_EMAIL[session]
 
         return None
+
+    def get_templates(self, config, user, stage="First Mark"):
+        if config.get(stage):
+            config = config[stage]
+
+        template = config["new_user_template"]
+        if user.password != "":
+            template = config["previous_user_template"]
+
+        return (template, config["subject_template"])
 
     def handle(self, *args, **kwargs):
         if not kwargs["send_emails"]:
@@ -94,12 +107,12 @@ class Command(BaseCommand):
                 if user.email:
                     self.stdout.write(f"Sending email for to this email: {user.email}")
                     if kwargs["send_emails"]:
-                        template = config["new_user_template"]
+                        template, subject_template = self.get_templates(
+                            config, user, kwargs["stage"]
+                        )
                         if user.password == "":
                             user.set_password(get_random_string(length=20))
                             user.save()
-                        else:
-                            template = config["previous_user_template"]
 
                         form = PasswordResetForm({"email": user.email})
                         assert form.is_valid()
@@ -111,7 +124,7 @@ class Command(BaseCommand):
                             domain_override=config["server_name"],
                             use_https=True,
                             from_email=config["from_email"],
-                            subject_template_name=config["subject_template"],
+                            subject_template_name=subject_template,
                             email_template_name=template,
                         )
                         marker.send_welcome_email = False

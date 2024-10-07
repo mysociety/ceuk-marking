@@ -57,6 +57,38 @@ class BaseQuestionView(TemplateView):
         ):
             raise PermissionDenied
 
+    def has_previous(self):
+        has_previous = Question.objects.filter(
+            section__marking_session=self.request.current_session,
+            section__title=self.kwargs["section_title"],
+            questiongroup=self.authority.questiongroup,
+            how_marked__in=self.how_marked_in,
+            previous_question__isnull=False,
+        ).exists()
+
+        self.has_previous_questions = has_previous
+        return has_previous
+
+    def add_previous(self, initial, rt):
+        question_list = self.questions.values_list("previous_question_id", flat=True)
+        prev_responses = Response.objects.filter(
+            authority=self.authority,
+            question_id__in=question_list,
+            response_type=rt,
+        ).select_related("question")
+
+        response_map = {}
+        for r in prev_responses:
+            response_map[r.question.id] = r
+
+        for q in self.questions:
+            data = initial[q.id]
+            data["previous_response"] = response_map.get(q.previous_question_id)
+
+            initial[q.id] = data
+
+        return initial
+
     def get_initial_obj(self):
         self.authority = PublicAuthority.objects.get(name=self.kwargs["name"])
         self.questions = Question.objects.filter(

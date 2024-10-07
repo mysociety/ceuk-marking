@@ -12,7 +12,6 @@ from crowdsourcer.models import (
     MarkingSession,
     PublicAuthority,
     Question,
-    Response,
     ResponseType,
     SessionProperties,
     SessionPropertyValues,
@@ -249,35 +248,9 @@ class AuthoritySectionQuestions(BaseQuestionView):
 
         initial = super().get_initial_obj()
 
-        is_previous = Question.objects.filter(
-            section__marking_session=self.request.current_session,
-            section__title=self.kwargs["section_title"],
-            questiongroup=self.authority.questiongroup,
-            how_marked__in=self.how_marked_in,
-            previous_question__isnull=False,
-        ).exists()
-
-        if is_previous:
-            self.has_previous_questions = True
+        if self.has_previous():
             audit_rt = ResponseType.objects.get(type="Audit")
-            question_list = self.questions.values_list(
-                "previous_question_id", flat=True
-            )
-            prev_responses = Response.objects.filter(
-                authority=self.authority,
-                question__in=question_list,
-                response_type=audit_rt,
-            ).select_related("question")
-
-            response_map = {}
-            for r in prev_responses:
-                response_map[r.question.id] = r
-
-            for q in self.questions:
-                data = initial[q.id]
-                data["previous_response"] = response_map.get(q.previous_question_id)
-
-                initial[q.id] = data
+            initial = self.add_previous(initial, audit_rt)
 
         return initial
 

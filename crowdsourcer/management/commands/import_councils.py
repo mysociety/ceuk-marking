@@ -4,7 +4,13 @@ from django.core.management.base import BaseCommand
 
 import pandas as pd
 
-from crowdsourcer.models import Assigned, Marker, PublicAuthority, ResponseType
+from crowdsourcer.models import (
+    Assigned,
+    Marker,
+    MarkingSession,
+    PublicAuthority,
+    ResponseType,
+)
 
 YELLOW = "\033[33m"
 RED = "\033[31m"
@@ -23,12 +29,19 @@ class Command(BaseCommand):
         )
 
         parser.add_argument(
+            "--session",
+            action="store",
+            required=True,
+            help="Marking session to use assignments with",
+        )
+
+        parser.add_argument(
             "--add_users", action="store_true", help="add users to database"
         )
 
         parser.add_argument("--council_list", help="file to import data from")
 
-    def handle(self, quiet: bool = False, *args, **options):
+    def handle(self, quiet: bool = False, session: str = None, *args, **options):
         if options.get("council_list") is not None:
             self.council_file = options["council_list"]
 
@@ -43,6 +56,7 @@ class Command(BaseCommand):
             ],
         )
 
+        session = MarkingSession.objects.get(label=session)
         rt = ResponseType.objects.get(type="Right of Reply")
         for index, row in df.iterrows():
             if pd.isna(row["email"]) or pd.isna(row["gssNumber"]):
@@ -63,12 +77,41 @@ class Command(BaseCommand):
                 continue
 
             if Marker.objects.filter(authority=council).exists():
-                self.stdout.write(f"user already exists for council: {row['council']}")
-                continue
+                m = Marker.objects.get(authority=council)
+
+                if (
+                    m.user.email == row["email"]
+                    and m.marking_session.filter(pk=session.pk).exists()
+                ):
+                    self.stdout.write(
+                        f"user already exists for council: {row['council']}"
+                    )
+                    continue
 
             if User.objects.filter(username=row["email"]).exists():
                 u = User.objects.get(username=row["email"])
-                if u.marker.authority is not None and u.marker.authority != council:
+                if (
+                    u.marker.authority == council
+                    and not u.marker.marking_session.filter(pk=session.pk).exists()
+                ):
+                    u.marker.marking_session.set([session])
+                    self.stdout.write(
+                        f"updating marker to current session: {row['email']} ({council}, {u.marker.authority}"
+                    )
+                elif (
+                    u.marker.authority is None
+                    and not Assigned.objects.filter(
+                        user=u, authority=council, marking_session=session
+                    ).exists()
+                ):
+                    self.stdout.write(
+                        f"updating marker to council: {row['email']} ({council}, {u.marker.authority}"
+                    )
+                    if options["add_users"]:
+                        u.marker.authority = council
+                        u.marker.save()
+                        u.marker.marking_session.set([session])
+                elif u.marker.authority is not None and u.marker.authority != council:
                     self.stdout.write(
                         f"dual email for councils: {row['email']} ({council}, {u.marker.authority}"
                     )
@@ -76,10 +119,14 @@ class Command(BaseCommand):
                         for c in [council, u.marker.authority]:
                             if options["add_users"]:
                                 a, _ = Assigned.objects.update_or_create(
-                                    user=u, authority=c
+                                    user=u,
+                                    authority=c,
+                                    marking_session=session,
                                 )
                         u.marker.authority = None
+                        u.marker.send_welcome_email = True
                         u.marker.save()
+                        u.marker.marking_session.set([session])
                     continue
                 self.stdout.write(f"user already exists for email: {row['email']}")
                 continue
@@ -98,4 +145,8 @@ class Command(BaseCommand):
                     user=u,
                     authority=council,
                     response_type=rt,
+                    defaults={
+                        "send_welcome_email": True,
+                    },
                 )
+                m.marking_session.set([session])
