@@ -1,0 +1,31 @@
+number,section,question,criteria,clarifications,type,option_1,option_2,option_3,option_4
+1,First Section,Is the council transitioning their vehicle fleet to electric?,"Two-tier criteria
+
+First tier criteria met if 10% or more of the council's fleet are electric vehicles.
+
+Second tier criteria met if 50% or more of the council's fleet are electric vehicles","A council's fleet includes council owned or leased vehicles, and may include street cleaners and waste collection vehicles.
+
+Usually the breakdown of the council fleet by vehicle type is not published, therefore we will just take the stated total fleet number and number of electric vehicles.",multiple_choice,No evidence found,Evidence doesn't meet criteria,10% or over,50% or over
+2,First Section,Has the council set up or supported a shared transport scheme that can be used across their whole area?,"Criteria met for each type of scheme where a member of the public can hire a vehicle (e.g. car/scooter/bike/mobility device) within the local authorities area.
+
+The following schemes will be awarded points:
+- Car share scheme of any size in the area. Including:
+        - Community car clubs.
+        - Car clubs provided by private companies
+        - Hiring of council vehicles when not in use
+- Bike share scheme
+- E-bike or cargo bike share scheme
+- E-scooter scheme
+- Mobility Devices
+- Wheels 2 Work scheme
+
+Trial schemes that are active at the time of marking will be accepted.",Marked initially using Coordinated Mobility's publicly available data on shared transport schemes.,select_one,No evidence found,Car share,Bike share,E-bike or cargo bike share
+1,Second Section,Does the council's corporate plan include a net zero target and make tackling the climate emergency one of its main priorities?,"Criteria met if climate action (alternatively called sustainability or environment) is listed as one of the council's core priorities or equivalent. It must have its own heading or section and a net zero target date must be referenced.
+
+The net zero target date must be an area-wide target, either the UK Government's national target, the devolved nation's target or the council's area-wide net zero target. 
+
+",,yes_no,,,,
+2,Second Section,"Does the council's medium term financial plan include the council's net zero target and make tackling the climate emergency one of its main priorities?
+","Criteria met if climate action (alternatively called sustainability or environment) is listed as one of the council's core priorities or equivalent. It must have its own heading or section and a net zero target date must be referenced.
+
+The net zero target date must be an area-wide target, either the UK Government's national target, the devolved nation's target or the council's area-wide net zero target. ",,yes_no,,,,
