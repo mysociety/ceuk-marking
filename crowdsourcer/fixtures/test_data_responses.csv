@@ -1,0 +1,13 @@
+section,session,number,stage,authority,answer,public_notes,page_number,evidence,private_notes,agree_with_response
+First Section,Session One,1,First Mark,Test Council,10% or over,Section One Q1 2023 notes,1,http://example.com,First Section Q1 2023 private notes,
+First Section,Session One,2,First Mark,Test Council,Car share,Section One Q2 2023 notes,2,http://example.com,Section One Q2 2023 private notes,
+Second Section,Session One,1,First Mark,Test Council,Yes,Section Two Q1 2023 notes,34,http://example.com,Section Two Q1 2023 private notes,
+Second Section,Session One,2,First Mark,Test Council,No,Section Two Q2 2023 notes,,http://example.com,Section Two Q2 2023 private notes,
+First Section,Session One,1,Right of Reply,Test Council,,,,http://example.com,Section One Q1 2023 council private notes,Yes
+First Section,Session One,2,Right of Reply,Test Council,,,,http://example.com,Section One Q1 2023 council private notes,No
+Second Section,Session One,1,Right of Reply,Test Council,,,,http://example.com,Section One Q1 2023 council private notes,Yes
+Second Section,Session One,2,Right of Reply,Test Council,,,,http://example.com,Section One Q1 2023 council private notes,No
+First Section,Session Two,1,First Mark,Test Council,10% or over,Section One Q1 2025 notes,1,http://example.com,Section One Q1 2025 private notes,
+First Section,Session Two,2,First Mark,Test Council,Car share,Section One Q2 2025 notes,2,http://example.com,Section One Q2 2025 private notes,
+Second Section,Session Two,1,First Mark,Test Council,Yes,Section Two Q1 2025 notes,34,http://example.com,Section Two Q1 2025 private notes,
+Second Section,Session Two,2,First Mark,Test Council,No,Section Two Q2 2025 notes,,http://example.com,Section Two Q2 2025 private notes,
