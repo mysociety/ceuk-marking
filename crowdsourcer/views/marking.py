@@ -238,14 +238,6 @@ class AuthoritySectionQuestions(BaseQuestionView):
             return [self.template_name]
 
     def get_initial_obj(self):
-        if self.kwargs["name"] == "Isles of Scilly":
-            self.how_marked_in = [
-                "volunteer",
-                "national_volunteer",
-                "foi",
-                "national_data",
-            ]
-
         initial = super().get_initial_obj()
 
         if self.has_previous():
