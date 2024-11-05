@@ -67,6 +67,12 @@ class Command(BaseCommand):
         )
 
         parser.add_argument(
+            "--foi_yes_no_fix",
+            action="store_true",
+            help="only import yes_no foi questions to fix problem",
+        )
+
+        parser.add_argument(
             "--delete_options",
             action="store_true",
             help="remove all options and recreate",
@@ -106,6 +112,10 @@ class Command(BaseCommand):
         if not self.question_file.exists():
             self.stderr.write(f"file does not exist: {self.question_file}")
             return
+
+        foi_yes_no_fix = kwargs.get("foi_yes_no_fix", None)
+        if foi_yes_no_fix:
+            self.stdout.write("Only importing Yes/No FOI questions")
 
         q_groups = {}
 
@@ -199,10 +209,8 @@ class Command(BaseCommand):
                 how_marked_row = str(row["how_marked"]).strip().lower()
                 if how_marked_row == "foi":
                     how_marked = "foi"
-                    question_type = "foi"
                 elif how_marked_row == "national data":
                     how_marked = "national_data"
-                    question_type = "national_data"
 
                 if row.get("question_type", None) is not None and not pd.isna(
                     row["question_type"]
@@ -223,6 +231,12 @@ class Command(BaseCommand):
                             f"missing question type: {section.title}, {row['question_no']} - {row['question_type']}"
                         )
                         continue
+
+                if foi_yes_no_fix and (
+                    how_marked not in ["national_data", "foi"]
+                    or question_type != "yes_no"
+                ):
+                    continue
 
                 row = row.fillna("")
                 weighting = "low"
