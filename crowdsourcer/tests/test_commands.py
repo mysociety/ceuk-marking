@@ -110,7 +110,9 @@ class ImportCouncilsTestCase(BaseCommandTestCase):
 
     def test_import_councils_no_commit(self):
         data_file = (
-            pathlib.Path(__file__).parent.resolve() / "data" / "merged_contacts.csv"
+            pathlib.Path(__file__).parent.resolve()
+            / "data"
+            / "merged_contacts_2025.csv"
         )
 
         self.call_command("import_councils", session="Default", council_list=data_file)
@@ -120,7 +122,9 @@ class ImportCouncilsTestCase(BaseCommandTestCase):
 
     def test_import_councils(self):
         data_file = (
-            pathlib.Path(__file__).parent.resolve() / "data" / "merged_contacts.csv"
+            pathlib.Path(__file__).parent.resolve()
+            / "data"
+            / "merged_contacts_2025.csv"
         )
 
         self.call_command(
@@ -156,7 +160,9 @@ class ImportCouncilsTestCase(BaseCommandTestCase):
 
     def test_import_for_new_session_all_same_users(self):
         data_file = (
-            pathlib.Path(__file__).parent.resolve() / "data" / "merged_contacts.csv"
+            pathlib.Path(__file__).parent.resolve()
+            / "data"
+            / "merged_contacts_2025.csv"
         )
 
         self.call_command(
@@ -210,7 +216,9 @@ class ImportCouncilsTestCase(BaseCommandTestCase):
 
     def test_import_for_new_session_new_users(self):
         data_file = (
-            pathlib.Path(__file__).parent.resolve() / "data" / "merged_contacts.csv"
+            pathlib.Path(__file__).parent.resolve()
+            / "data"
+            / "merged_contacts_2025.csv"
         )
 
         self.call_command(
@@ -226,7 +234,9 @@ class ImportCouncilsTestCase(BaseCommandTestCase):
             2, Marker.objects.filter(marking_session__label="Default").count()
         )
         data_file = (
-            pathlib.Path(__file__).parent.resolve() / "data" / "council_new_users.csv"
+            pathlib.Path(__file__).parent.resolve()
+            / "data"
+            / "council_new_users_2025.csv"
         )
 
         self.call_command(
@@ -288,7 +298,9 @@ class ImportCouncilsTestCase(BaseCommandTestCase):
 
     def test_import_for_new_session_council_split_users(self):
         data_file = (
-            pathlib.Path(__file__).parent.resolve() / "data" / "merged_contacts.csv"
+            pathlib.Path(__file__).parent.resolve()
+            / "data"
+            / "merged_contacts_2025.csv"
         )
 
         self.call_command(
@@ -304,7 +316,9 @@ class ImportCouncilsTestCase(BaseCommandTestCase):
             2, Marker.objects.filter(marking_session__label="Default").count()
         )
         data_file = (
-            pathlib.Path(__file__).parent.resolve() / "data" / "council_split_users.csv"
+            pathlib.Path(__file__).parent.resolve()
+            / "data"
+            / "council_split_users_2025.csv"
         )
 
         self.call_command(
@@ -329,7 +343,9 @@ class ImportCouncilsTestCase(BaseCommandTestCase):
 
     def test_import_for_new_session_council_new_joint_users(self):
         data_file = (
-            pathlib.Path(__file__).parent.resolve() / "data" / "merged_contacts.csv"
+            pathlib.Path(__file__).parent.resolve()
+            / "data"
+            / "merged_contacts_2025.csv"
         )
 
         self.call_command(
@@ -347,7 +363,7 @@ class ImportCouncilsTestCase(BaseCommandTestCase):
         data_file = (
             pathlib.Path(__file__).parent.resolve()
             / "data"
-            / "council_new_joint_users.csv"
+            / "council_new_joint_users_2025.csv"
         )
 
         self.call_command(
