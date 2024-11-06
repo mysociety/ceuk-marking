@@ -345,7 +345,7 @@ class Command(BaseCommand):
                         for option in no_mark_options:
                             o, c = Option.objects.update_or_create(
                                 question=q,
-                                description=option,
+                                description=option.strip(),
                                 defaults={"score": 0, "ordering": 100},
                             )
                     else:

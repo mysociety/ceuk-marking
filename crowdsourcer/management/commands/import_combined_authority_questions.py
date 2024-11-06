@@ -67,6 +67,12 @@ class Command(BaseCommand):
             help="remove all options and recreate",
         )
 
+        parser.add_argument(
+            "--foi_yes_no_fix",
+            action="store_true",
+            help="only import yes_no foi questions to fix problem",
+        )
+
     def get_column_names(self, **kwargs):
         column_list = kwargs.get("column_list", None)
         column_list = settings.BASE_DIR / "data" / column_list
@@ -110,6 +116,10 @@ class Command(BaseCommand):
         )
 
         self.get_column_names(**kwargs)
+
+        foi_yes_no_fix = kwargs.get("foi_yes_no_fix", None)
+        if foi_yes_no_fix:
+            self.stdout.write("Only importing Yes/No FOI questions")
 
         for section in Section.objects.filter(
             marking_session=session, title__contains="(CA)"
@@ -204,10 +214,8 @@ class Command(BaseCommand):
                 if not kwargs["text_only"]:
                     if how_marked_row == "foi":
                         how_marked = "foi"
-                        question_type = "foi"
                     elif "national data" == how_marked_row:
                         how_marked = "national_data"
-                        question_type = "national_data"
 
                     if not pd.isna(row["question_type"]):
                         q_type = str(row["question_type"]).strip().lower()
@@ -230,6 +238,12 @@ class Command(BaseCommand):
                                 f"missing question type: {section.title}, {row['question_no']} - {row['question_type']}"
                             )
                             continue
+
+                if foi_yes_no_fix and (
+                    how_marked not in ["national_data", "foi"]
+                    or question_type != "yes_no"
+                ):
+                    continue
 
                 weighting = "low"
                 if type(row["weighting"]) is str:
