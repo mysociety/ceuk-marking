@@ -83,6 +83,8 @@ class Command(BaseCommand):
             ],
         )
 
+        add_users = options["add_users"]
+
         session = MarkingSession.objects.get(label=session)
         rt = ResponseType.objects.get(type="Right of Reply")
         for index, row in df.iterrows():
@@ -113,13 +115,20 @@ class Command(BaseCommand):
                     self.stdout.write(
                         f"user already exists for council: {row['council']}"
                     )
-                    if not m.send_welcome_email:
+                    if add_users and not m.send_welcome_email:
                         m.send_welcome_email = True
                         m.save()
+                    if add_users and not m.user.is_active:
+                        m.user.is_active = True
+                        m.user.save()
                     continue
 
             if User.objects.filter(username=row["email"]).exists():
                 u = User.objects.get(username=row["email"])
+                if add_users and not u.is_active:
+                    u.is_active = True
+                    u.save()
+
                 if not hasattr(u, "marker"):
                     m = Marker.objects.create(
                         user=u, authority=council, response_type=rt
@@ -144,7 +153,7 @@ class Command(BaseCommand):
                     self.stdout.write(
                         f"updating marker to council: {row['email']} ({council}, {u.marker.authority}"
                     )
-                    if options["add_users"]:
+                    if add_users:
                         u.marker.authority = council
                         u.marker.send_welcome_email = True
                         u.marker.save()
@@ -153,15 +162,14 @@ class Command(BaseCommand):
                     self.stdout.write(
                         f"dual email for councils: {row['email']} ({council}, {u.marker.authority}"
                     )
-                    if options["add_users"]:
+                    if add_users:
                         for c in [council, u.marker.authority]:
-                            if options["add_users"]:
-                                a, _ = Assigned.objects.update_or_create(
-                                    user=u,
-                                    authority=c,
-                                    response_type=rt,
-                                    marking_session=session,
-                                )
+                            a, _ = Assigned.objects.update_or_create(
+                                user=u,
+                                authority=c,
+                                response_type=rt,
+                                marking_session=session,
+                            )
                         u.marker.authority = None
                         u.marker.send_welcome_email = True
                         u.marker.save()
@@ -175,7 +183,7 @@ class Command(BaseCommand):
                 continue
 
             firstname, surname = row["name"].split(" ", maxsplit=1)
-            if options["add_users"] is True:
+            if add_users:
                 u, created = User.objects.update_or_create(
                     username=row["email"],
                     defaults={
