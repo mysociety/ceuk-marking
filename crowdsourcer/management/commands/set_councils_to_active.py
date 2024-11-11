@@ -1,16 +1,9 @@
 from django.conf import settings
-from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand
 
 import pandas as pd
 
-from crowdsourcer.models import (
-    Assigned,
-    Marker,
-    MarkingSession,
-    PublicAuthority,
-    ResponseType,
-)
+from crowdsourcer.models import Marker, MarkingSession, PublicAuthority
 
 YELLOW = "\033[33m"
 RED = "\033[31m"
@@ -85,7 +78,6 @@ class Command(BaseCommand):
         )
 
         session = MarkingSession.objects.get(label=session)
-        rt = ResponseType.objects.get(type="Right of Reply")
         count = 0
         for index, row in df.iterrows():
             if pd.isna(row["email"]):
@@ -104,10 +96,16 @@ class Command(BaseCommand):
                 continue
 
             if Marker.objects.filter(
-                authority=council, marking_session=session
+                authority=council,
+                marking_session=session,
+                response_type__type="Right of Reply",
             ).exists():
-                m = Marker.objects.get(authority=council, marking_session=session)
-                if m.user.is_active == False:
+                m = Marker.objects.get(
+                    authority=council,
+                    marking_session=session,
+                    response_type__type="Right of Reply",
+                )
+                if m.user.is_active is False:
                     print(f"fixing details for {m.user.email}")
                     count += 1
                     m.user.is_active = True
