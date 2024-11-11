@@ -75,7 +75,7 @@ class TestAssignmentView(BaseTestCase):
 
     def test_null_answers_ignored(self):
         Response.objects.filter(question_id=272, user=3, response_type=2).update(
-            option=None
+            agree_with_response=None
         )
         url = reverse("authority_ror_sections", args=("Aberdeenshire Council",))
         response = self.client.get(url)

@@ -213,12 +213,18 @@ class PublicAuthority(models.Model):
         assigned=None,
         response_type=None,
         question_types=None,
+        right_of_reply=False,
     ):
         if response_type is None:
             response_type = ResponseType.objects.get(type="First Mark")
 
         if question_types is None:
             question_types = Question.VOLUNTEER_TYPES
+
+        if right_of_reply:
+            null_responses = Response.objects.filter(agree_with_response__isnull=True)
+        else:
+            null_responses = Response.null_responses()
 
         authorities = cls.objects.filter(
             marking_session=marking_session, questiongroup__question__in=questions
@@ -243,7 +249,7 @@ class PublicAuthority(models.Model):
                     question__in=questions,
                     response_type=response_type,
                 )
-                .exclude(id__in=Response.null_responses())
+                .exclude(id__in=null_responses)
                 .values("authority")
                 .annotate(response_count=Count("question_id", distinct=True))
                 .values("response_count")

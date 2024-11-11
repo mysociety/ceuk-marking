@@ -115,11 +115,14 @@ class AuthorityRORSectionList(ListView):
                 section.title,
                 self.request.user,
                 self.request.current_session,
-                [authority.id],
             ]
 
             response_counts = PublicAuthority.response_counts(
-                *args, response_type=response_type, question_types=question_types
+                *args,
+                assigned=[authority.id],
+                response_type=response_type,
+                question_types=question_types,
+                right_of_reply=True,
             ).distinct()
 
             section.complete = 0
