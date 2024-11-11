@@ -486,7 +486,7 @@ class Command(BaseCommand):
                 "Not all senior staff trained (evidence doesn't meet criteria)"
             )
         else:
-            description = "Evidence doesn't meet criteria "
+            description = "Evidence doesn't meet criteria"
 
         option = Option.objects.get(question=q, description=description)
 
