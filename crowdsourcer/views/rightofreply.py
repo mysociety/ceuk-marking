@@ -275,9 +275,17 @@ class AuthorityRORCSVView(ListView):
         by_section = defaultdict(dict)
 
         for r in responses:
-            by_section[r.question.section.title][
-                r.question.number_and_part
-            ] = r.option.description
+            if r.option:
+                by_section[r.question.section.title][
+                    r.question.number_and_part
+                ] = r.option.description
+            elif r.multi_option:
+                answers = r.multi_option.values_list("description", flat=True)
+                by_section[r.question.section.title][r.question.number_and_part] = (
+                    ", ".join(answers)
+                )
+            else:
+                by_section[r.question.section.title][r.question.number_and_part] = ""
 
         return by_section
 
