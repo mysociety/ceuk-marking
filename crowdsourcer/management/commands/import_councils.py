@@ -113,6 +113,9 @@ class Command(BaseCommand):
                     self.stdout.write(
                         f"user already exists for council: {row['council']}"
                     )
+                    if not m.send_welcome_email:
+                        m.send_welcome_email = True
+                        m.save()
                     continue
 
             if User.objects.filter(username=row["email"]).exists():
@@ -130,6 +133,8 @@ class Command(BaseCommand):
                     self.stdout.write(
                         f"updating marker to current session: {row['email']} ({council}, {u.marker.authority}"
                     )
+                    u.marker.send_welcome_email = True
+                    u.marker.save()
                 elif (
                     u.marker.authority is None
                     and not Assigned.objects.filter(
@@ -141,6 +146,7 @@ class Command(BaseCommand):
                     )
                     if options["add_users"]:
                         u.marker.authority = council
+                        u.marker.send_welcome_email = True
                         u.marker.save()
                         u.marker.marking_session.set([session])
                 elif u.marker.authority is not None and u.marker.authority != council:
@@ -161,6 +167,10 @@ class Command(BaseCommand):
                         u.marker.save()
                         u.marker.marking_session.set([session])
                     continue
+
+                if hasattr(u, "marker") and not u.marker.send_welcome_email:
+                    u.marker.send_welcome_email = True
+                    u.marker.save()
                 self.stdout.write(f"user already exists for email: {row['email']}")
                 continue
 
