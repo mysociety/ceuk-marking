@@ -9,7 +9,13 @@ from django.http import HttpResponse
 from django.utils.text import slugify
 from django.views.generic import ListView, TemplateView
 
-from crowdsourcer.models import Option, PublicAuthority, Question, Response
+from crowdsourcer.models import (
+    Option,
+    PublicAuthority,
+    Question,
+    Response,
+    SessionPropertyValues,
+)
 from crowdsourcer.scoring import (
     get_all_question_data,
     get_duplicate_responses,
@@ -794,3 +800,55 @@ class ResponseHistoryView(StatsUserTestMixin, ListView):
 
         context["duplicates"] = self.has_duplicates
         return context
+
+
+class SessionPropertiesCSVView(StatsUserTestMixin, ListView):
+    context_object_name = "properties"
+
+    def get_queryset(self):
+        return (
+            SessionPropertyValues.objects.filter(
+                property__marking_session=self.request.current_session
+            )
+            .select_related("property", "authority")
+            .order_by(
+                "authority__name",
+                "property__order",
+            )
+        )
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        rows = []
+        rows.append(
+            [
+                "authority",
+                "property",
+                "value",
+            ]
+        )
+        for property in context["properties"]:
+            rows.append(
+                [
+                    property.authority.name,
+                    property.property.label,
+                    property.value,
+                ]
+            )
+
+        context["rows"] = rows
+
+        return context
+
+    def render_to_response(self, context, **response_kwargs):
+        response = HttpResponse(
+            content_type="text/csv",
+            headers={
+                "Content-Disposition": 'attachment; filename="session_properties.csv"'
+            },
+        )
+        writer = csv.writer(response)
+        for row in context["rows"]:
+            writer.writerow(row)
+        return response

@@ -216,6 +216,11 @@ session_patterns = [
         stats.ResponseHistoryView.as_view(),
         name="question_history",
     ),
+    path(
+        "stats/session_properties",
+        stats.SessionPropertiesCSVView.as_view(),
+        name="session_properties",
+    ),
     # audit screens
     path(
         "section/audit/<section_title>/authorities/",
