@@ -12,6 +12,8 @@ from crowdsourcer.models import (
     PublicAuthority,
     Response,
     ResponseType,
+    SessionProperties,
+    SessionPropertyValues,
 )
 
 
@@ -25,6 +27,7 @@ class BaseTestCase(TestCase):
         "assignments.json",
         "responses.json",
         "ror_responses.json",
+        "session_properties",
     ]
 
     def setUp(self):
@@ -561,7 +564,7 @@ class TestChallengeView(BaseTestCase):
 
 
 class TestCSVDownloadView(BaseTestCase):
-    def test_download(self):
+    def get_download_df(self):
         url = reverse("authority_ror_download", args=("Aberdeenshire Council",))
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
@@ -572,6 +575,11 @@ class TestCSVDownloadView(BaseTestCase):
         df = pd.read_csv(io.StringIO(content), dtype="object")
         # avoid nan results
         df = df.fillna("")
+
+        return df
+
+    def test_download(self):
+        df = self.get_download_df()
 
         self.assertEqual(df.shape[0], 2)
         b_and_h_q4 = df.iloc[0]
@@ -595,3 +603,19 @@ class TestCSVDownloadView(BaseTestCase):
         self.assertEqual(b_and_h_q5.agree_with_mark, "No")
         self.assertEqual(b_and_h_q5.council_page_number, "20")
         self.assertEqual(b_and_h_q5.council_notes, "We do not agree for reasons")
+
+    def test_download_with_props(self):
+        sp = SessionProperties.objects.get(name="ror_property")
+        SessionPropertyValues.objects.create(
+            property=sp,
+            authority=PublicAuthority.objects.get(name="Aberdeenshire Council"),
+            value="This is a property value",
+        )
+
+        df = self.get_download_df()
+        self.assertEqual(df.shape[0], 3)
+        prop = df.iloc[2]
+
+        self.assertEqual(prop.section, "Additional information")
+        self.assertEqual(prop.question, "Right of Reply Property")
+        self.assertEqual(prop.council_response, "This is a property value")

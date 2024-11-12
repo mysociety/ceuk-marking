@@ -18,6 +18,7 @@ from crowdsourcer.models import (
     ResponseType,
     Section,
     SessionProperties,
+    SessionPropertyValues,
 )
 from crowdsourcer.views.base import BaseQuestionView
 
@@ -336,8 +337,34 @@ class AuthorityRORCSVView(ListView):
             )
 
         context["authority"] = self.authority.name
-        context["rows"] = rows
 
+        props = (
+            SessionPropertyValues.objects.filter(
+                authority=self.authority,
+                property__stage=ResponseType.objects.get(type="Right of Reply"),
+                property__marking_session=self.request.current_session,
+            )
+            .select_related("property")
+            .order_by(
+                "property__order",
+            )
+        )
+        for prop in props:
+            rows.append(
+                [
+                    "Additional information",
+                    "",
+                    prop.property.label,
+                    "",
+                    "",
+                    prop.value,
+                    "",
+                    "",
+                    "",
+                ]
+            )
+
+        context["rows"] = rows
         return context
 
     def render_to_response(self, context, **response_kwargs):
