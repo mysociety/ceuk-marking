@@ -36,9 +36,15 @@
                       {% if user.is_authenticated %}
                         {% if not setup_required %}
                           {% if ror_user %}
-                            <li class="nav-item">
-                                <a class="nav-link" href="https://docs.google.com/document/d/1kPzvASwPI157n7i2GBuv0S8YwiYGpZwmEm0pDUmpR_A/edit?usp=sharing">Right of Reply Guide</a>
-                            </li>
+                            {% if marking_session.label == "Scorecards 2023" %}
+                              <li class="nav-item">
+                                  <a class="nav-link" href="https://docs.google.com/document/d/1kPzvASwPI157n7i2GBuv0S8YwiYGpZwmEm0pDUmpR_A/edit?usp=sharing">Right of Reply Guide</a>
+                              </li>
+                            {% elif marking_session.label == "Scorecards 2025" %}
+                              <li class="nav-item">
+                                  <a class="nav-link" href="https://docs.google.com/document/d/1eIhSYq8wm5lf1QsjGRf9IvgnKVncQ5H95i7QIkD5SGs/edit?usp=sharing">Right of Reply Guide</a>
+                              </li>
+                            {% endif %}
                           {% endif %}
                           <li class="nav-item">
                               <a class="nav-link" href="{% url 'home' %}">My assignments</a>
