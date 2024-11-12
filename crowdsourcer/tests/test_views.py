@@ -1,8 +1,10 @@
+import datetime
 import io
 
 from django.contrib.auth.models import User
 from django.test import TestCase, override_settings
 from django.urls import reverse
+from django.utils import timezone
 
 import pandas as pd
 
@@ -1279,4 +1281,34 @@ class TestAuthorityLoginView(BaseTestCase):
                 self.assertEquals(auth.multi_has_logged_in, last_login)
             else:
                 self.assertEquals(auth.has_logged_in, None)
+                self.assertEquals(auth.multi_has_logged_in, None)
+
+    def test_has_logged_in_since_session_start(self):
+        council = User.objects.get(username="council")
+        council.lastlogin = datetime.datetime(2023, 2, 27, 0, 0, 0, tzinfo=timezone.utc)
+        council.save()
+        last_login = council.last_login
+
+        u = User.objects.get(username="admin")
+        self.client.force_login(u)
+
+        response = self.client.get(reverse("authority_login_report"))
+        self.assertEquals(response.status_code, 200)
+        context = response.context["authorities"]
+
+        for auth in context:
+            if auth.name == "Aberdeenshire Council":
+                self.assertEquals(auth.has_logged_in, None)
+                self.assertEquals(auth.multi_has_logged_in, None)
+
+        self.client.force_login(council)
+        council = User.objects.get(username="council")
+        last_login = council.last_login
+        self.client.force_login(u)
+
+        response = self.client.get(reverse("authority_login_report"))
+        context = response.context["authorities"]
+        for auth in context:
+            if auth.name == "Aberdeenshire Council":
+                self.assertEquals(auth.has_logged_in, last_login)
                 self.assertEquals(auth.multi_has_logged_in, None)

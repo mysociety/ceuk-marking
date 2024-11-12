@@ -1,11 +1,13 @@
 import csv
 import logging
+from datetime import datetime
 
 from django.contrib.auth.mixins import UserPassesTestMixin
 from django.contrib.auth.models import User
 from django.db.models import Count, F, FloatField, OuterRef, Subquery
 from django.db.models.functions import Cast
 from django.http import HttpResponse
+from django.utils.timezone import make_aware
 from django.views.generic import ListView
 
 from crowdsourcer.models import (
@@ -412,6 +414,8 @@ class AuthorityLoginReport(UserPassesTestMixin, ListView):
         return self.request.user.is_superuser
 
     def get_queryset(self):
+        sd = self.request.current_session.start_date
+        start_date = make_aware(datetime(sd.year, sd.month, sd.day))
         authorities = (
             PublicAuthority.objects.filter(
                 marking_session=self.request.current_session,
@@ -423,6 +427,7 @@ class AuthorityLoginReport(UserPassesTestMixin, ListView):
                         authority=OuterRef("pk"),
                         response_type__type="Right of Reply",
                         marking_session=self.request.current_session,
+                        user__last_login__gt=start_date,
                     )
                     .order_by("-user__last_login")
                     .values("user__last_login")[:1]
@@ -432,6 +437,7 @@ class AuthorityLoginReport(UserPassesTestMixin, ListView):
                         authority=OuterRef("pk"),
                         marking_session=self.request.current_session,
                         user__marker__response_type__type="Right of Reply",
+                        user__last_login__gt=start_date,
                     )
                     .order_by("-user__last_login")
                     .values("user__last_login")[:1]
