@@ -303,9 +303,7 @@ class AuthorityRORCSVView(ListView):
                 "question",
                 "first_mark_response",
                 "agree_with_mark",
-                "council_response",
                 "council_evidence",
-                "council_page_number",
                 "council_notes",
             ]
         )
@@ -329,10 +327,8 @@ class AuthorityRORCSVView(ListView):
                     response.question.description,
                     first_mark_response,
                     "Yes" if response.agree_with_response else "No",
-                    response.option,
-                    ",".join(response.evidence_links),
-                    response.page_number,
                     response.evidence,
+                    response.private_notes,
                 ]
             )
 
@@ -357,10 +353,8 @@ class AuthorityRORCSVView(ListView):
                     prop.property.label,
                     "",
                     "",
+                    "",
                     prop.value,
-                    "",
-                    "",
-                    "",
                 ]
             )
 

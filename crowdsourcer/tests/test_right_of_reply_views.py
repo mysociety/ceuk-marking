@@ -591,7 +591,6 @@ class TestCSVDownloadView(BaseTestCase):
             "The council has completed an exercise to measure how much, approximately, it will cost them to retrofit all homes (to EPC C or higher, or equivalent) and there is a target date of 2030.",
         )
         self.assertEqual(b_and_h_q4.agree_with_mark, "Yes")
-        self.assertEqual(b_and_h_q4.council_page_number, "")
         self.assertEqual(b_and_h_q4.council_evidence, "")
 
         self.assertEqual(b_and_h_q5.question_no, "5")
@@ -599,10 +598,9 @@ class TestCSVDownloadView(BaseTestCase):
             b_and_h_q5.first_mark_response,
             "The council convenes or is a member of a local retrofit partnership",
         )
-        self.assertEqual(b_and_h_q5.council_evidence, "http://example.org/")
+        self.assertEqual(b_and_h_q5.council_evidence, "We do not agree for reasons")
         self.assertEqual(b_and_h_q5.agree_with_mark, "No")
-        self.assertEqual(b_and_h_q5.council_page_number, "20")
-        self.assertEqual(b_and_h_q5.council_notes, "We do not agree for reasons")
+        self.assertEqual(b_and_h_q5.council_notes, "a council objection")
 
     def test_download_with_props(self):
         sp = SessionProperties.objects.get(name="ror_property")
@@ -618,4 +616,4 @@ class TestCSVDownloadView(BaseTestCase):
 
         self.assertEqual(prop.section, "Additional information")
         self.assertEqual(prop.question, "Right of Reply Property")
-        self.assertEqual(prop.council_response, "This is a property value")
+        self.assertEqual(prop.council_notes, "This is a property value")
