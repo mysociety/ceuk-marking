@@ -26,6 +26,35 @@ class MarkingSession(models.Model):
         return self.label
 
 
+class SessionConfig(models.Model):
+    CONFIG_TYPES = [
+        ("text", "Text"),
+        ("url", "URL"),
+        ("json", "JSON"),
+    ]
+    marking_session = models.ForeignKey(MarkingSession, on_delete=models.CASCADE)
+    name = models.CharField(max_length=200, help_text="Keyname in database")
+    config_type = models.CharField(max_length=200, choices=CONFIG_TYPES)
+    text_value = models.TextField(null=True, blank=True)
+    json_value = models.JSONField(null=True, blank=True)
+
+    @property
+    def value(self):
+        if self.config_type == "json":
+            return self.json_value
+        else:
+            return self.text_value
+
+    @classmethod
+    def get_config(cls, marking_session, name):
+        try:
+            config = cls.objects.get(name=name, marking_session=marking_session)
+            config = config.value
+            return config
+        except cls.DoesNotExist:
+            return None
+
+
 class SessionProperties(models.Model):
     """Used to define extra properties that can be added as part of marking"""
 
