@@ -5,7 +5,11 @@ from django.utils.text import slugify
 import pandas as pd
 
 from crowdsourcer.models import MarkingSession, Question
-from crowdsourcer.scoring import get_all_question_data, get_scoring_object
+from crowdsourcer.scoring import (
+    clear_exception_cache,
+    get_all_question_data,
+    get_scoring_object,
+)
 
 
 class Command(BaseCommand):
@@ -80,6 +84,8 @@ class Command(BaseCommand):
     ):
         self.questions_only = questions_only
 
+        # make sure we're not using old cached exceptions
+        clear_exception_cache()
         session_label = options["session"]
         try:
             session = MarkingSession.objects.get(label=session_label)

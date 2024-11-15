@@ -17,6 +17,7 @@ from crowdsourcer.models import (
     SessionPropertyValues,
 )
 from crowdsourcer.scoring import (
+    clear_exception_cache,
     get_all_question_data,
     get_duplicate_responses,
     get_exact_duplicates,
@@ -288,13 +289,16 @@ class QuestionDataCSVView(StatsUserTestMixin, ListView):
         return [authority, "-", "-", "-", "-", "-", "-"]
 
     def get_response_data(self, response):
-        return get_response_data(response, include_private=True)
+        return get_response_data(
+            response, include_private=True, marking_session=self.request.current_session
+        )
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
         answers = {}
 
+        clear_exception_cache()
         for response in context["responses"]:
             data = self.get_response_data(response)
             answers[response.authority.name] = data
@@ -367,6 +371,7 @@ class RoRQuestionDataCSVView(QuestionDataCSVView):
 
 class BaseScoresView(StatsUserTestMixin, TemplateView):
     def get_scores(self):
+        clear_exception_cache()
         self.scoring = get_scoring_object(self.request.current_session)
 
     def render_to_response(self, context, **response_kwargs):
@@ -540,6 +545,7 @@ class QuestionScoresCSV(StatsUserTestMixin, ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
+        clear_exception_cache()
         scoring = {}
         get_section_maxes(scoring, self.request.current_session)
 

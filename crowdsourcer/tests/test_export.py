@@ -5,8 +5,105 @@ from unittest import mock
 from django.core.management import call_command
 from django.test import TestCase
 
-from crowdsourcer.models import MarkingSession, Question, Response
+from crowdsourcer.models import MarkingSession, Question, Response, SessionConfig
 from crowdsourcer.scoring import get_section_maxes
+
+SECTION_WEIGHTINGS = {
+    "Buildings & Heating": {
+        "Single Tier": 0.20,
+        "District": 0.25,
+        "County": 0.20,
+        "Northern Ireland": 0.20,
+    },
+    "Transport": {
+        "Single Tier": 0.20,
+        "District": 0.05,
+        "County": 0.30,
+        "Northern Ireland": 0.15,
+    },
+    "Planning & Land Use": {
+        "Single Tier": 0.15,
+        "District": 0.25,
+        "County": 0.05,
+        "Northern Ireland": 0.15,
+    },
+    "Governance & Finance": {
+        "Single Tier": 0.15,
+        "District": 0.15,
+        "County": 0.15,
+        "Northern Ireland": 0.20,
+    },
+    "Biodiversity": {
+        "Single Tier": 0.10,
+        "District": 0.10,
+        "County": 0.10,
+        "Northern Ireland": 0.10,
+    },
+    "Collaboration & Engagement": {
+        "Single Tier": 0.10,
+        "District": 0.10,
+        "County": 0.10,
+        "Northern Ireland": 0.10,
+    },
+    "Waste Reduction & Food": {
+        "Single Tier": 0.10,
+        "District": 0.10,
+        "County": 0.10,
+        "Northern Ireland": 0.10,
+    },
+    "Transport (CA)": {
+        "Combined Authority": 0.25,
+    },
+    "Buildings & Heating & Green Skills (CA)": {
+        "Combined Authority": 0.25,
+    },
+    "Governance & Finance (CA)": {
+        "Combined Authority": 0.20,
+    },
+    "Planning & Biodiversity (CA)": {
+        "Combined Authority": 0.10,
+    },
+    "Collaboration & Engagement (CA)": {
+        "Combined Authority": 0.20,
+    },
+}
+
+EXCEPTIONS = {
+    "Transport": {
+        "Single Tier": {
+            "scotland": ["6", "8b"],
+            "wales": ["6", "8b"],
+        },
+        "LBO": ["6"],
+        "Greater London Authority": ["6"],
+    },
+    "Biodiversity": {
+        "Single Tier": {
+            "scotland": ["4"],
+            "wales": ["4"],
+        }
+    },
+    "Buildings & Heating": {
+        "Single Tier": {
+            "scotland": ["8"],
+        },
+        "Northern Ireland": {
+            "northern ireland": ["8"],
+        },
+    },
+    "Waste Reduction & Food": {
+        "CTY": ["1b"],
+    },
+}
+
+SCORE_EXCEPTIONS = {
+    "Waste Reduction & Food": {
+        "2": {
+            "max_score": 1,
+            "points_for_max": 2,
+        }
+    }
+}
 
 max_section = {
     "Buildings & Heating": {
@@ -151,6 +248,30 @@ class BaseCommandTestCase(TestCase):
         )
         return out.getvalue()
 
+    def add_config(self):
+        SessionConfig.objects.create(
+            marking_session=self.session,
+            name="exceptions",
+            config_type="json",
+            json_value={},
+        )
+        SessionConfig.objects.create(
+            marking_session=self.session,
+            name="score_exceptions",
+            config_type="json",
+            json_value={},
+        )
+        SessionConfig.objects.create(
+            marking_session=self.session,
+            name="score_weightings",
+            config_type="json",
+            json_value=SECTION_WEIGHTINGS,
+        )
+
+    def setUp(self):
+        self.session = MarkingSession.objects.get(label="Default")
+        self.add_config()
+
 
 class ExportNoMarksTestCase(BaseCommandTestCase):
     fixtures = [
@@ -161,8 +282,25 @@ class ExportNoMarksTestCase(BaseCommandTestCase):
         "options.json",
     ]
 
-    def setUp(self):
-        self.session = MarkingSession.objects.get(label="Default")
+    def add_config(self):
+        SessionConfig.objects.create(
+            marking_session=self.session,
+            name="exceptions",
+            config_type="json",
+            json_value=EXCEPTIONS,
+        )
+        SessionConfig.objects.create(
+            marking_session=self.session,
+            name="score_exceptions",
+            config_type="json",
+            json_value=SCORE_EXCEPTIONS,
+        )
+        SessionConfig.objects.create(
+            marking_session=self.session,
+            name="score_weightings",
+            config_type="json",
+            json_value=SECTION_WEIGHTINGS,
+        )
 
     def test_max_calculation(self):
         scoring = {}
@@ -194,12 +332,11 @@ class ExportNoMarksTestCase(BaseCommandTestCase):
         self.assertEquals(scoring["section_weighted_maxes"], local_max_w)
 
     @mock.patch("crowdsourcer.management.commands.export_marks.Command.write_files")
-    # this gets patched everywhere are the exceptions are in the scoring file and have
-    # question numbers that don't exist in the fixtures and hence throw errors when the
-    # code tries to handle them
-    @mock.patch("crowdsourcer.scoring.EXCEPTIONS", {})
-    @mock.patch("crowdsourcer.scoring.SCORE_EXCEPTIONS", {})
     def test_export_with_no_marks(self, write_mock):
+        c = SessionConfig.objects.get(marking_session=self.session, name="exceptions")
+        c.json_value = {}
+        c.save()
+
         self.call_command("export_marks", session="Default")
 
         expected_percent = [
@@ -476,8 +613,6 @@ class ExportWithMarksTestCase(BaseCommandTestCase):
     score_exceptions_mock = {"Transport": {"2": {"max_score": 1, "points_for_max": 2}}}
 
     @mock.patch("crowdsourcer.management.commands.export_marks.Command.write_files")
-    @mock.patch("crowdsourcer.scoring.EXCEPTIONS", {})
-    @mock.patch("crowdsourcer.scoring.SCORE_EXCEPTIONS", {})
     def test_export(self, write_mock):
         self.call_command("export_marks", session="Default")
 
@@ -487,8 +622,6 @@ class ExportWithMarksTestCase(BaseCommandTestCase):
         self.assertEquals(linear, self.expected_linear)
 
     @mock.patch("crowdsourcer.management.commands.export_marks.Command.write_files")
-    @mock.patch("crowdsourcer.scoring.EXCEPTIONS", {})
-    @mock.patch("crowdsourcer.scoring.SCORE_EXCEPTIONS", {})
     def test_export_with_unweighted_q(self, write_mock):
         Question.objects.filter(pk=272).update(weighting="unweighted")
 
@@ -504,9 +637,11 @@ class ExportWithMarksTestCase(BaseCommandTestCase):
         self.assertEquals(linear, self.expected_linear)
 
     @mock.patch("crowdsourcer.management.commands.export_marks.Command.write_files")
-    @mock.patch("crowdsourcer.scoring.EXCEPTIONS", exceptions_mock)
-    @mock.patch("crowdsourcer.scoring.SCORE_EXCEPTIONS", {})
     def test_export_with_exceptions(self, write_mock):
+        c = SessionConfig.objects.get(marking_session=self.session, name="exceptions")
+        c.json_value = self.exceptions_mock
+        c.save()
+
         Response.objects.filter(question_id=282, authority_id=2).delete()
 
         self.call_command("export_marks", session="Default")
@@ -542,9 +677,13 @@ class ExportWithMarksTestCase(BaseCommandTestCase):
         self.assertEquals(percent, expected_percent)
 
     @mock.patch("crowdsourcer.management.commands.export_marks.Command.write_files")
-    @mock.patch("crowdsourcer.scoring.EXCEPTIONS", {})
-    @mock.patch("crowdsourcer.scoring.SCORE_EXCEPTIONS", score_exceptions_mock)
     def test_export_with_score_exceptions(self, write_mock):
+        c = SessionConfig.objects.get(
+            marking_session=self.session, name="score_exceptions"
+        )
+        c.json_value = self.score_exceptions_mock
+        c.save()
+
         r = Response.objects.get(
             question_id=282, authority_id=2, response_type__type="Audit"
         )
@@ -618,9 +757,10 @@ class ExportWithMarksTestCase(BaseCommandTestCase):
         self.assertEquals(percent, expected_percent)
 
     @mock.patch("crowdsourcer.management.commands.export_marks.Command.write_files")
-    @mock.patch("crowdsourcer.scoring.EXCEPTIONS", exceptions_type_mock)
-    @mock.patch("crowdsourcer.scoring.SCORE_EXCEPTIONS", {})
     def test_export_with_council_type_exceptions(self, write_mock):
+        c = SessionConfig.objects.get(marking_session=self.session, name="exceptions")
+        c.json_value = self.exceptions_type_mock
+        c.save()
         Response.objects.filter(question_id=282, authority_id=2).delete()
 
         self.call_command("export_marks", session="Default")
@@ -656,9 +796,11 @@ class ExportWithMarksTestCase(BaseCommandTestCase):
         self.assertEquals(percent, expected_percent)
 
     @mock.patch("crowdsourcer.management.commands.export_marks.Command.write_files")
-    @mock.patch("crowdsourcer.scoring.EXCEPTIONS", exceptions_name_mock)
-    @mock.patch("crowdsourcer.scoring.SCORE_EXCEPTIONS", {})
     def test_export_with_council_name_exceptions(self, write_mock):
+        c = SessionConfig.objects.get(marking_session=self.session, name="exceptions")
+        c.json_value = self.exceptions_name_mock
+        c.save()
+
         Response.objects.filter(question_id=282, authority_id=2).delete()
 
         self.call_command("export_marks", session="Default")
@@ -694,9 +836,11 @@ class ExportWithMarksTestCase(BaseCommandTestCase):
         self.assertEquals(percent, expected_percent)
 
     @mock.patch("crowdsourcer.management.commands.export_marks.Command.write_files")
-    @mock.patch("crowdsourcer.scoring.EXCEPTIONS", {"Buildings & Heating": {}})
-    @mock.patch("crowdsourcer.scoring.SCORE_EXCEPTIONS", {})
     def test_export_with_housing_exception(self, write_mock):
+        c = SessionConfig.objects.get(marking_session=self.session, name="exceptions")
+        c.json_value = {"Buildings & Heating": {}}
+        c.save()
+
         r = Response.objects.get(question_id=271, authority_id=1)
         r.option_id = 206
         r.save()
@@ -806,8 +950,6 @@ class ExportWithMarksNegativeQTestCase(BaseCommandTestCase):
     ]
 
     @mock.patch("crowdsourcer.management.commands.export_marks.Command.write_files")
-    @mock.patch("crowdsourcer.scoring.EXCEPTIONS", {})
-    @mock.patch("crowdsourcer.scoring.SCORE_EXCEPTIONS", {})
     def test_export(self, write_mock):
         self.call_command("export_marks", session="Default")
 
@@ -827,8 +969,6 @@ class ExportWithMultiMarksTestCase(BaseCommandTestCase):
     ]
 
     @mock.patch("crowdsourcer.management.commands.export_marks.Command.write_files")
-    @mock.patch("crowdsourcer.scoring.EXCEPTIONS", {})
-    @mock.patch("crowdsourcer.scoring.SCORE_EXCEPTIONS", {})
     def test_export(self, write_mock):
         self.call_command("export_marks", session="Default")
 
@@ -932,8 +1072,6 @@ class ExportWithMoreMarksTestCase(BaseCommandTestCase):
     ]
 
     @mock.patch("crowdsourcer.management.commands.export_marks.Command.write_files")
-    @mock.patch("crowdsourcer.scoring.EXCEPTIONS", {})
-    @mock.patch("crowdsourcer.scoring.SCORE_EXCEPTIONS", {})
     def test_export(self, write_mock):
         self.call_command("export_marks", session="Default")
 
@@ -1090,8 +1228,6 @@ class ExportNoMarksCATestCase(BaseCommandTestCase):
         self.assertEquals(scoring["group_maxes"], ca_max_totals)
 
     @mock.patch("crowdsourcer.management.commands.export_marks.Command.write_files")
-    @mock.patch("crowdsourcer.scoring.EXCEPTIONS", {})
-    @mock.patch("crowdsourcer.scoring.SCORE_EXCEPTIONS", {})
     def test_export_with_no_marks(self, write_mock):
         self.call_command("export_marks", session="Default")
 
@@ -1375,8 +1511,6 @@ class ExportWithMoreMarksCATestCase(BaseCommandTestCase):
     ]
 
     @mock.patch("crowdsourcer.management.commands.export_marks.Command.write_files")
-    @mock.patch("crowdsourcer.scoring.EXCEPTIONS", {})
-    @mock.patch("crowdsourcer.scoring.SCORE_EXCEPTIONS", {})
     def test_export(self, write_mock):
         self.call_command("export_marks", session="Default")
 
@@ -1386,8 +1520,6 @@ class ExportWithMoreMarksCATestCase(BaseCommandTestCase):
         self.assertEquals(percent, self.expected_percent)
 
     @mock.patch("crowdsourcer.management.commands.export_marks.Command.write_files")
-    @mock.patch("crowdsourcer.scoring.EXCEPTIONS", {})
-    @mock.patch("crowdsourcer.scoring.SCORE_EXCEPTIONS", {})
     def test_export_100_percent(self, write_mock):
 
         Response.objects.filter(pk=37).update(option_id=196)
@@ -1540,7 +1672,31 @@ class ExportSecondSessionTestCase(BaseCommandTestCase):
         },
     ]
 
+    def setUp(self):
+        self.session = MarkingSession.objects.get(label="Second Session")
+
+    def add_exceptions(self):
+        SessionConfig.objects.create(
+            marking_session=self.session,
+            name="exceptions",
+            config_type="json",
+            json_value={},
+        )
+        SessionConfig.objects.create(
+            marking_session=self.session,
+            name="score_exceptions",
+            config_type="json",
+            json_value={},
+        )
+        SessionConfig.objects.create(
+            marking_session=self.session,
+            name="score_weightings",
+            config_type="json",
+            json_value=SECTION_WEIGHTINGS,
+        )
+
     def test_max_calculation(self):
+        self.add_exceptions()
         scoring = {}
         get_section_maxes(scoring, MarkingSession.objects.get(label="Second Session"))
 
@@ -1550,9 +1706,8 @@ class ExportSecondSessionTestCase(BaseCommandTestCase):
         self.assertEquals(scoring["section_weighted_maxes"], self.max_weighted)
 
     @mock.patch("crowdsourcer.management.commands.export_marks.Command.write_files")
-    @mock.patch("crowdsourcer.scoring.EXCEPTIONS", {})
-    @mock.patch("crowdsourcer.scoring.SCORE_EXCEPTIONS", {})
     def test_export(self, write_mock):
+        self.add_config()
         self.call_command("export_marks", session="Second Session")
 
         percent, raw, linear = write_mock.call_args[0]

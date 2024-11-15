@@ -1,5 +1,6 @@
 from collections import defaultdict
 from copy import deepcopy
+from functools import cache
 
 from django.db.models import Count, Max, OuterRef, Q, Subquery, Sum
 
@@ -12,104 +13,8 @@ from crowdsourcer.models import (
     Response,
     ResponseType,
     Section,
+    SessionConfig,
 )
-
-SECTION_WEIGHTINGS = {
-    "Buildings & Heating": {
-        "Single Tier": 0.20,
-        "District": 0.25,
-        "County": 0.20,
-        "Northern Ireland": 0.20,
-    },
-    "Transport": {
-        "Single Tier": 0.20,
-        "District": 0.05,
-        "County": 0.30,
-        "Northern Ireland": 0.15,
-    },
-    "Planning & Land Use": {
-        "Single Tier": 0.15,
-        "District": 0.25,
-        "County": 0.05,
-        "Northern Ireland": 0.15,
-    },
-    "Governance & Finance": {
-        "Single Tier": 0.15,
-        "District": 0.15,
-        "County": 0.15,
-        "Northern Ireland": 0.20,
-    },
-    "Biodiversity": {
-        "Single Tier": 0.10,
-        "District": 0.10,
-        "County": 0.10,
-        "Northern Ireland": 0.10,
-    },
-    "Collaboration & Engagement": {
-        "Single Tier": 0.10,
-        "District": 0.10,
-        "County": 0.10,
-        "Northern Ireland": 0.10,
-    },
-    "Waste Reduction & Food": {
-        "Single Tier": 0.10,
-        "District": 0.10,
-        "County": 0.10,
-        "Northern Ireland": 0.10,
-    },
-    "Transport (CA)": {
-        "Combined Authority": 0.25,
-    },
-    "Buildings & Heating & Green Skills (CA)": {
-        "Combined Authority": 0.25,
-    },
-    "Governance & Finance (CA)": {
-        "Combined Authority": 0.20,
-    },
-    "Planning & Biodiversity (CA)": {
-        "Combined Authority": 0.10,
-    },
-    "Collaboration & Engagement (CA)": {
-        "Combined Authority": 0.20,
-    },
-}
-
-EXCEPTIONS = {
-    "Transport": {
-        "Single Tier": {
-            "scotland": ["6", "8b"],
-            "wales": ["6", "8b"],
-        },
-        "LBO": ["6"],
-        "Greater London Authority": ["6"],
-    },
-    "Biodiversity": {
-        "Single Tier": {
-            "scotland": ["4"],
-            "wales": ["4"],
-        }
-    },
-    "Buildings & Heating": {
-        "Single Tier": {
-            "scotland": ["8"],
-        },
-        "Northern Ireland": {
-            "northern ireland": ["8"],
-        },
-    },
-    "Waste Reduction & Food": {
-        "CTY": ["1b"],
-    },
-}
-
-SCORE_EXCEPTIONS = {
-    "Waste Reduction & Food": {
-        "2": {
-            "max_score": 1,
-            "points_for_max": 2,
-        }
-    }
-}
 
 NEW_COUNCILS = [
     "Cumberland Council",
@@ -117,6 +22,37 @@ NEW_COUNCILS = [
     "North Yorkshire Council",
     "Somerset Council",
 ]
+
+
+def get_scoring_config(marking_session, name):
+    conf = SessionConfig.get_config(marking_session, name)
+    if conf is None:
+        conf = {}
+
+    return conf
+
+
+@cache
+def get_exceptions(marking_session):
+    exceptions = get_scoring_config(marking_session, "exceptions")
+    exceptions = update_with_housing_exceptions(exceptions, marking_session)
+    return exceptions
+
+
+@cache
+def get_score_exceptions(marking_session):
+    return get_scoring_config(marking_session, "score_exceptions")
+
+
+@cache
+def get_weightings(marking_session):
+    return get_scoring_config(marking_session, "score_weightings")
+
+
+def clear_exception_cache():
+    get_exceptions.cache_clear()
+    get_score_exceptions.cache_clear()
+    get_weightings.cache_clear()
 
 
 def number_and_part(number=None, number_part=None):
@@ -146,6 +82,7 @@ def get_section_maxes(scoring, session):
     q_maxes = defaultdict(int)
     q_weighted_maxes = defaultdict(int)
     negative_q = defaultdict(int)
+    score_exceptions = get_score_exceptions(session)
 
     for section in Section.objects.filter(marking_session=session):
         q_section_maxes = {}
@@ -195,10 +132,10 @@ def get_section_maxes(scoring, session):
                     m["question__number"], m["question__number_part"]
                 )
                 if (
-                    SCORE_EXCEPTIONS.get(section.title, None) is not None
-                    and SCORE_EXCEPTIONS[section.title].get(q_number, None) is not None
+                    score_exceptions.get(section.title, None) is not None
+                    and score_exceptions[section.title].get(q_number, None) is not None
                 ):
-                    m["highest"] = SCORE_EXCEPTIONS[section.title][q_number][
+                    m["highest"] = score_exceptions[section.title][q_number][
                         "max_score"
                     ]
                 q_section_maxes[q_number] = m["highest"]
@@ -232,22 +169,23 @@ def get_section_maxes(scoring, session):
     scoring["negative_q"] = negative_q
 
 
-def q_is_exception(q, section, group, country, council):
+def q_is_exception(q, section, group, country, council, session):
+    config_exceptions = get_exceptions(session)
     all_exceptions = []
     try:
-        exceptions = EXCEPTIONS[section][group][country]
+        exceptions = config_exceptions[section][group][country]
         all_exceptions = all_exceptions + exceptions
     except KeyError:
         pass
 
     try:
-        exceptions = EXCEPTIONS[section][council.type]
+        exceptions = config_exceptions[section][council.type]
         all_exceptions = all_exceptions + exceptions
     except KeyError:
         pass
 
     try:
-        exceptions = EXCEPTIONS[section][council.name]
+        exceptions = config_exceptions[section][council.name]
         all_exceptions = all_exceptions + exceptions
     except KeyError:
         pass
@@ -257,7 +195,7 @@ def q_is_exception(q, section, group, country, council):
     return False
 
 
-def update_with_housing_exceptions(session):
+def update_with_housing_exceptions(exceptions, session):
     rt = ResponseType.objects.get(type="Audit")
     try:
         q = Question.objects.get(
@@ -266,7 +204,7 @@ def update_with_housing_exceptions(session):
             section__marking_session=session,
         )
     except Question.DoesNotExist:
-        return
+        return exceptions
 
     try:
         o = Option.objects.get(
@@ -274,37 +212,40 @@ def update_with_housing_exceptions(session):
             description="Council does not own or manage any council homes",
         )
     except Option.DoesNotExist:
-        return
+        return exceptions
 
-    exceptions = Response.objects.filter(
+    housing_responses = Response.objects.filter(
         question=q,
         option=o,
         response_type=rt,
     )
 
-    for e in exceptions:
-        EXCEPTIONS["Buildings & Heating"][e.authority.name] = ["3", "4"]
+    for e in housing_responses:
+        exceptions["Buildings & Heating"][e.authority.name] = ["3", "4"]
+
+    return exceptions
 
 
-def get_maxes_for_council(scoring, group, country, council):
+def get_maxes_for_council(scoring, group, country, council, session):
     maxes = deepcopy(scoring["section_maxes"])
     weighted_maxes = deepcopy(scoring["section_weighted_maxes"])
+    config_exceptions = get_exceptions(session)
     for section in maxes.keys():
         all_exceptions = []
         try:
-            exceptions = EXCEPTIONS[section][group][country]
+            exceptions = config_exceptions[section][group][country]
             all_exceptions = all_exceptions + exceptions
         except KeyError:
             pass
 
         try:
-            exceptions = EXCEPTIONS[section][council.type]
+            exceptions = config_exceptions[section][council.type]
             all_exceptions = all_exceptions + exceptions
         except KeyError:
             pass
 
         try:
-            exceptions = EXCEPTIONS[section][council.name]
+            exceptions = config_exceptions[section][council.name]
             all_exceptions = all_exceptions + exceptions
         except KeyError:
             pass
@@ -365,7 +306,7 @@ def get_weighted_question_score(score, max_score, weighting):
 def get_section_scores(scoring, session):
     raw_scores, weighted = get_blank_section_scores(session)
 
-    update_with_housing_exceptions(session)
+    score_exceptions = get_score_exceptions(session)
 
     for section in Section.objects.filter(marking_session=session):
         options = (
@@ -420,6 +361,7 @@ def get_section_scores(scoring, session):
                 scoring["council_groups"][score["authority__name"]],
                 scoring["council_countries"][score["authority__name"]],
                 scoring["councils"][score["authority__name"]],
+                session,
             ):
                 print(f"exception: {q}")
                 continue
@@ -454,11 +396,11 @@ def get_section_scores(scoring, session):
                 else:
                     q_score = 0
             if (
-                SCORE_EXCEPTIONS.get(section.title, None) is not None
-                and SCORE_EXCEPTIONS[section.title].get(q, None) is not None
+                score_exceptions.get(section.title, None) is not None
+                and score_exceptions[section.title].get(q, None) is not None
             ):
-                if q_score >= SCORE_EXCEPTIONS[section.title][q]["points_for_max"]:
-                    q_score = SCORE_EXCEPTIONS[section.title][q]["max_score"]
+                if q_score >= score_exceptions[section.title][q]["points_for_max"]:
+                    q_score = score_exceptions[section.title][q]["max_score"]
                 else:
                     q_score = 0
 
@@ -476,18 +418,20 @@ def get_section_scores(scoring, session):
     scoring["weighted_scores"] = weighted
 
 
-def get_section_weighting(section, council_group):
+def get_section_weighting(section, council_group, session):
+    section_weightings = get_weightings(session)
+
     if (
-        SECTION_WEIGHTINGS.get(section, None) is not None
-        and SECTION_WEIGHTINGS[section].get(council_group, None) is not None
+        section_weightings.get(section, None) is not None
+        and section_weightings[section].get(council_group, None) is not None
     ):
-        return SECTION_WEIGHTINGS[section][council_group]
+        return section_weightings[section][council_group]
 
     print(f"No weighting for {section} and {council_group}")
     return 0
 
 
-def calculate_council_totals(scoring):
+def calculate_council_totals(scoring, session):
     section_totals = defaultdict(dict)
     totals = {}
     scoring["council_maxes"] = {}
@@ -502,6 +446,7 @@ def calculate_council_totals(scoring):
             scoring["council_groups"][council],
             scoring["council_countries"][council],
             scoring["councils"][council],
+            session,
         )
         scoring["council_maxes"][council] = {
             "raw": deepcopy(council_max),
@@ -525,7 +470,7 @@ def calculate_council_totals(scoring):
                 weighted_score = (
                     scoring["weighted_scores"][council][section]
                     / council_weighted_max[section][council_group]
-                ) * get_section_weighting(section, council_group)
+                ) * get_section_weighting(section, council_group, session)
                 weighted_score = round(weighted_score, 2)
 
                 unweighted_percentage = (
@@ -573,7 +518,7 @@ def get_scoring_object(session):
 
     get_section_maxes(scoring, session)
     get_section_scores(scoring, session)
-    calculate_council_totals(scoring)
+    calculate_council_totals(scoring, session)
 
     return scoring
 
@@ -655,7 +600,11 @@ def get_exact_duplicates(duplicates, session, response_type="Audit"):
 
 
 def get_response_data(
-    response, include_private=False, include_name=True, process_links=False
+    response,
+    include_private=False,
+    include_name=True,
+    process_links=False,
+    marking_session=None,
 ):
     score = 0
     answer = ""
@@ -674,12 +623,13 @@ def get_response_data(
 
     section = response.question.section
     q = response.question.number_and_part
+    exceptions = get_score_exceptions(marking_session)
     if (
-        SCORE_EXCEPTIONS.get(section.title, None) is not None
-        and SCORE_EXCEPTIONS[section.title].get(q, None) is not None
+        exceptions.get(section.title, None) is not None
+        and exceptions[section.title].get(q, None) is not None
     ):
-        if score >= SCORE_EXCEPTIONS[section.title][q]["points_for_max"]:
-            score = SCORE_EXCEPTIONS[section.title][q]["max_score"]
+        if score >= exceptions[section.title][q]["points_for_max"]:
+            score = exceptions[section.title][q]["max_score"]
         else:
             score = 0
 
@@ -758,6 +708,7 @@ def get_all_question_data(scoring, marking_session=None, response_type="Audit"):
             scoring["council_groups"][council],
             scoring["council_countries"][council],
             scoring["councils"][council],
+            session,
         ):
             continue
 
