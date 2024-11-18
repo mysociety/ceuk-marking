@@ -33,6 +33,7 @@ env = environ.Env(
     HIDE_DEBUG_TOOLBAR=(bool, False),
     LOG_LEVEL=(str, "WARNING"),
     BRAND=(str, "default"),
+    LOG_FAILED_LOGINS=(bool, False),
 )
 environ.Env.read_env(BASE_DIR / ".env")
 
@@ -45,6 +46,7 @@ MAPIT_URL = env("MAPIT_URL")
 MAPIT_API_KEY = env("MAPIT_API_KEY")
 LOG_LEVEL = env("LOG_LEVEL")
 BRAND = env("BRAND")
+LOG_FAILED_LOGINS = env("LOG_FAILED_LOGINS")
 
 BRAND_TEMPLATES = BASE_DIR / "cobrands" / BRAND
 

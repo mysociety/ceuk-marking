@@ -2,10 +2,13 @@ import logging
 
 from django.conf import settings
 from django.contrib.auth.mixins import UserPassesTestMixin
+from django.contrib.auth.models import User
+from django.contrib.auth.signals import user_login_failed
 from django.core.exceptions import PermissionDenied
 from django.core.mail import mail_admins
 from django.db.models import Count, F, FloatField, OuterRef, Subquery
 from django.db.models.functions import Cast
+from django.dispatch import receiver
 from django.http import JsonResponse
 from django.views.generic import ListView, TemplateView
 
@@ -639,3 +642,25 @@ class BaseAuthorityAssignmentView(UserPassesTestMixin, ListView):
         context["do_not_mark_only"] = do_not_mark_only
 
         return context
+
+
+@receiver(user_login_failed)
+def log_failed_login(sender, credentials, **kwargs):
+    print(f"LOG_FAILED_LOGINS is {settings.LOG_FAILED_LOGINS}")
+    if not settings.LOG_FAILED_LOGINS:
+        return
+
+    username = credentials.get("username", None)
+    msg = "User exists"
+    try:
+        u = User.objects.get(username=username)
+        if not u.is_active:
+            msg = "User exists, is not active"
+        elif not hasattr(u, "marker"):
+            msg = "User exists, has no marker"
+    except User.DoesNotExist:
+        msg = "User does not exist"
+
+    logger.warning(
+        f"Failed login attempt: Username '{username}' failed to authenticate. {msg}"
+    )
