@@ -91,7 +91,7 @@ class BaseAllAuthorityProgressView(UserPassesTestMixin, ListView):
                         authority=OuterRef("pk"),
                         response_type=response_type,
                     )
-                    .exclude(id__in=Response.null_responses())
+                    .exclude(id__in=Response.null_responses(stage_name=self.stage))
                     .values("authority")
                     .annotate(response_count=Count("question_id", distinct=True))
                     .values("response_count")
@@ -195,7 +195,7 @@ class BaseAuthorityProgressView(UserPassesTestMixin, ListView):
                             question__in=question_list,
                             response_type=stage,
                         )
-                        .exclude(id__in=Response.null_responses())
+                        .exclude(id__in=Response.null_responses(stage_name=self.stage))
                         .values("authority")
                         .annotate(response_count=Count("question_id", distict=True))
                         .values("response_count")
@@ -288,7 +288,11 @@ class VolunteerProgressView(UserPassesTestMixin, ListView):
                                 authority=OuterRef("pk"),
                                 response_type=rt,
                             )
-                            .exclude(id__in=Response.null_responses())
+                            .exclude(
+                                id__in=Response.null_responses(
+                                    stage_name=self.request.current_stage.type
+                                )
+                            )
                             .values("authority")
                             .annotate(
                                 response_count=Count("question_id", distinct=True)
@@ -478,6 +482,7 @@ class AllSectionChallengeView(UserPassesTestMixin, ListView):
                     self.request.current_session,
                     response_type=response_types,
                     question_types=types,
+                    right_of_reply=True,
                 )
                 .annotate(
                     num_challenges=Subquery(

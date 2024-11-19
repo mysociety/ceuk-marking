@@ -250,10 +250,10 @@ class PublicAuthority(models.Model):
         if question_types is None:
             question_types = Question.VOLUNTEER_TYPES
 
+        stage_name = ""
         if right_of_reply:
-            null_responses = Response.objects.filter(agree_with_response__isnull=True)
-        else:
-            null_responses = Response.null_responses()
+            stage_name = "Right of Reply"
+        null_responses = Response.null_responses(stage_name=stage_name)
 
         authorities = cls.objects.filter(
             marking_session=marking_session, questiongroup__question__in=questions
@@ -394,7 +394,10 @@ class Response(models.Model):
         return links
 
     @classmethod
-    def null_responses(cls):
+    def null_responses(cls, stage_name=""):
+        if stage_name == "Right of Reply":
+            return cls.objects.filter(agree_with_response__isnull=True)
+
         return cls.objects.filter(option__isnull=True, multi_option__isnull=True)
 
 
