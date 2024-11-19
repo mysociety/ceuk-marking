@@ -87,6 +87,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "compressor",
     "django_bootstrap5",
+    "django_json_widget",
     "crowdsourcer",
 ]
 

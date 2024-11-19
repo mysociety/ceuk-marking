@@ -1,5 +1,8 @@
 from django.contrib import admin
 from django.contrib.admin import SimpleListFilter
+from django.db.models import JSONField
+
+from django_json_widget.widgets import JSONEditorWidget
 
 from crowdsourcer.models import (
     Assigned,
@@ -178,3 +181,6 @@ class SessionConfigAdmin(admin.ModelAdmin):
     )
 
     list_filter = ["marking_session"]
+    formfield_overrides = {
+        JSONField: {"widget": JSONEditorWidget},
+    }
