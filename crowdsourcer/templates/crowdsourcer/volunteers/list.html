@@ -1,23 +1,57 @@
 {% extends 'crowdsourcer/base.html' %}
 
 {% load crowdsourcer_tags %}
+{% load django_bootstrap5 %}
 
 {% block content %}
 {% if show_login %}
     <h1 class="mb-4">Sign in</h1>
     <a href="{% url 'login' %}">Sign in</a>
 {% else %}
-    <div class="float-end">
-        <a href="{% session_url 'add_volunteer' %}">Add volunteer</a>
-        <a href="{% session_url 'bulk_assign_volunteer' %}">Bulk assignment</a>
-        <a href="{% session_url 'deactivate_volunteers' %}">Stage deactivate</a>
+    <div class="d-md-flex align-items-center mb-4">
+        <h1 class="mb-md-0 me-md-auto">Volunteers</h1>
+        <ul class="nav ms-n3 me-md-n3">
+            <li class="nav-item">
+                <a href="{% session_url 'add_volunteer' %}" class="nav-link">Add volunteer</a>
+            </li>
+            <li class="nav-item">
+                <a href="{% session_url 'bulk_assign_volunteer' %}" class="nav-link">Bulk assignment</a>
+            </li>
+            <li class="nav-item">
+                <a href="{% session_url 'deactivate_volunteers' %}" class="nav-link">Stage deactivate</a>
+            </li>
+        </ul>
     </div>
-    <h1 class="mb-4">Volunteers</h1>
+
+    <form method="GET" id="volunteer_filter" class="bg-light p-3 rounded-sm mb-3">
+        <div class="row align-items-end flex-wrap mb-n3 mb-md-n4">
+            <div class="col" style="min-width: 10rem">
+                {% bootstrap_field filter.form.marker__response_type %}
+            </div>
+            <div class="col" style="min-width: 10rem">
+                {% bootstrap_field filter.form.is_active %}
+            </div>
+            <div class="col" style="min-width: 10rem">
+                {% bootstrap_field filter.form.has_assignments %}
+            </div>
+            <div class="col" style="min-width: 10rem">
+                {% bootstrap_field filter.form.assigned_section %}
+            </div>
+            <div class="col" style="min-width: 10rem">
+                {% bootstrap_field filter.form.username %}
+            </div>
+            <div class="col" style="min-width: 10rem">
+                <button type="submit" class="btn btn-primary btn-block mb-3 mb-md-4">Filter list</button>
+            </div>
+        </div>
+    </form>
+
     <table class="table">
         <thead>
             <tr>
                 <th>Name/Email</th>
                 <th>Stage</th>
+                <th>Section</th>
                 <th>Assignments</th>
                 <th>Active</th>
             </tr>
@@ -30,6 +64,9 @@
                 </td>
                 <td>
                     {{ volunteer.marker.response_type|default:"First Mark" }}
+                </td>
+                <td>
+                    {{ volunteer.assigned_section }}
                 </td>
                 <td>
                     <a title="show progress" href="{% session_url 'volunteer_progress' volunteer.pk %}">{{ volunteer.num_assignments }}</a>

@@ -2,12 +2,16 @@ import logging
 
 from django.contrib.auth.mixins import UserPassesTestMixin
 from django.contrib.auth.models import User
+from django.contrib.postgres.aggregates import StringAgg
 from django.db.models import Count, OuterRef, Subquery
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from django.views.generic import FormView, ListView
 
+from django_filters.views import FilterView
+
+from crowdsourcer.filters import VolunteerFilter
 from crowdsourcer.forms import (
     CreateMarkerForm,
     MarkerFormset,
@@ -35,12 +39,21 @@ class VolunteerAccessMixin(UserPassesTestMixin):
         return self.request.user.has_perm("crowdsourcer.can_manage_users")
 
 
-class VolunteersView(VolunteerAccessMixin, ListView):
+class VolunteersView(VolunteerAccessMixin, FilterView):
     template_name = "crowdsourcer/volunteers/list.html"
     context_object_name = "volunteers"
+    filterset_class = VolunteerFilter
+
+    def get_filterset(self, filterset_class):
+        fs = super().get_filterset(filterset_class)
+
+        fs.filters["assigned_section"].field.choices = Section.objects.filter(
+            marking_session=self.request.current_session
+        ).values_list("title", "title")
+        return fs
 
     def get_queryset(self):
-        return (
+        qs = (
             User.objects.filter(marker__marking_session=self.request.current_session)
             .select_related("marker")
             .annotate(
@@ -54,8 +67,27 @@ class VolunteersView(VolunteerAccessMixin, ListView):
                     .values("num_assignments")
                 )
             )
+            .annotate(
+                assigned_section=(
+                    Subquery(
+                        Assigned.objects.filter(
+                            marking_session=self.request.current_session,
+                            user=OuterRef("pk"),
+                        )
+                        .values_list("user")
+                        .annotate(
+                            joined_title=StringAgg(
+                                "section__title", distinct=True, delimiter=", "
+                            )
+                        )
+                        .values("joined_title")
+                    )
+                )
+            )
             .order_by("username")
         )
+
+        return qs
 
 
 class VolunteerAddView(VolunteerAccessMixin, FormView):

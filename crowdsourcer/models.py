@@ -321,6 +321,11 @@ class ResponseType(models.Model):
     priority = models.IntegerField()
     active = models.BooleanField(default=False)
 
+    @classmethod
+    def choices(cls):
+        choices = cls.objects.values_list("pk", "type")
+        return choices
+
     def __str__(self):
         return self.type
 
