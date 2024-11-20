@@ -41,6 +41,9 @@ class BaseQuestionView(TemplateView):
         except ResponseType.DoesNotExist:
             self.rt = None
 
+        if self.request.user.is_superuser and self.request.GET.get("show_foi_q", None):
+            self.how_marked_in = ["volunteer", "national_volunteer", "foi"]
+
     def check_local_permissions(self):
         return True
 
