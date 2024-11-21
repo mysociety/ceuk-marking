@@ -162,6 +162,7 @@ class Question(models.Model):
     previous_question = models.ForeignKey(
         "Question", blank=True, null=True, on_delete=models.SET_NULL
     )
+    read_only = models.BooleanField(default=False)
     created = models.DateTimeField(auto_now_add=True)
     last_update = models.DateTimeField(auto_now=True)
 
