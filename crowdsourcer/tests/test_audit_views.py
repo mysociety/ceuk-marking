@@ -239,6 +239,28 @@ class TestSaveView(BaseTestCase):
         self.assertRegex(response.content, rb"Second Session")
         self.assertNotRegex(response.content, rb"vehicle fleet")
 
+    def test_read_only_questions(self):
+        q = Question.objects.get(pk=282)
+        q.read_only = True
+        q.save()
+
+        url = reverse("authority_audit", args=("Aberdeenshire Council", "Transport"))
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+
+        form = response.context["form"]
+        self.assertTrue(form.forms[1].fields["evidence"].disabled)
+
+        u = User.objects.get(username="admin")
+        self.client.force_login(u)
+
+        url = reverse("authority_audit", args=("Aberdeenshire Council", "Transport"))
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+
+        form = response.context["form"]
+        self.assertFalse(form.forms[1].fields["evidence"].disabled)
+
     def test_save(self):
         url = reverse("authority_audit", args=("Aberdeenshire Council", "Transport"))
         response = self.client.get(url)

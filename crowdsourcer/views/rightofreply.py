@@ -155,6 +155,7 @@ class AuthorityRORSectionQuestions(BaseQuestionView):
     log_start = "ROR form"
     title_start = "Right of Reply - "
     how_marked_in = ["volunteer", "national_volunteer", "foi"]
+    read_only_questions = False
 
     def get_template_names(self):
         if self.has_previous_questions:

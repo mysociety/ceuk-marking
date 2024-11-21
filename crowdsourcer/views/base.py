@@ -33,6 +33,7 @@ class BaseQuestionView(TemplateView):
     title_start = ""
     how_marked_in = ["volunteer", "national_volunteer"]
     has_previous_questions = False
+    read_only_questions = True
 
     def setup(self, request, *args, **kwargs):
         super().setup(request, *args, **kwargs)
@@ -193,7 +194,16 @@ class BaseQuestionView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["form"] = self.get_form()
+        form = self.get_form()
+
+        if self.read_only_questions and not self.request.user.is_superuser:
+            for q_form in form:
+                if q_form.question_obj.read_only:
+                    for name, field in q_form.fields.items():
+                        field.disabled = True
+                        q_form.fields[name] = field
+
+        context["form"] = form
         context["section_title"] = self.kwargs.get("section_title", "")
         context["authority"] = PublicAuthority.objects.get(
             name=self.kwargs.get("name", "")
