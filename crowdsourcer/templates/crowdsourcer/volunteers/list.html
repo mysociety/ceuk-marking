@@ -60,7 +60,7 @@
           {% for volunteer in volunteers %}
             <tr>
                 <td>
-                    <a title="edit user" href="{% session_url 'edit_volunteer' volunteer.pk %}">{{ volunteer.email|default:volunteer.username }}</a>
+                    <a title="Edit user" href="{% session_url 'edit_volunteer' volunteer.pk %}">{{ volunteer.email|default:volunteer.username }}</a>
                 </td>
                 <td>
                     {{ volunteer.marker.response_type|default:"First Mark" }}
@@ -69,8 +69,11 @@
                     {{ volunteer.assigned_section }}
                 </td>
                 <td>
-                    <a title="show progress" href="{% session_url 'volunteer_progress' volunteer.pk %}">{{ volunteer.num_assignments }}</a>
-                    <a title="assign to volunteer" href="{% session_url 'assign_volunteer' volunteer.pk %}">edit</a>
+                    <a title="Show progress" href="{% session_url 'volunteer_progress' volunteer.pk %}">{{ volunteer.num_assignments }}</a>
+                    <a title="Edit assignments" href="{% session_url 'assign_volunteer' volunteer.pk %}" class="ms-1">
+                        {% include 'crowdsourcer/icons/edit.svg' %}
+                        <span class="visually-hidden">Edit</span>
+                    </a>
                 </td>
                 <td>
                     {{ volunteer.is_active }}
