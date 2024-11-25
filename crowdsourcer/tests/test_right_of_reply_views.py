@@ -157,6 +157,24 @@ class TestTwoCouncilsAssignmentView(BaseTestCase):
         self.assertEqual(first.authority.name, "Aberdeen City Council")
         self.assertEqual(second.authority.name, "Aberdeenshire Council")
 
+    def test_bad_assignments_ignored(self):
+        Assigned.objects.create(
+            marking_session=MarkingSession.objects.get(label="Default"),
+            user=self.user,
+        )
+        url = reverse("authority_ror_authorities")
+        response = self.client.get(url)
+
+        context = response.context
+        assignments = context["assignments"]
+
+        self.assertEqual(len(assignments), 2)
+
+        first = assignments[0]
+        second = assignments[1]
+        self.assertEqual(first.authority.name, "Aberdeen City Council")
+        self.assertEqual(second.authority.name, "Aberdeenshire Council")
+
     def test_council_section_list(self):
         url = reverse("authority_ror_sections", args=("Aberdeenshire Council",))
         response = self.client.get(url)

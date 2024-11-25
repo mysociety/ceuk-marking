@@ -50,7 +50,9 @@ class AuthorityRORList(ListView):
         if user.is_anonymous:
             return None
 
-        qs = Assigned.objects.filter(user=user).order_by("authority__name")
+        qs = Assigned.objects.filter(user=user, authority__isnull=False).order_by(
+            "authority__name"
+        )
 
         return qs
 
