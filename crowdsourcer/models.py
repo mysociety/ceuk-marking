@@ -261,6 +261,7 @@ class PublicAuthority(models.Model):
         response_type=None,
         question_types=None,
         right_of_reply=False,
+        exceptions=[],
     ):
         if response_type is None:
             response_type = ResponseType.objects.get(type="First Mark")
@@ -283,6 +284,7 @@ class PublicAuthority(models.Model):
                     section__marking_session=marking_session,
                     how_marked__in=question_types,
                 )
+                .exclude(pk__in=exceptions)
                 .values("questiongroup")
                 .annotate(num_questions=Count("pk"))
                 .values("num_questions")

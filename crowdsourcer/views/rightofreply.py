@@ -20,6 +20,7 @@ from crowdsourcer.models import (
     SessionProperties,
     SessionPropertyValues,
 )
+from crowdsourcer.scoring import get_exceptions_for_authority
 from crowdsourcer.views.base import BaseQuestionView
 
 logger = logging.getLogger(__name__)
@@ -71,6 +72,7 @@ class AuthorityRORSectionList(ListView):
             raise PermissionDenied
 
         authority = PublicAuthority.objects.get(name=self.kwargs["name"])
+        self.authority = authority
         if user.is_superuser is False:
             if hasattr(user, "marker"):
                 marker = user.marker
@@ -109,11 +111,14 @@ class AuthorityRORSectionList(ListView):
         question_types = ["volunteer", "national_volunteer", "foi"]
 
         response_type = ResponseType.objects.get(type="Right of Reply")
+        exceptions = get_exceptions_for_authority(
+            self.request.current_session, self.authority
+        )
         for section in sections:
             questions = Question.objects.filter(
                 section=section,
                 how_marked__in=question_types,
-            )
+            ).exclude(pk__in=exceptions)
             question_list = list(questions.values_list("id", flat=True))
 
             authority = PublicAuthority.objects.get(name=context["authority_name"])
@@ -130,6 +135,7 @@ class AuthorityRORSectionList(ListView):
                 response_type=response_type,
                 question_types=question_types,
                 right_of_reply=True,
+                exceptions=exceptions,
             ).distinct()
 
             section.complete = 0
