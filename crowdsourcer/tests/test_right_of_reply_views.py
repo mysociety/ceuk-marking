@@ -137,11 +137,26 @@ class TestTwoCouncilsAssignmentView(BaseTestCase):
             authority=auth2,
             response_type=rt,
         )
+        Assigned.objects.create(
+            marking_session=MarkingSession.objects.get(label="Second Session"),
+            user=u,
+            authority=auth2,
+            response_type=rt,
+        )
 
     def test_homepage_redirect(self):
         response = self.client.get("/")
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response.url, "/authority_ror_authorities/")
+
+    def test_homepage_redirect_with_marking_session(self):
+        self.user.marker.marking_session.clear()
+        self.user.marker.marking_session.add(
+            MarkingSession.objects.get(label="Second Session")
+        )
+        response = self.client.get("/")
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, "/Second%20Session/authority_ror_authorities/")
 
     def test_council_homepage(self):
         url = reverse("authority_ror_authorities")

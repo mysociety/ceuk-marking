@@ -50,9 +50,11 @@ class AuthorityRORList(ListView):
         if user.is_anonymous:
             return None
 
-        qs = Assigned.objects.filter(user=user, authority__isnull=False).order_by(
-            "authority__name"
-        )
+        qs = Assigned.objects.filter(
+            user=user,
+            marking_session=self.request.current_session,
+            authority__isnull=False,
+        ).order_by("authority__name")
 
         return qs
 
@@ -76,7 +78,9 @@ class AuthorityRORSectionList(ListView):
                     if (
                         marker.authority != authority
                         and not Assigned.objects.filter(
-                            user=user, authority=authority, section__isnull=True
+                            user=user,
+                            authority=authority,
+                            marking_session=self.request.current_session,
                         ).exists()
                     ):
                         raise PermissionDenied

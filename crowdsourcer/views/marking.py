@@ -77,16 +77,35 @@ class OverviewView(ListView):
                     # assignments screen
                     if count == 1:
                         assignment = Assigned.objects.filter(
-                            user=user, marking_session=self.request.current_session
+                            user=user, marking_session=session
                         ).first()
-                        url = reverse(
-                            "authority_ror_sections",
-                            kwargs={"name": assignment.authority.name},
-                        )
+                        if self.request.current_session != session:
+                            url = reverse(
+                                "session_urls:authority_ror_sections",
+                                kwargs={
+                                    "name": assignment.authority.name,
+                                    "marking_session": session,
+                                },
+                            )
+                        else:
+                            url = reverse(
+                                "authority_ror_sections",
+                                kwargs={
+                                    "name": assignment.authority.name,
+                                },
+                            )
                     # if they have nothing assigned then it's fine to show then the blank
                     # no assignments screen so handle everything else
                     else:
-                        url = reverse("authority_ror_authorities")
+                        if self.request.current_session != session:
+                            url = reverse(
+                                "session_urls:authority_ror_authorities",
+                                kwargs={
+                                    "marking_session": session,
+                                },
+                            )
+                        else:
+                            url = reverse("authority_ror_authorities")
 
             if url is not None:
                 return redirect(url)
