@@ -21,6 +21,7 @@ from crowdsourcer.models import (
     ResponseType,
     Section,
 )
+from crowdsourcer.scoring import get_exceptions_for_authority
 
 logger = logging.getLogger(__name__)
 
@@ -97,12 +98,19 @@ class BaseQuestionView(TemplateView):
 
     def get_initial_obj(self):
         self.authority = PublicAuthority.objects.get(name=self.kwargs["name"])
-        self.questions = Question.objects.filter(
-            section__marking_session=self.request.current_session,
-            section__title=self.kwargs["section_title"],
-            questiongroup=self.authority.questiongroup,
-            how_marked__in=self.how_marked_in,
-        ).order_by("number", "number_part")
+        exceptions = get_exceptions_for_authority(
+            self.request.current_session, self.authority
+        )
+        self.questions = (
+            Question.objects.filter(
+                section__marking_session=self.request.current_session,
+                section__title=self.kwargs["section_title"],
+                questiongroup=self.authority.questiongroup,
+                how_marked__in=self.how_marked_in,
+            )
+            .exclude(pk__in=exceptions)
+            .order_by("number", "number_part")
+        )
         responses = Response.objects.filter(
             authority=self.authority, question__in=self.questions, response_type=self.rt
         ).select_related("question")

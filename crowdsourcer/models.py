@@ -177,6 +177,24 @@ class Question(models.Model):
     def options(self):
         return Option.objects.filter(question=self).order_by("ordering", "score")
 
+    @classmethod
+    def by_number_and_section(cls, marking_session, section_title, q_no_and_part):
+        q_parts = re.search(r"(\d+)([a-z]?)", q_no_and_part).groups()
+        number = q_parts[0]
+
+        filters = {
+            "section__title": section_title,
+            "section__marking_session": marking_session,
+            "number": int(number),
+        }
+        if len(q_parts) == 2 and q_parts[1] != "":
+            filters["number_part"] = q_parts[1]
+
+        try:
+            return cls.objects.get(**filters)
+        except cls.DoesNotExist:
+            return None
+
 
 class AuthorityData(models.Model):
     authority = models.ForeignKey("PublicAuthority", on_delete=models.CASCADE)

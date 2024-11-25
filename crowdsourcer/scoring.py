@@ -75,6 +75,21 @@ def weighting_to_points(weighting="low", max_points=0):
     return points
 
 
+def get_exceptions_for_authority(marking_session, authority):
+    all_exceptions = get_exceptions(marking_session)
+    exception_list = []
+    for section, exceptions in all_exceptions.items():
+        group = authority.questiongroup.description
+        if exceptions.get(group) and exceptions[group].get(authority.country):
+            questions = exceptions[group][authority.country]
+            for question in questions:
+                q = Question.by_number_and_section(marking_session, section, question)
+                if q:
+                    exception_list.append(q.pk)
+
+    return exception_list
+
+
 def get_section_maxes(scoring, session):
     section_maxes = defaultdict(dict)
     section_weighted_maxes = defaultdict(dict)
