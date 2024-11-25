@@ -229,6 +229,9 @@ class VolunteerAssignmentView(VolunteerAccessMixin, FormView):
         formset = VolunteerAssignmentFormset(
             instance=self.user,
             form_kwargs={"session": self.request.current_session},
+            queryset=Assigned.objects.filter(
+                user=self.user, marking_session=self.request.current_session
+            ),
             **self.get_form_kwargs()
         )
 
