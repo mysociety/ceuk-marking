@@ -611,6 +611,11 @@ class TestCSVDownloadView(BaseTestCase):
 
         return df
 
+    def test_wrong_council(self):
+        url = reverse("authority_ror_download", args=("Adur District Council",))
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 403)
+
     def test_download(self):
         df = self.get_download_df()
 
@@ -634,6 +639,32 @@ class TestCSVDownloadView(BaseTestCase):
         self.assertEqual(b_and_h_q5.council_evidence, "We do not agree for reasons")
         self.assertEqual(b_and_h_q5.agree_with_mark, "No")
         self.assertEqual(b_and_h_q5.council_notes, "a council objection")
+
+    def test_download_with_two_councils(self):
+        self.user.marker.authority = None
+        self.user.marker.save()
+
+        rt = ResponseType.objects.get(type="Right of Reply")
+        ms = MarkingSession.objects.get(label="Default")
+        Assigned.objects.create(
+            user=self.user,
+            response_type=rt,
+            authority=PublicAuthority.objects.get(name="Aberdeenshire Council"),
+            marking_session=ms,
+        )
+        Assigned.objects.create(
+            user=self.user,
+            response_type=rt,
+            authority=PublicAuthority.objects.get(name="Aberdeen City Council"),
+            marking_session=ms,
+        )
+
+        df = self.get_download_df()
+        self.assertEqual(df.shape[0], 2)
+
+        url = reverse("authority_ror_download", args=("Adur District Council",))
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 403)
 
     def test_download_with_props(self):
         sp = SessionProperties.objects.get(name="ror_property")

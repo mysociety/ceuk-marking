@@ -241,15 +241,27 @@ class AuthorityRORCSVView(ListView):
         user = self.request.user
 
         rt = ResponseType.objects.get(type="Right of Reply")
+        authority_name = self.kwargs["name"]
+        requested_authority = PublicAuthority.objects.get(name=authority_name)
+        authority = None
         if user.is_superuser:
-            authority_name = self.kwargs["name"]
-            authority = PublicAuthority.objects.get(name=authority_name)
-        else:
+            authority = requested_authority
+        elif (
+            self.request.user.marker.authority is not None
+            and self.request.user.marker.authority == requested_authority
+        ):
             authority = self.request.user.marker.authority
-
-        self.authority = authority
+        else:
+            if Assigned.objects.filter(
+                user=self.request.user,
+                authority=requested_authority,
+                marking_session=self.request.current_session,
+                response_type=rt,
+            ).exists():
+                authority = requested_authority
 
         if authority is not None:
+            self.authority = authority
             return (
                 Response.objects.filter(
                     question__section__marking_session=self.request.current_session,
@@ -264,7 +276,7 @@ class AuthorityRORCSVView(ListView):
                 )
             )
 
-        return None
+        raise PermissionDenied
 
     def get_first_mark_responses(self):
         rt = ResponseType.objects.get(type="First Mark")
