@@ -557,9 +557,12 @@ class AuthorityContactCSVView(UserPassesTestMixin, ListView):
             ).all()
             if assigned:
                 for assignment in assigned:
+                    council_name = "No authority assigned"
+                    if assignment.authority:
+                        council_name = assignment.authority.name
                     contacts.append(
                         {
-                            "council": assignment.authority.name,
+                            "council": council_name,
                             "email": marker.user.username,
                             "name": f"{marker.user.first_name} {marker.user.last_name}",
                         }
