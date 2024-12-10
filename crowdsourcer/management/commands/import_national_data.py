@@ -1,3 +1,4 @@
+import json
 import math
 import numbers
 import re
@@ -9,6 +10,7 @@ from django.core.management.base import BaseCommand
 import pandas as pd
 
 from crowdsourcer.models import (
+    MarkingSession,
     Option,
     PublicAuthority,
     Question,
@@ -25,655 +27,6 @@ NOBOLD = "\033[0m"
 class Command(BaseCommand):
     help = "import questions"
 
-    question_file = settings.BASE_DIR / "data" / "national_data.xlsx"
-
-    sheets = [
-        {
-            "sheet": "Copy of Planning Q10B (pivot ta",
-            "section": "Planning & Land Use",
-            "number": 10,
-            "number_part": "b",
-            "default_if_missing": 0,
-            "gss_col": "local-authority-code",
-            "score_col": "Unweighted section score",
-            "evidence_link": """https://data.barbour-abi.com/smart-map/repd/beis/?type=repd
-https://data.barbour-abi.com/smart-map/repd/desnz/?type=heat_network""",
-            "type": "select_one",
-            "options": [
-                {"desc": "Criteria not met", "score": 0},
-                {"desc": "1 renewable energy system", "score": 1},
-                {"desc": "2 renewable energy systems", "score": 2},
-                {"desc": "3 renewable energy systems", "score": 3},
-                {"desc": "4 renewable energy systems", "score": 4},
-                {"desc": "5 renewable energy systems", "score": 5},
-            ],
-        },
-        # XXX - negative points
-        {
-            "sheet": "Planning Q11 Fossil Fuel infras",
-            "section": "Planning & Land Use",
-            "number": 11,
-            "default_if_missing": "No",
-            "missing_filter": {"type__in": ["CTY", "UTA"]},
-            "evidence": "Link to Evidence",
-            "evidence_detail": "Status (explanation)",
-            "negative": True,
-            "gss_col": "local authority code",
-            "score_col": "Score",
-            "type": "yes_no",
-            "points_map": {
-                "default": {
-                    "-20%": -4.4,
-                    "-0.2": -4.4,
-                    "-6.0": -4.4,
-                },
-            },
-        },
-        {
-            "sheet": "Recycling",
-            "section": "Waste Reduction & Food",
-            "number": 8,
-            "header_row": 6,
-            "council_col": "Local Authority 2020/21",
-            "score_col": "Mark",
-            "evidence": "Evidence",
-            # XXX - tiered
-            "type": "select_one",
-            "options": [
-                {"desc": "Criteria not met", "score": 0},
-                {"desc": "50% recycling rate", "score": 1},
-                {"desc": "60% recycling rate", "score": 2},
-                {"desc": "70% recycling rate", "score": 3},
-            ],
-            # "options": [{"desc": "Criteria not met", "score": 0},]
-        },
-        {
-            "sheet": "Residual Waste",
-            "section": "Waste Reduction & Food",
-            "number": 9,
-            "header_row": 6,
-            "council_col": "Local Authority 2020/21",
-            "score_col": "Mark",
-            "evidence": "Source",
-            # XXX - tiered
-            "type": "select_one",
-            "options": [
-                {"desc": "Criteria not met", "score": 0},
-                {"desc": "300-400kg residual waste per household", "score": 1},
-                {"desc": "Less than 300kg residual waste per household", "score": 2},
-            ],
-        },
-        {
-            "sheet": "Transport Q4 - 20mph",
-            "section": "Transport",
-            "number": 4,
-            "council_col": "Council name",
-            "score_col": "Award point - only 1 tier",
-            "evidence": "Evidence link",
-            "default_if_missing": 0,
-            "missing_filter": {"type__in": ["CTY", "UTA"], "country": "england"},
-            "type": "yes_no",
-        },
-        {
-            "sheet": "Transport Q6 - Active Travel England scores",
-            "section": "Transport",
-            "number": 6,
-            "header_row": 1,
-            "council_col": "Local Authority",
-            "score_col": "Unweighted scores",
-            "evidence": "Evidence link",
-            "type": "select_one",
-            "options": [
-                {"desc": "Criteria not met", "score": 0},
-                {"desc": "Active Travel Capability Rating - 1", "score": 1},
-                {"desc": "Active Travel Capability Rating - 2", "score": 2},
-                {"desc": "Active Travel Capability Rating - 3", "score": 3},
-                {"desc": "Active Travel Capability Rating - 4", "score": 4},
-            ],
-        },
-        {
-            "sheet": "Transport 8B - Bus Ridership",
-            "section": "Transport",
-            "number": 8,
-            "number_part": "b",
-            "header_row": 2,
-            "council_col": "Local Authority",
-            "score_col": "Unweighted Question scores",
-            "evidence": "Evidence link",
-            "type": "select_one",
-            "options": [
-                {"desc": "Criteria not met", "score": 0},
-                {"desc": "75 journeys per head of population", "score": 1},
-                {"desc": "150 journeys per head of population", "score": 2},
-            ],
-        },
-        {
-            "sheet": "Transport 10 - EV chargers",
-            "section": "Transport",
-            "number": 10,
-            "header_row": 1,
-            "council_col": "Local Authority / Region Name",
-            "score_col": "Unweighted Question Scores",
-            "evidence": "Evidence link",
-            "type": "select_one",
-            "options": [
-                {"desc": "Criteria not met", "score": 0},
-                {
-                    "desc": "60+ chargers per 100,000 people (but less than 434 per 100k)",
-                    "score": 1,
-                },
-                {
-                    "desc": "434+ chargers per 100,000 people",
-                    "score": 2,
-                },
-            ],
-        },
-        # XXX - negative points
-        {
-            "sheet": "Transport 12a - Air Quality NO2",
-            "section": "Transport",
-            "number": 12,
-            "number_part": "a",
-            "header_row": 1,
-            "council_col": "Local authority name",
-            "score_col": "Award negative points",
-            "negative": True,
-            "type": "select_one",
-            "evidence_link": "https://policy.friendsoftheearth.uk/insight/which-neighbourhoods-have-worst-air-pollution",
-            "options": [
-                {
-                    "desc": "None",
-                    "score": 0,
-                },
-                {
-                    "desc": "-2%",
-                    "score": 0,
-                },
-                {
-                    "desc": "-6%",
-                    "score": 0,
-                },
-            ],
-            "points_map": {
-                "UTA": {
-                    "-2%": -0.5,
-                    "-6%": -1.5,
-                },
-                "MTD": {
-                    "-2%": -0.5,
-                    "-6%": -1.5,
-                },
-                "LBO": {
-                    "-2%": -0.5,
-                    "-6%": -1.5,
-                },
-                "CTY": {
-                    "-2%": -0.5,
-                    "-6%": -1.5,
-                },
-                "default": {
-                    "-2%": -0.16,
-                    "-6%": -0.48,
-                },
-            },
-        },
-        # XXX - negative points
-        {
-            "sheet": "Transport 12b - Air Quality PM2.5",
-            "section": "Transport",
-            "number": 12,
-            "number_part": "b",
-            "header_row": 1,
-            "council_col": "Local authority name",
-            "score_col": "Award negative points",
-            "negative": True,
-            "type": "select_one",
-            "evidence_link": "https://policy.friendsoftheearth.uk/insight/which-neighbourhoods-have-worst-air-pollution",
-            "options": [
-                {
-                    "desc": "None",
-                    "score": 0,
-                },
-                {
-                    "desc": "-2%",
-                    "score": 0,
-                },
-                {
-                    "desc": "-4%",
-                    "score": 0,
-                },
-            ],
-            "points_map": {
-                "UTA": {
-                    "-2%": -0.5,
-                    "-4%": -1,
-                },
-                "MTD": {
-                    "-2%": -0.5,
-                    "-4%": -1,
-                },
-                "LBO": {
-                    "-2%": -0.5,
-                    "-4%": -1,
-                },
-                "CTY": {
-                    "-2%": -0.5,
-                    "-4%": -1,
-                },
-                "default": {
-                    "-2%": -0.16,
-                    "-4%": -0.32,
-                },
-            },
-        },
-        {
-            "sheet": "Transport Q11 (negative)",
-            "section": "Transport",
-            "number": 11,
-            "number_part": None,
-            "council_col": "authority",
-            "score_col": "score",
-            "negative": True,
-            "skip_clear_existing": False,
-            "update_points_only": True,
-            "type": "multi_select",
-            "points_map": {
-                "UTA": {
-                    "-": 0,
-                    "-0.05": -1.25,
-                    "-0.15": -3.75,
-                    "-0.2": -5,
-                },
-                "LBO": {
-                    "-": 0,
-                    "-0.05": -1.25,
-                    "-0.15": -3.75,
-                    "-0.2": -5,
-                },
-                "MTD": {
-                    "-": 0,
-                    "-0.05": -1.25,
-                    "-0.15": -3.75,
-                    "-0.2": -5,
-                },
-                "CTY": {
-                    "-": 0,
-                    "-0.05": -1.25,
-                    "-0.15": -3.75,
-                    "-0.2": -5,
-                },
-                "default": {
-                    "-": 0,
-                    "-0.05": -0.4,
-                    "-0.15": -1.2,
-                    "-0.2": -1.6,
-                },
-            },
-        },
-        {
-            "sheet": "Biodiversity Q2 - Pesticides",
-            "section": "Biodiversity",
-            "number": 2,
-            "header_row": 1,
-            "council_col": "Council",
-            "score_col": "Unweighted points",
-            "default_if_missing": 0,
-            "evidence": "Link to data",
-            "evidence_detail": "Banned Pesticides?",
-            "type": "yes_no",
-        },
-        {
-            "sheet": "Biodiversity Q4 - Wildlife Sites ",
-            "section": "Biodiversity",
-            "number": 4,
-            "header_row": 2,
-            "council_col": "Council",
-            "score_col": "Point awarded",
-            "evidence": "Evidence link",
-            "type": "yes_no",
-        },
-        {
-            "sheet": "Sheet23",
-            "section": "Biodiversity",
-            "number": 7,
-            "council_col": "local authority council code",
-            "score_col": "Unweighted score",
-            "type": "select_one",
-            "default_if_missing": 0,
-            "evidence": "Evidence link",
-            "options": [
-                {"desc": "Criteria not met", "score": 0},
-                {"desc": "1-3 Green Flag accredited parks", "score": 1},
-                {"desc": "4+ Green Flag accredited parks", "score": 2},
-            ],
-        },
-        {
-            "sheet": "Gov&Fin Q11a",
-            "section": "Governance & Finance",
-            "number": 11,
-            "number_part": "a",
-            "council_col": "Council",
-            "score_col": "Score",
-            "evidence": "Evidence",
-            "default_if_missing": 0,
-            "type": "select_one",
-            "options": [
-                {"desc": "Criteria not met", "score": 0},
-                {"desc": "Divestment of council's investments", "score": 1},
-                {"desc": "Divestment of pensions's investments", "score": 2},
-            ],
-        },
-        {
-            "sheet": "Gov&Fin Q11b",
-            "section": "Governance & Finance",
-            "number": 11,
-            "number_part": "b",
-            "council_col": "Council",
-            "score_col": "Score",
-            "evidence": "Evidence",
-            "default_if_missing": 0,
-            "type": "select_one",
-            "options": [
-                {"desc": "Criteria not met", "score": 0},
-                {"desc": "Partial divestment", "score": 1},
-                {"desc": "All Fossil fuels divestment", "score": 2},
-            ],
-        },
-        {
-            "sheet": "Gov&Fin Q4",
-            "section": "Governance & Finance",
-            "number": 4,
-            "header_row": 6,
-            "gss_col": "Local Authority Code",
-            "score_col": "Score",
-            "skip_check": {"col": "Calendar Year", "val": 2019},
-            "evidence_link": "https://www.gov.uk/government/statistics/uk-local-authority-and-regional-greenhouse-gas-emissions-national-statistics-2005-to-2021",
-            "type": "select_one",
-            "options": [
-                {"desc": "Criteria not met", "score": 0},
-                {"desc": "2% or more emission reduction", "score": 1},
-                {"desc": "5% or more emission reduction", "score": 2},
-                {"desc": "10% or more emission reduction", "score": 3},
-            ],
-        },
-        {
-            "sheet": "Gov&Fin Q5 CA",
-            "section": "Governance & Finance (CA)",
-            "number": 5,
-            "header_row": 6,
-            "gss_col": "local-authority-code",
-            "evidence_link": "https://docs.google.com/spreadsheets/d/1dnoEk-l6TJDZfdrfVbkeMBQmj9dPVAQxuULPrNG5uXY/edit#gid=1108346321",
-            "score_col": "Score",
-            "type": "select_one",
-            "options": [
-                {"desc": "Criteria not met", "score": 0},
-                {"desc": "2% or more emission reduction", "score": 1},
-                {"desc": "5% or more emission reduction", "score": 2},
-                {"desc": "10% or more emission reduction", "score": 3},
-            ],
-        },
-        {
-            "sheet": "Gov&Fin Q8",
-            "section": "Governance & Finance",
-            "number": 8,
-            "gss_col": "local-authority-code",
-            "score_col": "Score",
-            "type": "select_one",
-            "skip_clear_existing": False,
-            "options": [
-                {"desc": "Criteria not met", "score": 0},
-                {"desc": "more than 0.5% of staff working on climate", "score": 1},
-                {"desc": "more than 1% of staff working on climate", "score": 2},
-                {"desc": "more than 2% of staff working on climate", "score": 3},
-            ],
-        },
-        {
-            "sheet": "Gov&Fin Q8 CA",
-            "section": "Governance & Finance (CA)",
-            "number": 9,
-            "header_row": 1,
-            "gss_col": "local-authority-code",
-            "score_col": "Score",
-            "type": "select_one",
-            "skip_clear_existing": False,
-            "options": [
-                {"desc": "Criteria not met", "score": 0},
-                {"desc": "more than 0.5% of staff working on climate", "score": 1},
-                {"desc": "more than 1% of staff working on climate", "score": 2},
-                {"desc": "more than 2% of staff working on climate", "score": 3},
-            ],
-        },
-        {
-            "sheet": "Gov&Fin Q12 (negative)",
-            "section": "Governance & Finance",
-            "number": 12,
-            "number_part": None,
-            "negative": True,
-            "gss_col": "local-authority-code",
-            "score_col": "score",
-            "type": "yes_no",
-            "update_points_only": True,
-            "skip_clear_existing": False,
-            "update": True,
-            "points_map": {
-                "default": {
-                    "-15": -4.35,
-                    "-0.15": -4.35,
-                },
-            },
-        },
-        {
-            "sheet": "EPC - England & Wales",
-            "section": "Buildings & Heating",
-            "number": 7,
-            "header_row": 5,
-            "gss_col": "Local Authority Code",
-            "score_col": "Tiered mark",
-            "evidence": "Evidence",
-            "type": "select_one",
-            "options": [
-                {"desc": "Criteria not met", "score": 0},
-                {"desc": "50% rated EPC C or above", "score": 1},
-                {"desc": "60% rated EPC C or above", "score": 2},
-                {"desc": "90% rated EPC C or above", "score": 3},
-            ],
-        },
-        {
-            "sheet": "EPC - Scotland",
-            "section": "Buildings & Heating",
-            "number": 7,
-            "header_row": 5,
-            "council_col": "Local authority",
-            "score_col": "Tiered mark",
-            "evidence": "Evidence",
-            "type": "select_one",
-            "skip_clear_existing": True,
-            "options": [
-                {"desc": "Criteria not met", "score": 0},
-                {"desc": "50% rated EPC C or above", "score": 1},
-                {"desc": "60% rated EPC C or above", "score": 2},
-                {"desc": "90% rated EPC C or above", "score": 3},
-            ],
-        },
-        {
-            "sheet": "EPC - NI",
-            "section": "Buildings & Heating",
-            "number": 7,
-            "header_row": 2,
-            "gss_col": "Northern Irish Council GSS code",
-            "score_col": "Tiered mark",
-            "evidence": "Evidence",
-            "type": "select_one",
-            "skip_clear_existing": True,
-            "options": [
-                {"desc": "Criteria not met", "score": 0},
-                {"desc": "50% rated EPC C or above", "score": 1},
-                {"desc": "60% rated EPC C or above", "score": 2},
-                {"desc": "90% rated EPC C or above", "score": 3},
-            ],
-        },
-        {
-            "sheet": "Collab & Engagement Q11",
-            "section": "Collaboration & Engagement",
-            "number": 11,
-            "header_row": 1,
-            "council_col": "Council",
-            "score_col": "Unweighted Points",
-            "evidence": "Evidence link",
-            "type": "select_one",
-            "default_if_missing": 0,
-            "options": [
-                {"desc": "None", "score": 0},
-                {
-                    "desc": "Passed a fossil advertising motion or amended existing policy",
-                    "score": 1,
-                },
-            ],
-        },
-    ]
-
-    ca_sheets = [
-        {
-            "sheet": "Gov&Fin Q11a",
-            "section": "Governance & Finance (CA)",
-            "number": 12,
-            "number_part": "a",
-            "council_col": "Council",
-            "score_col": "Score",
-            "type": "select_one",
-            "evidence": "Evidence",
-            "default_if_missing": 0,
-            "options": [
-                {"desc": "Criteria not met", "score": 0},
-                {"desc": "Divestment of council's investments", "score": 1},
-                {"desc": "Divestment of pensions's investments", "score": 2},
-            ],
-        },
-        {
-            "sheet": "Gov&Fin Q11b",
-            "section": "Governance & Finance (CA)",
-            "number": 12,
-            "number_part": "b",
-            "council_col": "Council",
-            "score_col": "Score",
-            "evidence": "Evidence",
-            "default_if_missing": 0,
-            "type": "select_one",
-            "options": [
-                {"desc": "Criteria not met", "score": 0},
-                {"desc": "Partial divestment", "score": 1},
-                {"desc": "All Fossil fuels divestment", "score": 2},
-            ],
-        },
-        {
-            "sheet": "Transport Q6 - Active Travel England scores",
-            "section": "Transport (CA)",
-            "number": 7,
-            "header_row": 1,
-            "council_col": "Local Authority",
-            "score_col": "Unweighted scores",
-            "evidence": "Evidence link",
-            "type": "select_one",
-            "options": [
-                {"desc": "Criteria not met", "score": 0},
-                {"desc": "Active Travel Capability Rating - 1", "score": 1},
-                {"desc": "Active Travel Capability Rating - 2", "score": 2},
-                {"desc": "Active Travel Capability Rating - 3", "score": 3},
-                {"desc": "Active Travel Capability Rating - 4", "score": 4},
-            ],
-        },
-        {
-            "sheet": "Transport 8B - Bus Ridership",
-            "section": "Transport (CA)",
-            "number": 4,
-            "number_part": "b",
-            "header_row": 2,
-            "council_col": "Local Authority",
-            "score_col": "Unweighted Question scores",
-            "evidence": "Evidence link",
-            "type": "select_one",
-            "default_if_missing": 0,
-            "options": [
-                {"desc": "Criteria not met", "score": 0},
-                {"desc": "75 journeys per head of population", "score": 1},
-                {"desc": "150 journeys per head of population", "score": 2},
-            ],
-        },
-        {
-            "sheet": "Transport 10 - EV chargers",
-            "section": "Transport (CA)",
-            "number": 8,
-            "header_row": 1,
-            "council_col": "Local Authority / Region Name",
-            "score_col": "Unweighted Question Scores",
-            "evidence": "Evidence link",
-            "type": "select_one",
-            "default_if_missing": 0,
-            "options": [
-                {"desc": "Criteria not met", "score": 0},
-                {
-                    "desc": "60+ chargers per 100,000 people (but less than 434 per 100k)",
-                    "score": 1,
-                },
-                {
-                    "desc": "434+ chargers per 100,000 people",
-                    "score": 2,
-                },
-            ],
-        },
-        {
-            "sheet": "Transport 1b CA (negative)",
-            "section": "Transport (CA)",
-            "number": 1,
-            "number_part": "b",
-            "council_col": "authority",
-            "score_col": "score",
-            "negative": True,
-            "update_points_only": True,
-            "skip_clear_existing": False,
-            "type": "select_one",
-            "evidence": "Evidence",
-            "options": [
-                {
-                    "desc": "None",
-                    "score": 0,
-                },
-                {
-                    "desc": "-5%",
-                    "score": 0,
-                },
-                {
-                    "desc": "-20%",
-                    "score": 0,
-                },
-            ],
-            "points_map": {
-                "default": {
-                    "-0.05": -1.05,
-                    "-0.2": -3.15,
-                },
-            },
-        },
-        {
-            "sheet": "Collab & Engagement Q11",
-            "section": "Collaboration & Engagement (CA)",
-            "number": 9,
-            "header_row": 1,
-            "council_col": "Council",
-            "score_col": "Unweighted Points",
-            "evidence": "Evidence link",
-            "type": "select_one",
-            "default_if_missing": 0,
-            "options": [
-                {"desc": "None", "score": 0},
-                {
-                    "desc": "Passed a fossil advertising motion or amended existing policy",
-                    "score": 1,
-                },
-            ],
-        },
-    ]
-
     def add_arguments(self, parser):
         parser.add_argument(
             "-q", "--quiet", action="store_true", help="Silence debug data."
@@ -683,6 +36,39 @@ https://data.barbour-abi.com/smart-map/repd/desnz/?type=heat_network""",
             "--negative_only",
             action="store_true",
             help="only process Qs with negative points",
+        )
+
+        parser.add_argument(
+            "--add_options",
+            action="store_true",
+            help="Add options from the config",
+        )
+
+        parser.add_argument(
+            "--session",
+            action="store",
+            required=True,
+            help="Marking session to use questions with",
+        )
+
+        parser.add_argument(
+            "--file",
+            action="store",
+            required=True,
+            help="Excel file containing the national points",
+        )
+
+        parser.add_argument(
+            "--config",
+            action="store",
+            required=True,
+            help="JSON file containing the configuration for national points",
+        )
+
+        parser.add_argument(
+            "--commit",
+            action="store_true",
+            help="Save the responses to the database",
         )
 
     def add_options(self, q, details):
@@ -723,10 +109,16 @@ https://data.barbour-abi.com/smart-map/repd/desnz/?type=heat_network""",
             Response.objects.filter(question=q, response_type=self.rt).delete()
 
     def popuplate_council_lookup(self):
-        df = self.get_df("council names", {})
         lookup = {}
-        for _, row in df.iterrows():
-            lookup[row["local-authority-code"]] = row["gss-code"]
+        try:
+            df = self.get_df("council names", {})
+            for _, row in df.iterrows():
+                lookup[row["local-authority-code"]] = row["gss-code"]
+        except ValueError:
+            self.print_info(
+                f"{YELLOW}No council names tab found so not populating council lookup{NOBOLD}",
+                1,
+            )
 
         self.council_lookup = lookup
 
@@ -735,6 +127,7 @@ https://data.barbour-abi.com/smart-map/repd/desnz/?type=heat_network""",
         try:
             args = {
                 "section__title": details["section"],
+                "section__marking_session": self.session,
                 "number": details["number"],
             }
             if details.get("number_part", None) is not None:
@@ -782,10 +175,13 @@ https://data.barbour-abi.com/smart-map/repd/desnz/?type=heat_network""",
                 score = 0
                 desc = "No"
         else:
-            for opt in details["options"]:
-                if opt["score"] == score:
-                    desc = opt["desc"]
-                    break
+            if details.get("options"):
+                for opt in details["options"]:
+                    if opt["score"] == score:
+                        desc = opt["desc"]
+                        break
+            else:
+                desc = None
 
         return desc, score
 
@@ -797,32 +193,46 @@ https://data.barbour-abi.com/smart-map/repd/desnz/?type=heat_network""",
             for _, row in df.iterrows():
                 if details.get("skip_check", None) is not None:
                     skip_check = details["skip_check"]
-                    if row[skip_check["col"]] == skip_check["val"]:
+                    if (
+                        skip_check.get("unless_match")
+                        and row[skip_check["col"]] != skip_check["val"]
+                    ):
+                        continue
+                    elif (
+                        not skip_check.get("unless_match")
+                        and row[skip_check["col"]] == skip_check["val"]
+                    ):
                         continue
 
-                council_col = details.get("gss_col", details.get("council_col", ""))
+                gss_col = details.get("gss_col", "Local Authority Code")
+                if row.get(gss_col):
+                    gss = row[gss_col]
+                    code = gss
+                else:
+                    council_col = details.get("gss_col", details.get("council_col", ""))
 
-                code = row.get(
-                    "local authority code",
-                    row.get(
-                        "local authority council code",
+                    code = row.get(
+                        "local authority code",
                         row.get(
-                            "Local authority council code",
-                            row.get("local-authority-code", ""),
+                            "local authority council code",
+                            row.get(
+                                "Local authority council code",
+                                row.get("local-authority-code", ""),
+                            ),
                         ),
-                    ),
-                )
+                    )
 
-                if (
-                    (code == "" or pd.isna(code))
-                    and row.get("manually added local-authority-code", None) is not None
-                ) and not pd.isna(row["manually added local-authority-code"]):
-                    code = row["manually added local-authority-code"]
+                    if (
+                        (code == "" or pd.isna(code))
+                        and row.get("manually added local-authority-code", None)
+                        is not None
+                    ) and not pd.isna(row["manually added local-authority-code"]):
+                        code = row["manually added local-authority-code"]
 
-                gss = self.council_lookup.get(
-                    code,
-                    None,
-                )
+                    gss = self.council_lookup.get(
+                        code,
+                        None,
+                    )
 
                 if gss is None:
                     value = row[council_col]
@@ -864,7 +274,12 @@ https://data.barbour-abi.com/smart-map/repd/desnz/?type=heat_network""",
                 option = None
                 if not details.get("update_points_only", False):
                     try:
-                        option = Option.objects.get(question=q, description=score_desc)
+                        if score_desc is not None:
+                            option = Option.objects.get(
+                                question=q, description=score_desc
+                            )
+                        else:
+                            option = Option.objects.get(question=q, score=score)
                     except Option.DoesNotExist:
                         self.print_info(
                             f"No option found for {q.number}, {score_desc}, {authority.name}",
@@ -883,6 +298,10 @@ https://data.barbour-abi.com/smart-map/repd/desnz/?type=heat_network""",
 
                     if not self.quiet:
                         self.print_info(f"{authority.name}: {option}")
+
+                if self.check_options_only:
+                    count += 1
+                    continue
 
                 if details.get("update_points_only", False):
                     try:
@@ -930,29 +349,40 @@ https://data.barbour-abi.com/smart-map/repd/desnz/?type=heat_network""",
                 count += 1
             if details.get("default_if_missing", None) is not None:
                 default = details["default_if_missing"]
-                if type(default) is int:
-                    option = Option.objects.get(question=q, score=default)
-                else:
-                    option = Option.objects.get(question=q, description=default)
-                groups = q.questiongroup.all()
-                answered = Response.objects.filter(response_type=rt, question=q).values(
-                    "authority"
-                )
-                councils = PublicAuthority.objects.filter(
-                    questiongroup__in=groups
-                ).exclude(id__in=answered)
-                if details.get("missing_filter", None) is not None:
-                    councils = councils.filter(**details["missing_filter"])
-
-                for council in councils:
-                    r, _ = Response.objects.update_or_create(
-                        question=q,
-                        authority=council,
-                        user=user,
-                        response_type=rt,
-                        defaults={"option": option},
+                try:
+                    if type(default) is int:
+                        option = Option.objects.get(question=q, score=default)
+                    else:
+                        option = Option.objects.get(question=q, description=default)
+                except Option.DoesNotExist:
+                    self.print_info(
+                        f"{YELLOW}No matching default response for {q.number}, {default}{NOBOLD}",
+                        1,
                     )
-                    auto_zero += 1
+
+                if option:
+                    groups = q.questiongroup.all()
+                    answered = Response.objects.filter(
+                        response_type=rt, question=q
+                    ).values("authority")
+                    councils = PublicAuthority.objects.filter(
+                        marking_session=self.session, questiongroup__in=groups
+                    ).exclude(id__in=answered)
+                    if details.get("missing_filter", None) is not None:
+                        councils = councils.filter(**details["missing_filter"])
+
+                    if self.check_options_only:
+                        auto_zero = councils.count()
+                    else:
+                        for council in councils:
+                            r, _ = Response.objects.update_or_create(
+                                question=q,
+                                authority=council,
+                                user=user,
+                                response_type=rt,
+                                defaults={"option": option},
+                            )
+                            auto_zero += 1
 
         message = f"{GREEN}Added {count} responses, {auto_zero} default 0 responses, bad authorities {bad_authority_count}{NOBOLD}"
 
@@ -979,7 +409,8 @@ https://data.barbour-abi.com/smart-map/repd/desnz/?type=heat_network""",
             return
 
         self.clear_existing_answers(q, details)
-        self.add_options(q, details)
+        if self.add_options:
+            self.add_options(q, details)
         self.import_answers(user, self.rt, df, q, details)
 
     def print_info(self, message, level=2):
@@ -993,14 +424,34 @@ https://data.barbour-abi.com/smart-map/repd/desnz/?type=heat_network""",
         quiet: bool = False,
         only_sheet: str = None,
         negative_only: bool = False,
+        commit: bool = False,
         *args,
         **kwargs,
     ):
         self.quiet = quiet
 
+        self.check_options_only = not commit
+        self.question_file = settings.BASE_DIR / "data" / kwargs["file"]
+        self.config_file = settings.BASE_DIR / "data" / kwargs["config"]
+
+        with open(self.config_file) as conf_file:
+            config = json.load(conf_file)
+
+        self.sheets = config["sheets"]
+        self.ca_sheets = config["ca_sheets"]
+
         self.popuplate_council_lookup()
         user, _ = User.objects.get_or_create(username="National_Importer")
         self.rt = ResponseType.objects.get(type="Audit")
+        self.session = MarkingSession.objects.get(label=kwargs["session"])
+        self.add_options = kwargs["add_options"]
+
+        if self.check_options_only:
+            self.print_info(
+                f"{YELLOW}Not saving any responses, run with --commit to do so{NOBOLD}",
+                1,
+            )
+
         for details in self.sheets:
             sheet = details["sheet"]
             if only_sheet is not None and sheet != only_sheet:
@@ -1020,3 +471,9 @@ https://data.barbour-abi.com/smart-map/repd/desnz/?type=heat_network""",
                 continue
 
             self.handle_sheet(sheet, details, user)
+
+        if self.check_options_only:
+            self.print_info(
+                f"{YELLOW}Not saving any responses, run with --commit to do so{NOBOLD}",
+                1,
+            )
