@@ -9,6 +9,7 @@ from django.core.management.base import BaseCommand
 import pandas as pd
 
 from crowdsourcer.models import (
+    MarkingSession,
     Option,
     PublicAuthority,
     Question,
@@ -685,6 +686,19 @@ https://data.barbour-abi.com/smart-map/repd/desnz/?type=heat_network""",
             help="only process Qs with negative points",
         )
 
+        parser.add_argument(
+            "--add_options",
+            action="store_true",
+            help="Add options from the config",
+        )
+
+        parser.add_argument(
+            "--session",
+            action="store",
+            required=True,
+            help="Marking session to use questions with",
+        )
+
     def add_options(self, q, details):
         if details.get("type", None) is not None:
             expected_options = 2
@@ -735,6 +749,7 @@ https://data.barbour-abi.com/smart-map/repd/desnz/?type=heat_network""",
         try:
             args = {
                 "section__title": details["section"],
+                "section__marking_session": self.session,
                 "number": details["number"],
             }
             if details.get("number_part", None) is not None:
@@ -979,7 +994,8 @@ https://data.barbour-abi.com/smart-map/repd/desnz/?type=heat_network""",
             return
 
         self.clear_existing_answers(q, details)
-        self.add_options(q, details)
+        if self.add_options:
+            self.add_options(q, details)
         self.import_answers(user, self.rt, df, q, details)
 
     def print_info(self, message, level=2):
@@ -1001,6 +1017,9 @@ https://data.barbour-abi.com/smart-map/repd/desnz/?type=heat_network""",
         self.popuplate_council_lookup()
         user, _ = User.objects.get_or_create(username="National_Importer")
         self.rt = ResponseType.objects.get(type="Audit")
+        self.session = MarkingSession.objects.get(label=kwargs["session"])
+        self.add_options = kwargs["add_options"]
+
         for details in self.sheets:
             sheet = details["sheet"]
             if only_sheet is not None and sheet != only_sheet:
