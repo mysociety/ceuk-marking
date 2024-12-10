@@ -65,6 +65,12 @@ class Command(BaseCommand):
             help="JSON file containing the configuration for national points",
         )
 
+        parser.add_argument(
+            "--commit",
+            action="store_true",
+            help="Save the responses to the database",
+        )
+
     def add_options(self, q, details):
         if details.get("type", None) is not None:
             expected_options = 2
@@ -265,6 +271,10 @@ class Command(BaseCommand):
                     if not self.quiet:
                         self.print_info(f"{authority.name}: {option}")
 
+                if self.check_options_only:
+                    count += 1
+                    continue
+
                 if details.get("update_points_only", False):
                     try:
                         r = Response.objects.get(
@@ -311,29 +321,40 @@ class Command(BaseCommand):
                 count += 1
             if details.get("default_if_missing", None) is not None:
                 default = details["default_if_missing"]
-                if type(default) is int:
-                    option = Option.objects.get(question=q, score=default)
-                else:
-                    option = Option.objects.get(question=q, description=default)
-                groups = q.questiongroup.all()
-                answered = Response.objects.filter(response_type=rt, question=q).values(
-                    "authority"
-                )
-                councils = PublicAuthority.objects.filter(
-                    questiongroup__in=groups
-                ).exclude(id__in=answered)
-                if details.get("missing_filter", None) is not None:
-                    councils = councils.filter(**details["missing_filter"])
-
-                for council in councils:
-                    r, _ = Response.objects.update_or_create(
-                        question=q,
-                        authority=council,
-                        user=user,
-                        response_type=rt,
-                        defaults={"option": option},
+                try:
+                    if type(default) is int:
+                        option = Option.objects.get(question=q, score=default)
+                    else:
+                        option = Option.objects.get(question=q, description=default)
+                except Option.DoesNotExist:
+                    self.print_info(
+                        f"{YELLOW}No matching default response for {q.number}, {default}{NOBOLD}",
+                        1,
                     )
-                    auto_zero += 1
+
+                if option:
+                    groups = q.questiongroup.all()
+                    answered = Response.objects.filter(
+                        response_type=rt, question=q
+                    ).values("authority")
+                    councils = PublicAuthority.objects.filter(
+                        marking_session=self.session, questiongroup__in=groups
+                    ).exclude(id__in=answered)
+                    if details.get("missing_filter", None) is not None:
+                        councils = councils.filter(**details["missing_filter"])
+
+                    if self.check_options_only:
+                        auto_zero = councils.count()
+                    else:
+                        for council in councils:
+                            r, _ = Response.objects.update_or_create(
+                                question=q,
+                                authority=council,
+                                user=user,
+                                response_type=rt,
+                                defaults={"option": option},
+                            )
+                            auto_zero += 1
 
         message = f"{GREEN}Added {count} responses, {auto_zero} default 0 responses, bad authorities {bad_authority_count}{NOBOLD}"
 
@@ -375,11 +396,13 @@ class Command(BaseCommand):
         quiet: bool = False,
         only_sheet: str = None,
         negative_only: bool = False,
+        commit: bool = False,
         *args,
         **kwargs,
     ):
         self.quiet = quiet
 
+        self.check_options_only = not commit
         self.question_file = settings.BASE_DIR / "data" / kwargs["file"]
         self.config_file = settings.BASE_DIR / "data" / kwargs["config"]
 
@@ -394,6 +417,12 @@ class Command(BaseCommand):
         self.rt = ResponseType.objects.get(type="Audit")
         self.session = MarkingSession.objects.get(label=kwargs["session"])
         self.add_options = kwargs["add_options"]
+
+        if self.check_options_only:
+            self.print_info(
+                f"{YELLOW}Not saving any responses, run with --commit to do so{NOBOLD}",
+                1,
+            )
 
         for details in self.sheets:
             sheet = details["sheet"]
@@ -414,3 +443,9 @@ class Command(BaseCommand):
                 continue
 
             self.handle_sheet(sheet, details, user)
+
+        if self.check_options_only:
+            self.print_info(
+                f"{YELLOW}Not saving any responses, run with --commit to do so{NOBOLD}",
+                1,
+            )
