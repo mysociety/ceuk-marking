@@ -175,10 +175,13 @@ class Command(BaseCommand):
                 score = 0
                 desc = "No"
         else:
-            for opt in details["options"]:
-                if opt["score"] == score:
-                    desc = opt["desc"]
-                    break
+            if details.get("options"):
+                for opt in details["options"]:
+                    if opt["score"] == score:
+                        desc = opt["desc"]
+                        break
+            else:
+                desc = None
 
         return desc, score
 
@@ -271,7 +274,12 @@ class Command(BaseCommand):
                 option = None
                 if not details.get("update_points_only", False):
                     try:
-                        option = Option.objects.get(question=q, description=score_desc)
+                        if score_desc is not None:
+                            option = Option.objects.get(
+                                question=q, description=score_desc
+                            )
+                        else:
+                            option = Option.objects.get(question=q, score=score)
                     except Option.DoesNotExist:
                         self.print_info(
                             f"No option found for {q.number}, {score_desc}, {authority.name}",
