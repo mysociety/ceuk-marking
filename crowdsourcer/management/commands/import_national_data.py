@@ -190,7 +190,15 @@ class Command(BaseCommand):
             for _, row in df.iterrows():
                 if details.get("skip_check", None) is not None:
                     skip_check = details["skip_check"]
-                    if row[skip_check["col"]] == skip_check["val"]:
+                    if (
+                        skip_check.get("unless_match")
+                        and row[skip_check["col"]] != skip_check["val"]
+                    ):
+                        continue
+                    elif (
+                        not skip_check.get("unless_match")
+                        and row[skip_check["col"]] == skip_check["val"]
+                    ):
                         continue
 
                 gss_col = details.get("gss_col", "Local Authority Code")
