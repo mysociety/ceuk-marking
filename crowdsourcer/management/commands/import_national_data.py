@@ -109,10 +109,16 @@ class Command(BaseCommand):
             Response.objects.filter(question=q, response_type=self.rt).delete()
 
     def popuplate_council_lookup(self):
-        df = self.get_df("council names", {})
         lookup = {}
-        for _, row in df.iterrows():
-            lookup[row["local-authority-code"]] = row["gss-code"]
+        try:
+            df = self.get_df("council names", {})
+            for _, row in df.iterrows():
+                lookup[row["local-authority-code"]] = row["gss-code"]
+        except ValueError:
+            self.print_info(
+                f"{YELLOW}No council names tab found so not populating council lookup{NOBOLD}",
+                1,
+            )
 
         self.council_lookup = lookup
 
@@ -187,29 +193,35 @@ class Command(BaseCommand):
                     if row[skip_check["col"]] == skip_check["val"]:
                         continue
 
-                council_col = details.get("gss_col", details.get("council_col", ""))
+                gss_col = details.get("gss_col", "Local Authority Code")
+                if row.get(gss_col):
+                    gss = row[gss_col]
+                    code = gss
+                else:
+                    council_col = details.get("gss_col", details.get("council_col", ""))
 
-                code = row.get(
-                    "local authority code",
-                    row.get(
-                        "local authority council code",
+                    code = row.get(
+                        "local authority code",
                         row.get(
-                            "Local authority council code",
-                            row.get("local-authority-code", ""),
+                            "local authority council code",
+                            row.get(
+                                "Local authority council code",
+                                row.get("local-authority-code", ""),
+                            ),
                         ),
-                    ),
-                )
+                    )
 
-                if (
-                    (code == "" or pd.isna(code))
-                    and row.get("manually added local-authority-code", None) is not None
-                ) and not pd.isna(row["manually added local-authority-code"]):
-                    code = row["manually added local-authority-code"]
+                    if (
+                        (code == "" or pd.isna(code))
+                        and row.get("manually added local-authority-code", None)
+                        is not None
+                    ) and not pd.isna(row["manually added local-authority-code"]):
+                        code = row["manually added local-authority-code"]
 
-                gss = self.council_lookup.get(
-                    code,
-                    None,
-                )
+                    gss = self.council_lookup.get(
+                        code,
+                        None,
+                    )
 
                 if gss is None:
                     value = row[council_col]
