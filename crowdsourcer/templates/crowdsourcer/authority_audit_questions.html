@@ -2,6 +2,7 @@
 
 {% load django_bootstrap5 %}
 {% load neighbourhood_filters %}
+{% load static %}
 
 {% block content %}
     <h1 class="mb-3 mb-md-4">
@@ -205,7 +206,7 @@
       {% endfor %}
 
       <div class="sticky-bottom py-3 bg-white border-top" style="margin-top: -1px;">
-          <input type="submit" class="btn btn-primary" value="Save answers">
+          <input id="save_all_answers" type="submit" class="btn btn-primary" value="Save answers">
       </div>
     </form>
 
@@ -231,4 +232,8 @@
     });
     </script>
 
+{% endblock %}
+
+{% block script %}
+<script src="{% static 'js/questions.esm.js' %}"></script>
 {% endblock %}

@@ -2,7 +2,11 @@ import logging
 
 from crowdsourcer.forms import AuditResponseFormset
 from crowdsourcer.models import Response, ResponseType
-from crowdsourcer.views.base import BaseQuestionView, BaseSectionAuthorityList
+from crowdsourcer.views.base import (
+    BaseQuestionView,
+    BaseResponseJSONView,
+    BaseSectionAuthorityList,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -87,3 +91,7 @@ class AuthorityAuditSectionQuestions(BaseQuestionView):
         context = super().get_context_data(**kwargs)
         context["audit_user"] = True
         return context
+
+
+class AuthorityAuditSectionJSONQuestion(BaseResponseJSONView):
+    response_type = "Audit"

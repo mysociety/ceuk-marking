@@ -232,6 +232,11 @@ session_patterns = [
         audit.AuthorityAuditSectionQuestions.as_view(),
         name="authority_audit",
     ),
+    path(
+        "authorities/<name>/audit/section/<section_title>/questions/<question>/",
+        audit.AuthorityAuditSectionJSONQuestion.as_view(),
+        name="authority_audit_json_question_edit",
+    ),
     # audit progress
     path(
         "audit_authority_assignments/",
