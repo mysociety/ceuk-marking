@@ -261,6 +261,7 @@ class PublicAuthority(models.Model):
         ).annotate(
             num_questions=Subquery(
                 Question.objects.filter(
+                    id__in=questions,
                     questiongroup=OuterRef("questiongroup"),
                     section__title=section,
                     section__marking_session=marking_session,

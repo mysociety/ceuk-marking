@@ -12,6 +12,7 @@ from crowdsourcer.models import (
     PublicAuthority,
     Response,
     ResponseType,
+    SessionConfig,
     SessionProperties,
     SessionPropertyValues,
 )
@@ -109,6 +110,31 @@ class TestAssignmentView(BaseTestCase):
         self.assertEqual(first.title, "Buildings & Heating")
 
         self.assertEqual(first.complete, 1)
+
+    def test_ignore_questions_config(self):
+        SessionConfig.objects.create(
+            name="right_of_reply_responses_to_ignore",
+            marking_session=MarkingSession.objects.get(label="Default"),
+            config_type="json",
+            json_value=["Car share"],
+        )
+
+        url = reverse("authority_ror_sections", args=("Aberdeenshire Council",))
+        response = self.client.get(url)
+
+        context = response.context
+        sections = context["sections"]
+
+        self.assertEqual(len(sections), 7)
+        first = sections[0]
+        second = sections[1]
+        self.assertEqual(first.title, "Buildings & Heating")
+        self.assertEqual(second.title, "Transport")
+
+        self.assertEqual(first.total, 2)
+        self.assertEqual(first.complete, 2)
+        self.assertEqual(second.total, 1)
+        self.assertEqual(second.complete, 0)
 
 
 class TestTwoCouncilsAssignmentView(BaseTestCase):
@@ -399,6 +425,32 @@ class TestSaveView(BaseTestCase):
 
         self.assertRegex(response.content, rb"vehicle fleet")
         self.assertNotRegex(response.content, rb"Second Session")
+
+    def test_ignore_questions_config(self):
+        url = reverse("authority_ror", args=("Aberdeenshire Council", "Transport"))
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+
+        self.assertEqual(len(response.context["form"].initial), 2)
+        self.assertEqual(
+            response.context["form"].initial[0]["question"].number_and_part, "1"
+        )
+        self.assertEqual(
+            response.context["form"].initial[1]["question"].number_and_part, "2"
+        )
+
+        SessionConfig.objects.create(
+            name="right_of_reply_responses_to_ignore",
+            marking_session=MarkingSession.objects.get(label="Default"),
+            config_type="json",
+            json_value=["Car share"],
+        )
+
+        response = self.client.get(url)
+        self.assertEqual(len(response.context["form"].initial), 1)
+        self.assertEqual(
+            response.context["form"].initial[0]["question"].number_and_part, "1"
+        )
 
     def test_questions_alt_session(self):
         u = User.objects.get(username="other_marker")

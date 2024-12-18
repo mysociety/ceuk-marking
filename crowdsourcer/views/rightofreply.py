@@ -17,6 +17,7 @@ from crowdsourcer.models import (
     Response,
     ResponseType,
     Section,
+    SessionConfig,
     SessionProperties,
     SessionPropertyValues,
 )
@@ -109,14 +110,31 @@ class AuthorityRORSectionList(ListView):
         question_types = ["volunteer", "national_volunteer", "foi"]
 
         response_type = ResponseType.objects.get(type="Right of Reply")
-        for section in sections:
-            questions = Question.objects.filter(
-                section=section,
-                how_marked__in=question_types,
-            )
-            question_list = list(questions.values_list("id", flat=True))
+        authority = PublicAuthority.objects.get(name=context["authority_name"])
 
-            authority = PublicAuthority.objects.get(name=context["authority_name"])
+        for section in sections:
+            responses_to_ignore = SessionConfig.get_config(
+                self.request.current_session, "right_of_reply_responses_to_ignore"
+            )
+            if responses_to_ignore:
+                questions = (
+                    Response.objects.filter(
+                        authority=authority,
+                        question__section=section,
+                        question__how_marked__in=question_types,
+                        response_type=ResponseType.objects.get(type="First Mark"),
+                    )
+                    .exclude(option__description__in=responses_to_ignore)
+                    .exclude(multi_option__description__in=responses_to_ignore)
+                )
+                question_list = list(questions.values_list("question_id", flat=True))
+            else:
+                questions = Question.objects.filter(
+                    section=section,
+                    how_marked__in=question_types,
+                )
+                question_list = list(questions.values_list("id", flat=True))
+
             args = [
                 question_list,
                 section.title,
@@ -176,6 +194,27 @@ class AuthorityRORSectionQuestions(BaseQuestionView):
             data["original_response"] = r
 
             initial[r.question.id] = data
+
+        responses_to_ignore = SessionConfig.get_config(
+            self.request.current_session, "right_of_reply_responses_to_ignore"
+        )
+        if responses_to_ignore:
+            valid_questions = (
+                Response.objects.filter(
+                    authority=self.authority,
+                    question__in=self.questions,
+                    response_type=rt,
+                )
+                .exclude(option__description__in=responses_to_ignore)
+                .exclude(multi_option__description__in=responses_to_ignore)
+                .values_list("question_id", flat=True)
+            )
+
+            new_initial = {}
+            for k in initial.keys():
+                if k in valid_questions:
+                    new_initial[k] = initial[k]
+            initial = new_initial
 
         if self.has_previous():
             ror_rt = ResponseType.objects.get(type="Right of Reply")
