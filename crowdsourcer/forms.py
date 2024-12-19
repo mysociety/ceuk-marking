@@ -20,6 +20,7 @@ from django.forms import (
     URLField,
     formset_factory,
     inlineformset_factory,
+    modelformset_factory,
 )
 
 import pandas as pd
@@ -573,3 +574,8 @@ class SessionPropertyForm(Form):
                     required=False,
                     widget=Textarea,
                 )
+
+
+OptionFormset = modelformset_factory(
+    Option, fields=["score"], extra=0, can_delete=False
+)

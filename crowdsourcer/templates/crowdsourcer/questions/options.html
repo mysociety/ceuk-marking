@@ -1,0 +1,57 @@
+{% extends 'crowdsourcer/base.html' %}
+
+{% load crowdsourcer_tags django_bootstrap5 static %}
+
+{% block content %}
+{% if show_login %}
+    <h1 class="mb-4">Sign in</h1>
+    <a href="{% url 'login' %}">Sign in</a>
+{% else %}
+    <h3 class="mb-4">Scores for {{ section.title }} answers</h3>
+
+
+    <form action="" method="post">
+        {% csrf_token %}
+        {{ form.management_form }}
+        <div class="container">
+            <div class="row border-bottom fw-bold">
+                <div class="col-10">
+                    Description
+                </div>
+
+                <div class="col-2">
+                    Score
+                </div>
+            </div>
+            {% for option_form in form %}
+                {% ifchanged option_form.instance.question.number_and_part %}
+                {% if not forloop.first %}
+                </fieldset>
+                {% endif %}
+                <fieldset class="pt-1 mb-3">
+                <div class="row py-0 h5">
+                    <div class="col-12">
+                        {{ option_form.instance.question.number_and_part }}
+                        {{ option_form.instance.question.description }}
+                    </div>
+                </div>
+                {% endifchanged %}
+                <div class="row mb-2 pb-2 border-bottom">
+                    <div class="col-10">
+                        <div class="mb-dd-4">
+                            {{ option_form.instance.description }}
+                        </div>
+                    </div>
+
+                    <div class="col-2">
+                        {% bootstrap_field option_form.score show_label=False wrapper_class="mb-0 mb-md-0" %}
+                    </div>
+                </div>
+                {{ option_form.id }}
+            {% endfor %}
+        </div>
+        <input type="submit" class="btn btn-primary" value="Update">
+    </form>
+
+{% endif %}
+{% endblock %}

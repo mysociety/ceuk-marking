@@ -19,7 +19,15 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
 
-from crowdsourcer.views import audit, marking, progress, rightofreply, stats, volunteers
+from crowdsourcer.views import (
+    audit,
+    marking,
+    progress,
+    questions,
+    rightofreply,
+    stats,
+    volunteers,
+)
 
 session_patterns = [
     # home page
@@ -303,6 +311,17 @@ session_patterns = [
         "volunteers/<pk>/",
         volunteers.VolunteerEditView.as_view(),
         name="edit_volunteer",
+    ),
+    # question management
+    path(
+        "questions/options/<section_name>/",
+        questions.OptionsView.as_view(),
+        name="edit_options",
+    ),
+    path(
+        "questions/sections/",
+        questions.SectionList.as_view(),
+        name="question_sections",
     ),
 ]
 
