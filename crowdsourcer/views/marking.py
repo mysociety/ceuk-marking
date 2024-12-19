@@ -222,6 +222,8 @@ class OverviewView(ListView):
                 section_link = "home"
             elif assignment.response_type.type == "First Mark":
                 section_link = "section_authorities"
+            elif assignment.response_type.type == "Right of Reply":
+                section_link = "authority_ror_authorities"
             elif assignment.response_type.type == "Audit":
                 section_link = "audit_section_authorities"
 
