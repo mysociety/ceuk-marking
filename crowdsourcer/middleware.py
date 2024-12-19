@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.http import Http404
 
 from crowdsourcer.models import MarkingSession, ResponseType
 
@@ -21,6 +22,8 @@ class AddStateMiddleware:
             current_session = MarkingSession.objects.filter(
                 label=session_name, active=True
             ).first()
+            if current_session is None:
+                raise Http404
         else:
             current_session = (
                 MarkingSession.objects.filter(active=True).order_by("-default").first()
