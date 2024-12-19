@@ -4,7 +4,7 @@ from collections import defaultdict
 
 from django.core.exceptions import PermissionDenied
 from django.http import HttpResponse
-from django.shortcuts import redirect
+from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
 from django.views.generic import ListView
 
@@ -224,7 +224,8 @@ class AuthorityRORSectionQuestions(BaseQuestionView):
 
     def check_permissions(self):
         denied = True
-        authority = PublicAuthority.objects.get(name=self.kwargs["name"])
+        authority = get_object_or_404(PublicAuthority, name=self.kwargs["name"])
+
         user = self.request.user
 
         if user.is_anonymous:
