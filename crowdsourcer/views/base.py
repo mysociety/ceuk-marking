@@ -10,6 +10,7 @@ from django.db.models import Count, F, FloatField, OuterRef, Subquery
 from django.db.models.functions import Cast
 from django.dispatch import receiver
 from django.http import JsonResponse
+from django.shortcuts import get_object_or_404
 from django.views.generic import ListView, TemplateView
 
 from crowdsourcer.forms import ResponseForm, ResponseFormset
@@ -97,10 +98,14 @@ class BaseQuestionView(TemplateView):
         return initial
 
     def get_initial_obj(self):
-        self.authority = PublicAuthority.objects.get(name=self.kwargs["name"])
+        self.authority = get_object_or_404(PublicAuthority, name=self.kwargs["name"])
+        section = get_object_or_404(
+            Section,
+            title=self.kwargs["section_title"],
+            marking_session=self.request.current_session,
+        )
         self.questions = Question.objects.filter(
-            section__marking_session=self.request.current_session,
-            section__title=self.kwargs["section_title"],
+            section=section,
             questiongroup=self.authority.questiongroup,
             how_marked__in=self.how_marked_in,
         ).order_by("number", "number_part")
