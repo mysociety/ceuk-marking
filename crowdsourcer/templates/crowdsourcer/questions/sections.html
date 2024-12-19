@@ -1,0 +1,20 @@
+{% extends 'crowdsourcer/base.html' %}
+
+{% load crowdsourcer_tags %}
+
+{% block content %}
+{% if show_login %}
+    <h1 class="mb-4">Sign in</h1>
+    <a href="{% url 'login' %}">Sign in</a>
+{% else %}
+    <div class="d-md-flex align-items-center mb-4">
+        <h1 class="mb-md-0 me-md-auto">Sections</h1>
+    </div>
+
+    <ul>
+        {% for section in sections %}
+        <li><a href="{% session_url 'edit_options' section.title %}">{{ section.title }}</li>
+        {% endfor %}
+    </ul>
+{% endif %}
+{% endblock %}
