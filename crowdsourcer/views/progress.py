@@ -129,10 +129,10 @@ class BaseAllAuthorityProgressView(UserPassesTestMixin, ListView):
 
         if self.request.current_session.entity_name is not None:
             self.page_title = (
-                f"{self.request.current_session.entity_name}s {self.page_title }"
+                f"{self.request.current_session.entity_name}s {self.page_title}"
             )
         else:
-            self.page_title = f"Councils {self.page_title }"
+            self.page_title = f"Councils {self.page_title}"
 
         context["councils"] = council_totals
         context["authorities"] = authorities
