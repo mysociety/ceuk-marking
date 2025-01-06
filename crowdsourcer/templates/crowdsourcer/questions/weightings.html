@@ -1,0 +1,56 @@
+{% extends 'crowdsourcer/base.html' %}
+
+{% load crowdsourcer_tags django_bootstrap5 static %}
+
+{% block content %}
+{% if show_login %}
+    <h1 class="mb-4">Sign in</h1>
+    <a href="{% url 'login' %}">Sign in</a>
+{% else %}
+    <h3 class="mb-4">Types and Weightings for {{ section.title }} questions</h3>
+
+
+    <form action="" method="post">
+        {% csrf_token %}
+        {{ form.management_form }}
+        <div class="container">
+            <div class="row border-bottom fw-bold">
+                <div class="col-8">
+                    Question
+                </div>
+
+                <div class="col-2">
+                    Type
+                </div>
+
+                <div class="col-2">
+                    Weighting
+                </div>
+            </div>
+            {% for question_form in form %}
+                <fieldset class="pt-1 mb-3">
+                <div class="row py-0 border-bottom">
+                    <div class="col-8">
+                        <div class="mb-dd-4">
+                        <span class="fw-bold">{{ question_form.instance.number_and_part }}</span>
+                        {{ question_form.instance.description }}
+                        </div>
+                    </div>
+
+                    <div class="col-2">
+                        {% bootstrap_field question_form.question_type show_label=False %}
+                    </div>
+
+                    <div class="col-2">
+                        {% bootstrap_field question_form.weighting show_label=False %}
+                    </div>
+                </div>
+                {{ question_form.id }}
+                </fieldset>
+            {% endfor %}
+        </div>
+        <input type="submit" class="btn btn-primary" value="Update">
+    </form>
+
+{% endif %}
+{% endblock %}

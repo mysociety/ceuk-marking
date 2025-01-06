@@ -319,6 +319,11 @@ session_patterns = [
         name="edit_options",
     ),
     path(
+        "questions/weightings/<section_name>/",
+        questions.WeightingsView.as_view(),
+        name="edit_weightings",
+    ),
+    path(
         "questions/sections/",
         questions.SectionList.as_view(),
         name="question_sections",

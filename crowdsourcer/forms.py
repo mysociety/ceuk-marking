@@ -31,6 +31,7 @@ from crowdsourcer.models import (
     MarkingSession,
     Option,
     PublicAuthority,
+    Question,
     Response,
     ResponseType,
     Section,
@@ -578,4 +579,8 @@ class SessionPropertyForm(Form):
 
 OptionFormset = modelformset_factory(
     Option, fields=["score"], extra=0, can_delete=False
+)
+
+QuestionFormset = modelformset_factory(
+    Question, fields=["question_type", "weighting"], extra=0, can_delete=False
 )
