@@ -28,13 +28,13 @@
                     {{ q.number_and_part }} - {{ q.description }}
                 </td>
                 <td class="align-middle">
-                    <a href="{% session_url 'question_data_csv' 'first_mark' section q.number %}" class="d-flex align-items-center">
+                    <a href="{% session_url 'question_data_csv' 'first_mark' section q.number_and_part %}" class="d-flex align-items-center">
                         {% include 'crowdsourcer/icons/download.svg' with classes='me-2' %}
                         <span class="visually-hidden">Download</span> CSV
                     </a>
                 </td>
                 <td class="align-middle">
-                    <a href="{% session_url 'ror_question_data_csv' section q.number %}" class="d-flex align-items-center">
+                    <a href="{% session_url 'ror_question_data_csv' section q.number_and_part %}" class="d-flex align-items-center">
                         {% include 'crowdsourcer/icons/download.svg' with classes='me-2' %}
                         <span class="visually-hidden">Download</span> CSV
                     </a>
