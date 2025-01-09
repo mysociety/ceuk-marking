@@ -27,7 +27,7 @@ class OptionsView(UserPassesTestMixin, FormView):
             "session_urls:edit_options",
             kwargs={
                 "marking_session": self.request.current_session.label,
-                "section_name": "Buildings & Heating",
+                "section_name": self.kwargs["section_name"],
             },
         )
 
