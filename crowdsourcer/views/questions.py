@@ -1,5 +1,6 @@
 import re
 
+from django.contrib import messages
 from django.contrib.auth.mixins import UserPassesTestMixin
 from django.db import transaction
 from django.shortcuts import get_object_or_404
@@ -182,6 +183,7 @@ class QuestionBulkUpdateView(UserPassesTestMixin, FormView):
 
         context["section"] = self.section
         context["question"] = self.question
+        context["success"] = self.request.GET.get("success")
 
         return context
 
@@ -268,4 +270,5 @@ class QuestionBulkUpdateView(UserPassesTestMixin, FormView):
                             )
                             response.multi_option.add(option.id)
 
+        messages.add_message(self.request, messages.SUCCESS, "Question updated!")
         return super().form_valid(form)

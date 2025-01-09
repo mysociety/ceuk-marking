@@ -10,12 +10,17 @@
 <h1 class="mb-4">Update Responses for {{ section.title }} {{ question.number_and_part }}</h1>
 <h4 class="mb-4">{{ question.description }}</h4>
 
+{% for message in messages %}
+<div{% if message.tags %} class="alert alert-{{ message.tags }}" role="alert"{% endif %}>
+    {{ message }}
+</div>
+{% endfor %}
 
-    <form enctype="multipart/form-data" action="" method="post">
-        {% csrf_token %}
-        {% bootstrap_form form %}
-        <input type="submit" value="Update">
-    </form>
+<form enctype="multipart/form-data" action="" method="post">
+    {% csrf_token %}
+    {% bootstrap_form form %}
+    <input type="submit" value="Update">
+</form>
 
 {% endif %}
 {% endblock %}
