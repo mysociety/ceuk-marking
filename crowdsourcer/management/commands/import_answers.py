@@ -146,7 +146,7 @@ class Command(BaseCommand):
             desc = answer["answer"].strip()
             try:
                 if question.question_type == "multiple_choice":
-                    opts = desc.split(",")
+                    opts = desc.split("|")
                     options = []
                     for o in opts:
                         new_opt = Option.objects.get(question=question, description=o)

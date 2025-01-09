@@ -614,7 +614,7 @@ def get_response_data(
         for opt in response.multi_option.all():
             descs.append(opt.description)
             score += opt.score
-        answer = ",".join(descs)
+        answer = "|".join(descs)
     elif response.option is not None:
         score = response.option.score
         answer = response.option.description
