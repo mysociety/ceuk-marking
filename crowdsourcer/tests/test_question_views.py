@@ -123,3 +123,51 @@ class TestBulkUpload(BaseTestCase):
         self.assertEqual(r.option.description, "Yes")
         self.assertEqual(r.page_number, "0")
         self.assertEqual(last_update, r.last_update)
+
+    def test_one_new_one_deleted(self):
+        url = reverse("question_bulk_update", args=("Transport", "1"))
+        response = self.client.get(url)
+
+        q = Question.objects.get(
+            section__title="Transport",
+            section__marking_session__label="Default",
+            number=1,
+        )
+
+        all_r = Response.objects.filter(question=q, response_type__type="First Mark")
+        self.assertEqual(all_r.count(), 1)
+
+        exists = Response.objects.filter(
+            question=q, authority__name="Aberdeenshire Council"
+        ).exists()
+        self.assertTrue(exists)
+
+        upload_file = (
+            pathlib.Path(__file__).parent.resolve()
+            / "data"
+            / "test_question_upload_one_deleted.csv"
+        )
+
+        with open(upload_file, "rb") as fp:
+            response = self.client.post(
+                url,
+                data={
+                    "question": 281,
+                    "updated_responses": fp,
+                    "stage": "First Mark",
+                },
+            )
+
+        self.assertRedirects(response, "/Default" + url)
+        self.assertEqual(all_r.count(), 1)
+
+        r = Response.objects.get(question=q, authority__name="Aberdeen City Council")
+
+        self.assertEqual(r.option.description, "Yes")
+        self.assertEqual(r.page_number, "99")
+
+        exists = Response.objects.filter(
+            question=q, authority__name="Aberdeenshire Council"
+        ).exists()
+
+        self.assertFalse(exists)

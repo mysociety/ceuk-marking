@@ -194,81 +194,95 @@ class QuestionBulkUpdateView(UserPassesTestMixin, FormView):
         stage = get_object_or_404(ResponseType, type=data["stage"])
         is_multi = question.question_type == "multiple_choice"
 
+        counts = {"updated": 0, "added": 0, "deleted": 0}
         with transaction.atomic():
             for index, row in form.responses_df.iterrows():
                 answer = row["answer"].strip()
-                if answer == "-":
-                    continue
-
-                if is_multi:
-                    answers = answer.split("|")
-
                 authority = PublicAuthority.objects.get(
                     name=row["authority"],
                     marking_session=self.request.current_session,
                 )
-                if not is_multi:
-                    option = Option.objects.get(question=question, description=answer)
+
+                if answer != "-":
+                    if is_multi:
+                        answers = answer.split("|")
+
+                    if not is_multi:
+                        option = Option.objects.get(
+                            question=question, description=answer
+                        )
 
                 try:
                     response = Response.objects.get(
                         question=question, response_type=stage, authority=authority
                     )
-                    changed = False
-                    opts = {}
-                    for col in [
-                        "page_number",
-                        "evidence",
-                        "public_notes",
-                        "private_notes",
-                    ]:
-                        val = row[col]
-                        if pd.isna(val):
-                            val = None
-                            if col == "private_notes":
-                                val = ""
-                        if val != getattr(response, col):
-                            opts[col] = val
+                    if answer == "-":
+                        response.delete()
+                        counts["deleted"] += 1
+                    else:
+                        changed = False
+                        opts = {}
+                        for col in [
+                            "page_number",
+                            "evidence",
+                            "public_notes",
+                            "private_notes",
+                        ]:
+                            val = row[col]
+                            if pd.isna(val):
+                                val = None
+                                if col == "private_notes":
+                                    val = ""
+                            if val != getattr(response, col):
+                                opts[col] = val
+                                changed = True
+                        if not is_multi and response.option != option:
                             changed = True
-                    if not is_multi and response.option != option:
-                        changed = True
-                        opts["option"] = option
+                            opts["option"] = option
 
-                    if changed:
-                        response.user = self.request.user
-                        for k, v in opts.items():
-                            setattr(response, k, v)
-                        response.save()
+                        if changed:
+                            counts["updated"] += 1
+                            response.user = self.request.user
+                            for k, v in opts.items():
+                                setattr(response, k, v)
+                            response.save()
+
+                            if is_multi:
+                                response.multi_option.clear()
+                                for a in answers:
+                                    option = Option.objects.get(
+                                        question=question, description=a
+                                    )
+                                    response.multi_option.add(option.id)
+
+                except Response.DoesNotExist:
+                    if answer != "-":
+                        counts["added"] += 1
+                        opts = {
+                            "question": question,
+                            "response_type": stage,
+                            "authority": authority,
+                            "user": self.request.user,
+                        }
+                        for col in ["page_number", "evidence", "public_notes"]:
+                            if pd.isna(row[col]) is False:
+                                opts[col] = row[col]
+                        if not is_multi:
+                            opts["option"] = option
+
+                        response = Response.objects.create(**opts)
 
                         if is_multi:
-                            response.multi_option.clear()
                             for a in answers:
                                 option = Option.objects.get(
                                     question=question, description=a
                                 )
                                 response.multi_option.add(option.id)
 
-                except Response.DoesNotExist:
-                    opts = {
-                        "question": question,
-                        "response_type": stage,
-                        "authority": authority,
-                        "user": self.request.user,
-                    }
-                    for col in ["page_number", "evidence", "public_notes"]:
-                        if pd.isna(row[col]) is False:
-                            opts[col] = row[col]
-                    if not is_multi:
-                        opts["option"] = option
-
-                    response = Response.objects.create(**opts)
-
-                    if is_multi:
-                        for a in answers:
-                            option = Option.objects.get(
-                                question=question, description=a
-                            )
-                            response.multi_option.add(option.id)
-
         messages.add_message(self.request, messages.SUCCESS, "Question updated!")
+        messages.add_message(
+            self.request,
+            messages.INFO,
+            f"{counts['updated']} updated, {counts['added']} added, {counts['deleted']} deleted",
+        )
         return super().form_valid(form)
