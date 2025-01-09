@@ -584,3 +584,75 @@ OptionFormset = modelformset_factory(
 QuestionFormset = modelformset_factory(
     Question, fields=["question_type", "weighting"], extra=0, can_delete=False
 )
+
+
+class QuestionBulkUploadForm(Form):
+    question = CharField(widget=HiddenInput)
+    stage = ChoiceField(required=True, choices=[])
+    updated_responses = FileField()
+
+    def clean(self):
+        data = self.cleaned_data.get("updated_responses")
+
+        try:
+            df = pd.read_csv(
+                data,
+                usecols=[
+                    "authority",
+                    "answer",
+                    "score",
+                    "public_notes",
+                    "page_number",
+                    "evidence",
+                    "private_notes",
+                ],
+            )
+        except ValueError as v:
+            raise ValidationError(f"Problem processing csv file: {v}")
+
+        self.responses_df = df
+
+        try:
+            question = Question.objects.get(id=self.cleaned_data["question"])
+        except Question.DoesNotExist:
+            raise ValidationError(f"Bad question id: {self.cleaned_data['question']}")
+
+        is_multi = question.question_type == "multiple_choice"
+
+        file_errors = []
+        for _, row in self.responses_df.iterrows():
+            desc = row["answer"].strip()
+            try:
+                PublicAuthority.objects.get(
+                    name=row["authority"],
+                    marking_session=self.session,
+                )
+            except PublicAuthority.DoesNotExist:
+                file_errors.append(f"No such authority: {row['authority']}")
+                continue
+
+            if desc == "-":
+                continue
+
+            if not is_multi:
+                answers = [desc]
+            else:
+                answers = desc.split("|")
+
+            for answer in answers:
+                try:
+                    Option.objects.get(question=question, description=answer)
+                except Option.DoesNotExist:
+                    file_errors.append(
+                        f"No such answer for {row['authority']}: {answer}"
+                    )
+                    continue
+
+        if len(file_errors) > 0:
+            raise ValidationError(file_errors)
+
+    def __init__(self, question_id, stage_choices, session, **kwargs):
+        super().__init__(**kwargs)
+        self.session = session
+        self.initial["question"] = question_id
+        self.fields["stage"].choices = stage_choices

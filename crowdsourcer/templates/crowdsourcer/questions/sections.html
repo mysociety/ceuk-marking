@@ -13,7 +13,7 @@
 
     <ul>
         {% for section in sections %}
-        <li>{{section.title}} - <a href="{% session_url 'edit_weightings' section.title %}">weightings and type</a> : <a href="{% session_url 'edit_options' section.title %}">scores</a></li>
+        <li>{{section.title}} - <a href="{% session_url 'edit_weightings' section.title %}">weightings and type</a> : <a href="{% session_url 'edit_options' section.title %}">scores</a> : <a href="{% session_url 'question_section_questions' section.title %}">question list</a></li>
         {% endfor %}
     </ul>
 {% endif %}

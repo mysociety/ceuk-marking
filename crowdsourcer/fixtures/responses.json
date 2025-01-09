@@ -10,7 +10,7 @@
     "response_type": 1,
     "public_notes": "public notrs",
     "page_number": "0",
-    "evidence": "",
+    "evidence": null,
     "private_notes": "private notes",
     "revision_type": null,
     "revision_notes": null,

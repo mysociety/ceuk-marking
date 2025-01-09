@@ -328,6 +328,16 @@ session_patterns = [
         questions.SectionList.as_view(),
         name="question_sections",
     ),
+    path(
+        "questions/sections/<section_name>/questions/",
+        questions.QuestionListView.as_view(),
+        name="question_section_questions",
+    ),
+    path(
+        "questions/update/<section_name>/<question>/",
+        questions.QuestionBulkUpdateView.as_view(),
+        name="question_bulk_update",
+    ),
 ]
 
 urlpatterns = [

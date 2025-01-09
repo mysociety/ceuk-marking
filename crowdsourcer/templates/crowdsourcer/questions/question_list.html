@@ -1,0 +1,36 @@
+{% extends 'crowdsourcer/base.html' %}
+
+{% load crowdsourcer_tags static %}
+
+{% block content %}
+{% if show_login %}
+    <h1 class="mb-4">Sign in</h1>
+    <a href="{% url 'login' %}">Sign in</a>
+{% else %}
+    <h3 class="mb-4">Actions for {{ section.title }} questions</h3>
+
+
+    <div class="container">
+        <div class="row border-bottom fw-bold">
+            <div class="col-8">
+                Question
+            </div>
+        </div>
+        {% for question in questions %}
+            <div class="row py-0 border-bottom">
+                <div class="col-8">
+                    <div class="mb-dd-4">
+                    <span class="fw-bold">{{ question.number_and_part }}</span>
+                    {{ question.description }}
+                    </div>
+                </div>
+
+                <div class="col-2">
+                    <a href="{% session_url 'question_bulk_update' section.title question.number_and_part %}">bulk update</a>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+{% endif %}
+{% endblock %}
