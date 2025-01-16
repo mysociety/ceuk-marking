@@ -173,7 +173,7 @@ class Question(models.Model):
         return f"{self.number}"
 
     def __str__(self):
-        return f"{self.number_and_part}. {self.description}"
+        return f"{self.number_and_part}. {self.section} - {self.description}"
 
     def options(self):
         return Option.objects.filter(question=self).order_by("ordering", "score")
