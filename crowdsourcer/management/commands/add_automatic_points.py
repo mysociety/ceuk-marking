@@ -1,10 +1,10 @@
 from collections import defaultdict
 
 from django.contrib.auth.models import User
-from django.core.management.base import BaseCommand
 
 import pandas as pd
 
+from crowdsourcer.import_utils import BaseImporter
 from crowdsourcer.models import (
     MarkingSession,
     Option,
@@ -14,13 +14,8 @@ from crowdsourcer.models import (
     ResponseType,
 )
 
-YELLOW = "\033[33m"
-RED = "\033[31m"
-GREEN = "\033[32m"
-NOBOLD = "\033[0m"
 
-
-class Command(BaseCommand):
+class Command(BaseImporter):
     help = "Add automatic points"
 
     def add_arguments(self, parser):
@@ -71,12 +66,6 @@ class Command(BaseCommand):
             "--commit", action="store_true", help="Commits changes to DB"
         )
 
-    def print_info(self, message, level=2):
-        if self.quiet and level > 1:
-            return
-
-        self.stdout.write(message)
-
     def get_points(self, file):
         df = pd.read_csv(file)
         df["answer in GRACE"] = df["answer in GRACE"].astype(str)
@@ -126,7 +115,7 @@ class Command(BaseCommand):
             if type_map.get(t) is not None:
                 scrubbed.append(type_map[t])
             else:
-                self.print_info(f"bad council type {t}", 1)
+                self.print_error(f"bad council type {t}")
         return scrubbed
 
     def get_mapped_answer(self, answer, q, answer_map):
@@ -232,9 +221,9 @@ class Command(BaseCommand):
                     **q_args,
                 )
             except Question.DoesNotExist:
-                self.print_info(
+                self.print_error(
                     f"no matching question for {point['section']}, {q_args}"
-                ), 1
+                )
                 continue
 
             copy_last_year = False
@@ -250,9 +239,8 @@ class Command(BaseCommand):
                 try:
                     option = Option.objects.get(question=question, description=answer)
                 except Option.DoesNotExist:
-                    self.print_info(
-                        f"no matching option for {question.number_and_part}, {point['section']} - '{answer}'",
-                        1,
+                    self.print_error(
+                        f"no matching option for {question.number_and_part}, {point['section']} - '{answer}' {point['answer in GRACE']}"
                     )
                     continue
 
@@ -269,12 +257,12 @@ class Command(BaseCommand):
                             response_type=prev_rt,
                         )
                     except Response.DoesNotExist:
-                        self.print_info(
+                        self.print_error(
                             f"no previous response exists for {council.name} for {question.number_and_part}, {question.section.title}"
                         )
                         continue
                     except Response.MultipleObjectsReturned:
-                        self.print_info(
+                        self.print_error(
                             f"multiple previous responses exist for {council.name} for {question.number_and_part}, {question.section.title}"
                         )
                         continue
@@ -298,9 +286,8 @@ class Command(BaseCommand):
                                 question=question, description=answer
                             )
                     except Option.DoesNotExist:
-                        self.print_info(
-                            f"no matching option for {question.number_and_part}, {point['section']} - '{prev_response.option.description}'",
-                            1,
+                        self.print_error(
+                            f"no matching option for {question.number_and_part}, {point['section']} - '{prev_response.option.description}'"
                         )
                         continue
 
@@ -313,14 +300,12 @@ class Command(BaseCommand):
                             options = [x.id for x in response.multi_option.all()]
                             if option.id not in options:
                                 self.print_info(
-                                    f"{YELLOW}existing response does not contain expected response for {question.number_and_part}, {point['section']}, {council.name}{NOBOLD}",
-                                    1,
+                                    f"existing response does not contain expected response for {question.number_and_part}, {point['section']}, {council.name}"
                                 )
                     else:
                         if response.option != option:
                             self.print_info(
-                                f"{YELLOW}different existing response for {question.number_and_part}, {point['section']}, {council.name}{NOBOLD}",
-                                1,
+                                f"different existing response for {question.number_and_part}, {point['section']}, {council.name}"
                             )
                         if point.get("override_response", None) is not None:
                             override_response = True
@@ -368,7 +353,7 @@ class Command(BaseCommand):
 
                 if add_response:
                     responses_added += 1
-                    self.print_info(
+                    self.print_debug(
                         f"creating response for {council.name} for {question.number_and_part}, {question.section.title}"
                     )
 
@@ -387,8 +372,7 @@ class Command(BaseCommand):
                 elif override_response or update_existing_responses:
                     responses_overidden += 1
                     self.print_info(
-                        f"overriding response for {council.name} for {question.number_and_part}, {question.section.title}",
-                        1,
+                        f"overriding response for {council.name} for {question.number_and_part}, {question.section.title}"
                     )
 
                     if question.question_type != "multiple_choice":
@@ -414,12 +398,8 @@ class Command(BaseCommand):
                             else:
                                 response.multi_option.add(option.id)
 
-            self.print_info(
-                f"{GREEN}Added {responses_added} responses for {question.section.title} {question.number_and_part}, {existing_responses} existing responses, {responses_overidden} responses overridden{NOBOLD}",
-                1,
+            self.print_success(
+                f"Added {responses_added} responses for {question.section.title} {question.number_and_part}, {existing_responses} existing responses, {responses_overidden} responses overridden",
             )
         if not commit:
-            self.print_info(
-                f"{YELLOW}call with --commit to commit changed to database{NOBOLD}",
-                1,
-            )
+            self.print_info("call with --commit to commit changed to database")
