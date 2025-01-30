@@ -153,6 +153,7 @@ class BaseAuthorityProgressView(UserPassesTestMixin, ListView):
     types = ["volunteer", "national_volunteer"]
     stage = "First Mark"
     url_pattern = "authority_question_edit"
+    ignore_read_only = True
 
     def test_func(self):
         return self.request.user.is_superuser
@@ -173,6 +174,9 @@ class BaseAuthorityProgressView(UserPassesTestMixin, ListView):
             questions = Question.objects.filter(
                 section=section, how_marked__in=self.types
             )
+            if self.ignore_read_only:
+                questions = questions.exclude(read_only=True)
+
             question_list = list(questions.values_list("id", flat=True))
             qs = (
                 PublicAuthority.objects.filter(name=name)
