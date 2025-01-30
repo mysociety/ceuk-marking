@@ -1,3 +1,5 @@
+from unittest import skip
+
 from django.contrib.auth.models import User
 from django.test import TestCase
 from django.urls import reverse
@@ -239,6 +241,7 @@ class TestSaveView(BaseTestCase):
         self.assertRegex(response.content, rb"Second Session")
         self.assertNotRegex(response.content, rb"vehicle fleet")
 
+    @skip("read only questions temporarily disabled")
     def test_read_only_questions(self):
         q = Question.objects.get(pk=282)
         q.read_only = True

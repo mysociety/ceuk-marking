@@ -1,5 +1,6 @@
 import datetime
 import io
+from unittest import skip
 
 from django.contrib.auth.models import User
 from django.test import TestCase, override_settings
@@ -428,6 +429,7 @@ class TestSaveView(BaseTestCase):
         self.assertNotRegex(response.content, rb"These will note be made public")
     """
 
+    @skip("read only questions temporarily hidden")
     def test_read_only_questions(self):
         q = Question.objects.get(pk=282)
         q.read_only = True

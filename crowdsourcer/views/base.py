@@ -109,6 +109,9 @@ class BaseQuestionView(TemplateView):
             questiongroup=self.authority.questiongroup,
             how_marked__in=self.how_marked_in,
         ).order_by("number", "number_part")
+        if self.read_only_questions and not self.request.user.is_superuser:
+            self.questions = self.questions.exclude(read_only=True)
+
         responses = Response.objects.filter(
             authority=self.authority, question__in=self.questions, response_type=self.rt
         ).select_related("question")
