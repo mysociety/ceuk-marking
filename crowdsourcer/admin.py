@@ -98,6 +98,7 @@ class QuestionAdmin(admin.ModelAdmin):
         "how_marked",
         "question_type",
         "questiongroup",
+        "read_only",
         SectionFilter,
     ]
     ordering = ("section", "number", "number_part")
