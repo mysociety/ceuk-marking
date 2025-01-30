@@ -104,6 +104,7 @@ class BaseQuestionView(TemplateView):
             title=self.kwargs["section_title"],
             marking_session=self.request.current_session,
         )
+        self.section = section
         self.questions = Question.objects.filter(
             section=section,
             questiongroup=self.authority.questiongroup,
@@ -177,23 +178,24 @@ class BaseQuestionView(TemplateView):
         section_title = self.kwargs.get("section_title", "")
         authority = self.kwargs.get("name", "")
         logger.debug(
-            f"{self.log_start} post from {self.request.user.email} for {authority}/{section_title}"
+            f"{self.log_start} post from {self.request.user.email} [{self.request.user.id}] for {authority}/{section_title}"
         )
-        logger.debug(f"post data is {self.request.POST}")
+        logger.debug(f"{self.request.user.id} post data is {self.request.POST}")
 
         formset = self.get_form()
+        log_start = f"{self.log_start} [{self.request.user.id}-{self.authority.id}-{self.section.id}]"
         if formset.is_valid():
-            logger.debug("form IS VALID")
+            logger.debug(f"{log_start} form IS VALID")
             post_hash = self.get_post_hash()
             if self.check_form_not_resubmitted(post_hash):
-                logger.debug("form saved")
+                logger.debug(f"{log_start} form saved")
                 for form in formset:
                     self.process_form(form)
                 self.request.session[self.session_form_hash()] = post_hash
             else:
-                logger.debug("form RESUBMITTED, not saving")
+                logger.debug(f"{log_start} form RESUBMITTED, not saving")
         else:
-            logger.debug(f"form NOT VALID, errors are {formset.errors}")
+            logger.debug(f"{log_start} form NOT VALID, errors are {formset.errors}")
             return self.render_to_response(self.get_context_data(form=formset))
 
         context = self.get_context_data()

@@ -68,6 +68,7 @@ class AuthorityAuditSectionQuestions(BaseQuestionView):
         return permitted
 
     def process_form(self, form):
+        log_start = f"[{self.request.user.id}-{self.authority.id}-{self.section.id}]"
         cleaned_data = form.cleaned_data
         # XXX work out what the field is
         if (
@@ -77,15 +78,12 @@ class AuthorityAuditSectionQuestions(BaseQuestionView):
             form.instance.response_type = self.rt
             form.instance.user = self.request.user
             form.save()
-            logger.debug(f"saved form {form.prefix}")
+            logger.debug(f"{log_start} saved form {form.prefix}")
         elif form.initial.get("id", None) is not None:
             form.save()
-            logger.debug(f"saved blank form {form.prefix}")
+            logger.debug(f"{log_start} saved blank form {form.prefix}")
         else:
-            logger.debug(f"did not save form {form.prefix}")
-            logger.debug(
-                f"agree_with_response is {cleaned_data.get('agree_with_response', None)}"
-            )
+            logger.debug(f"{log_start} did not save form {form.prefix}")
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
