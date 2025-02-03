@@ -5,15 +5,21 @@ from collections import defaultdict
 
 from django.contrib.auth.mixins import UserPassesTestMixin
 from django.db.models import Count
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.utils.text import slugify
 from django.views.generic import ListView, TemplateView
 
+from django_filters.views import FilterView
+
+from crowdsourcer.filters import ResponseFilter
 from crowdsourcer.models import (
+    MarkingSession,
     Option,
     PublicAuthority,
     Question,
     Response,
+    ResponseType,
+    Section,
     SessionPropertyValues,
 )
 from crowdsourcer.scoring import (
@@ -858,3 +864,118 @@ class SessionPropertiesCSVView(StatsUserTestMixin, ListView):
         for row in context["rows"]:
             writer.writerow(row)
         return response
+
+
+class ResponseReportView(StatsUserTestMixin, FilterView):
+    template_name = "crowdsourcer/stats/response_report.html"
+    context_object_name = "responses"
+    filterset_class = ResponseFilter
+
+    def get_filterset(self, filterset_class):
+        fs = super().get_filterset(filterset_class)
+
+        fs.filters["question__section"].field.choices = Section.objects.filter(
+            marking_session=self.request.current_session
+        ).values_list("id", "title")
+
+        questions = Question.objects.filter(
+            section__marking_session=self.request.current_session
+        ).order_by("section", "number", "number_part")
+        if (
+            self.request.GET.get("question__section") is not None
+            and self.request.GET["question__section"] != ""
+        ):
+            questions = questions.filter(
+                section__id=self.request.GET["question__section"]
+            )
+
+        question_choices = [(q.id, q.number_and_part) for q in questions]
+        fs.filters["question"].field.choices = question_choices
+
+        options = Option.objects.filter(
+            question__section__marking_session=self.request.current_session
+        ).order_by("ordering")
+        if (
+            self.request.GET.get("question") is not None
+            and self.request.GET["question"] != ""
+        ):
+            options = options.filter(question__id=self.request.GET["question"])
+
+        fs.filters["option"].field.choices = options.values_list("id", "description")
+
+        return fs
+
+    def get_queryset(self):
+        return Response.objects.filter(
+            question__section__marking_session=self.request.current_session
+        ).select_related("question", "authority")
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        params_required = False
+        params = ["question__section", "question", "option", "response_type"]
+        for p in params:
+            if self.request.GET.get(p) is None or self.request.GET[p] == "":
+                params_required = True
+
+        context["params_required"] = params_required
+
+        stage = "First Mark"
+        if (
+            self.request.GET.get("response_type") is not None
+            and self.request.GET["response_type"] != ""
+        ):
+            stage = ResponseType.objects.get(
+                id=self.request.GET.get("response_type")
+            ).type
+        url_pattern = "authority_question_edit"
+
+        if stage == "Right of Reply":
+            url_pattern = "authority_ror"
+        elif stage == "Audit":
+            url_pattern = "authority_audit"
+
+        context["url_pattern"] = url_pattern
+        return context
+
+
+class AvailableResponseQuestionsView(StatsUserTestMixin, ListView):
+    context_object_name = "questions"
+
+    def get_queryset(self):
+        if self.request.GET.get("ms") is None or self.request.GET.get("s") is None:
+            return []
+
+        marking_session = MarkingSession.objects.get(id=self.request.GET["ms"])
+        s = Section.objects.get(
+            marking_session=marking_session, id=self.request.GET["s"]
+        )
+        return Question.objects.filter(section=s).order_by("number", "number_part")
+
+    def render_to_response(self, context, **response_kwargs):
+        data = []
+
+        for q in context["questions"]:
+            data.append({"number_and_part": q.number_and_part, "id": q.id})
+
+        return JsonResponse({"results": data})
+
+
+class AvailableResponseOptionsView(StatsUserTestMixin, ListView):
+    context_object_name = "options"
+
+    def get_queryset(self):
+        if self.request.GET.get("q") is None:
+            return []
+
+        q = Question.objects.get(id=self.request.GET["q"])
+        return Option.objects.filter(question=q).order_by("ordering")
+
+    def render_to_response(self, context, **response_kwargs):
+        data = []
+
+        for o in context["options"]:
+            data.append({"description": o.description, "id": o.id})
+
+        return JsonResponse({"results": data})

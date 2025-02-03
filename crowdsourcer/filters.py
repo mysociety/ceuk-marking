@@ -1,8 +1,9 @@
 from django.contrib.auth.models import User
+from django.db.models import Q
 
 import django_filters
 
-from crowdsourcer.models import ResponseType, Section
+from crowdsourcer.models import Option, Question, Response, ResponseType, Section
 
 
 def filter_not_empty(queryset, name, value):
@@ -31,4 +32,60 @@ class VolunteerFilter(django_filters.FilterSet):
         fields = {
             "marker__response_type": ["exact"],
             "is_active": ["exact"],
+        }
+
+
+class ResponseFilter(django_filters.FilterSet):
+    AUTHORITY_TYPES = [
+        ("COMB", "Combined Authority"),
+        ("COI", "Isles of Scilly"),
+        ("CTY", "County Council"),
+        ("DIS", "District Council"),
+        ("LBO", "London Borough"),
+        ("UTA", "Unitary (includes Scotland and Wales)"),
+        ("MTD", "Metropolitan District"),
+        ("LGD", "Northern Ireland"),
+    ]
+    response_type = django_filters.ChoiceFilter(
+        label="Stage",
+        choices=ResponseType.choices(),
+        method="response_type_check",
+    )
+    question__section = django_filters.ChoiceFilter(
+        label="Section",
+        empty_label=None,
+        choices=Section.objects.values_list("id", "title"),
+    )
+    question = django_filters.ChoiceFilter(
+        field_name="question",
+        label="Question",
+        choices=Question.objects.values_list("id", "number"),
+    )
+    option = django_filters.ChoiceFilter(
+        field_name="option",
+        label="Answer",
+        method="option_check",
+        choices=Option.objects.values_list("id", "description"),
+    )
+
+    authority__type = django_filters.ChoiceFilter(
+        label="Authority Type",
+        method="response_type_check",
+        choices=AUTHORITY_TYPES,
+    )
+
+    def option_check(self, queryset, name, value):
+        queryset = queryset.filter(Q(option=value) | Q(multi_option=value))
+        return queryset
+
+    def response_type_check(self, queryset, name, value):
+        if value != "":
+            queryset = queryset.filter(**{name: value})
+        return queryset
+
+    class Meta:
+        model = Response
+        fields = {
+            "question": ["exact"],
+            "option": ["exact"],
         }

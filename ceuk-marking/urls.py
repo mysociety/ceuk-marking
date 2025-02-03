@@ -229,6 +229,21 @@ session_patterns = [
         stats.SessionPropertiesCSVView.as_view(),
         name="session_properties",
     ),
+    path(
+        "stats/response_report",
+        stats.ResponseReportView.as_view(),
+        name="response_report",
+    ),
+    path(
+        "stats/available_questions",
+        stats.AvailableResponseQuestionsView.as_view(),
+        name="available_questions_json",
+    ),
+    path(
+        "stats/available_options",
+        stats.AvailableResponseOptionsView.as_view(),
+        name="available_options_json",
+    ),
     # audit screens
     path(
         "section/audit/<section_title>/authorities/",

@@ -1,0 +1,83 @@
+{% extends 'crowdsourcer/base.html' %}
+
+{% load crowdsourcer_tags %}
+{% load django_bootstrap5 %}
+{% load static %}
+
+{% block script %}
+<script type="module" src="{% static 'js/stats.esm.js' %}"></script>
+{% endblock %}
+
+{% block content %}
+{% if show_login %}
+    <h1 class="mb-4">Sign in</h1>
+    <a href="{% url 'login' %}">Sign in</a>
+{% else %}
+    <div class="d-md-flex align-items-center mb-4">
+        <h1 class="mb-md-0 me-md-auto">Responses</h1>
+    </div>
+
+    <form method="GET" id="response_filter" class="bg-light p-3 rounded-sm mb-3">
+        <input type="hidden" id="session" value="{{ marking_session.id }}">
+        <div class="row align-items-end flex-wrap mb-n3 mb-md-n4">
+            <div class="col" style="min-width: 10rem">
+                {% bootstrap_field filter.form.question__section %}
+            </div>
+            <div class="col" style="min-width: 10rem">
+                {% bootstrap_field filter.form.question %}
+            </div>
+            <div class="col" style="min-width: 10rem">
+                {% bootstrap_field filter.form.option %}
+            </div>
+            <div class="col" style="min-width: 10rem">
+                {% bootstrap_field filter.form.response_type %}
+            </div>
+            <div class="col" style="min-width: 10rem">
+                {% bootstrap_field filter.form.authority__type %}
+            </div>
+            <div class="col" style="min-width: 10rem">
+                <button type="submit" class="btn btn-primary btn-block mb-3 mb-md-4">Filter list</button>
+            </div>
+        </div>
+    </form>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Question</th>
+                <th>Authority</th>
+                <th>Response</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% if params_required %}
+                <tr><td colspan="3">Please select all options above</td></tr>
+            {% else %}
+              {% for response in responses %}
+                <tr>
+                    <td>
+                        <a href="{% session_url url_pattern response.authority.name response.question.section.title %}">{{ response.question.number_and_part }}</a>
+                    </td>
+                    <td>
+                        {{ response.authority.name }}
+                    </td>
+                    <td>
+                      {% if response.multi_option.values %}
+                        <p>
+                          {% for option in response.multi_option.values %}
+                            {{ option.description }},
+                          {% empty %}
+                            (none)
+                          {% endfor %}
+                        </p>
+                      {% else %}
+                        {{ response.option|default:"(none)"|linebreaks }}
+                      {% endif %}
+                    </td>
+                </tr>
+              {% endfor %}
+            {% endif %}
+        </tbody>
+    </table>
+{% endif %}
+{% endblock %}
