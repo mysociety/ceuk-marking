@@ -355,11 +355,15 @@ class VolunteerProgressCSVView(UserPassesTestMixin, OverviewView):
         return self.request.user.is_superuser
 
     def get_queryset(self):
-        return Assigned.objects.filter(
-            user__is_active=True,
-            active=True,
+        assigned = Assigned.objects.filter(
             marking_session=self.request.current_session,
         )
+        if self.request.GET.get("show_all") != "1":
+            assigned = assigned.filter(
+                user__is_active=True,
+                active=True,
+            )
+        return assigned
 
     def render_to_response(self, context, **response_kwargs):
         response = HttpResponse(content_type="text/csv")

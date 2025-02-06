@@ -9,6 +9,10 @@
 {% else %}
     <h1 class="mb-4">{{ page_title }}</h1>
     <div class="list-group" style="max-width: 32rem;">
+        <a class="list-group-item list-group-item-action d-flex align-items-center justify-content-between" href="{% session_url 'volunteer_csv_progress' %}?show_all=1">
+            <span class="me-3">All volunteer progress for session (may be slow)</span>
+            {% include 'crowdsourcer/includes/csv-badge.html' %}
+        </a>
         <a class="list-group-item list-group-item-action d-flex align-items-center justify-content-between" href="{% session_url 'all_first_marks_csv' %}">
             <span class="me-3">First Mark Scores</span>
             {% include 'crowdsourcer/includes/csv-badge.html' %}
