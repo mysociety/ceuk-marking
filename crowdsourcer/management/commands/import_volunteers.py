@@ -334,14 +334,15 @@ class Command(BaseCommand):
                 preferred = row["preferred_councils"].split(",")
 
                 for p in preferred:
-                    if p.lower() in [
+                    p = p.strip().lower()
+                    if p in [
                         "scotland",
                         "england",
                         "wales",
                         "northern ireland",
                     ]:
-                        included_countries.append(p.lower())
-                    elif p == "London":
+                        included_countries.append(p.strip().lower())
+                    elif p == "london":
                         included_types.append("LBO")
 
             councils_to_assign = PublicAuthority.objects.filter(

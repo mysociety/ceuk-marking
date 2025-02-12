@@ -509,6 +509,74 @@ class AssignVolunteers(BaseCommandTestCase):
         self.assertTrue("East Borsetshire" in councils)
         self.assertTrue("Aberdeen City Council" in councils)
 
+    def test_council_preferences_with_spaces(self):
+        data_file = (
+            pathlib.Path(__file__).parent.resolve()
+            / "data"
+            / "volunteers_with_council_restriction_spaces.csv"
+        )
+        self.add_extra_councils()
+
+        self.assertEquals(Assigned.objects.count(), 0)
+        self.call_command(
+            "import_volunteers",
+            session="Default",
+            file=data_file,
+            add_users=True,
+            make_assignments=True,
+            preferred_councils=True,
+        )
+        self.assertEquals(Assigned.objects.count(), 6)
+        self.assertEquals(
+            Assigned.objects.filter(
+                marking_session__label="Default", section__title="Transport"
+            ).count(),
+            6,
+        )
+
+        councils = [a.authority.name for a in Assigned.objects.all()]
+        self.assertTrue("Aberdeen City Council" in councils)
+        self.assertTrue("Mid Borsetshire" not in councils)
+        self.assertTrue("Old Borsetshire" not in councils)
+
+        # need to remove them all as won't assign to people with existing assignments
+        Assigned.objects.all().delete()
+
+        ob = PublicAuthority.objects.get(unique_id="E90008")
+        ob.type = "LBO"
+        ob.save()
+
+        ob = PublicAuthority.objects.get(unique_id="E90007")
+        ob.country = "wales"
+        ob.save()
+
+        # PublicAuthority.objects.filter(
+        # unique_id__in=("E90004", "E90005", "E90006", "E90007")
+        # ).delete()
+
+        self.call_command(
+            "import_volunteers",
+            session="Default",
+            file=data_file,
+            add_users=True,
+            make_assignments=True,
+            preferred_councils=True,
+        )
+        self.assertEquals(User.objects.count(), 1)
+        self.assertEquals(Marker.objects.count(), 1)
+        self.assertEquals(Assigned.objects.count(), 6)
+        self.assertEquals(
+            Assigned.objects.filter(
+                marking_session__label="Default", section__title="Transport"
+            ).count(),
+            6,
+        )
+
+        councils = [a.authority.name for a in Assigned.objects.all()]
+        self.assertTrue("East Borsetshire" in councils)
+        self.assertTrue("Old Borsetshire" in councils)
+        self.assertTrue("Aberdeen City Council" in councils)
+
     def test_audit_assignments(self):
         data_file = pathlib.Path(__file__).parent.resolve() / "data" / "volunteers.csv"
 
