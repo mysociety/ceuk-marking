@@ -222,9 +222,15 @@
         });
 
         if(first_mark_responses.multi_option){
-          audit_responses.querySelectorAll('[name$="multi_option"]').forEach(function(checkbox){
-            checkbox.checked = ( first_mark_responses.multi_option.indexOf(checkbox.value) > -1 );
-          });
+          // occassionally the type of response has changed or an automated import has put the answer in
+          // the wrong place so try to handle this gracefully
+          if (audit_responses.querySelectorAll('[name$="multi_option"]').length > 0) {
+            audit_responses.querySelectorAll('[name$="multi_option"]').forEach(function(checkbox){
+              checkbox.checked = ( first_mark_responses.multi_option.indexOf(checkbox.value) > -1 );
+            });
+          } else if (audit_responses.querySelector('[name$="option"]').length > 0 && first_mark_responses.multi_option.length == 1) {
+            audit_responses.querySelector('[name$="option"]').value = first_mark_responses.multi_option[0];
+          }
         } else {
           audit_responses.querySelector('[name$="option"]').value = first_mark_responses.option;
         }
