@@ -253,10 +253,11 @@ class VolunteerProgressView(UserPassesTestMixin, ListView):
         user = User.objects.get(id=self.kwargs["id"])
         progress = []
 
-        types = Question.VOLUNTEER_TYPES
-
-        if self.request.current_stage.type == "Audit":
-            types = ["volunteer", "national_volunteer", "foi"]
+        types = {
+            "First Mark": Question.VOLUNTEER_TYPES,
+            "Right of Reply": Question.VOLUNTEER_TYPES,
+            "Audit": ["volunteer", "national_volunteer", "foi", "national_data"],
+        }
 
         for section in sections:
             section_details = {
@@ -278,7 +279,7 @@ class VolunteerProgressView(UserPassesTestMixin, ListView):
                             Question.objects.filter(
                                 section=section,
                                 questiongroup=OuterRef("questiongroup"),
-                                how_marked__in=types,
+                                how_marked__in=types[rt.type],
                             )
                             .values("questiongroup")
                             .annotate(num_questions=Count("pk"))
@@ -292,11 +293,7 @@ class VolunteerProgressView(UserPassesTestMixin, ListView):
                                 authority=OuterRef("pk"),
                                 response_type=rt,
                             )
-                            .exclude(
-                                id__in=Response.null_responses(
-                                    stage_name=self.request.current_stage.type
-                                )
-                            )
+                            .exclude(id__in=Response.null_responses(stage_name=rt.type))
                             .values("authority")
                             .annotate(
                                 response_count=Count("question_id", distinct=True)
@@ -328,9 +325,14 @@ class VolunteerProgressView(UserPassesTestMixin, ListView):
                     if a.num_questions == a.num_responses:
                         council_totals["complete"] = council_totals["complete"] + 1
 
+                if rt.type == "First Mark":
+                    authority_url_name = "authority_question_edit"
+                elif rt.type == "Audit":
+                    authority_url_name = "authority_audit"
                 section_details["responses"][rt.type] = {
                     "authorities": authorities,
                     "totals": council_totals,
+                    "authority_url_name": authority_url_name,
                 }
                 section_details["totals"]["total"] += council_totals["total"]
                 section_details["totals"]["complete"] += council_totals["complete"]
