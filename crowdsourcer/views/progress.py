@@ -290,6 +290,7 @@ class VolunteerProgressView(UserPassesTestMixin, ListView):
                         num_responses=Subquery(
                             Response.objects.filter(
                                 question__section=section,
+                                question__questiongroup=OuterRef("questiongroup"),
                                 authority=OuterRef("pk"),
                                 response_type=rt,
                             )
