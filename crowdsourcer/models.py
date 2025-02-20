@@ -244,6 +244,7 @@ class PublicAuthority(models.Model):
         response_type=None,
         question_types=None,
         right_of_reply=False,
+        ignore_question_list=False,
     ):
         if response_type is None:
             response_type = ResponseType.objects.get(type="First Mark")
@@ -273,12 +274,22 @@ class PublicAuthority(models.Model):
             ),
         )
 
+        args = {
+            "question__in": questions,
+        }
+        if ignore_question_list:
+            args = {
+                "question__questiongroup": OuterRef("questiongroup"),
+                "question__section__title": section,
+                "question__section__marking_session": marking_session,
+            }
+
         authorities = authorities.annotate(
             num_responses=Subquery(
                 Response.objects.filter(
                     authority=OuterRef("pk"),
-                    question__in=questions,
                     response_type=response_type,
+                    **args,
                 )
                 .exclude(id__in=null_responses)
                 .values("authority")
