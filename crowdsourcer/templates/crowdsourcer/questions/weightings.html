@@ -34,6 +34,7 @@
                         <div class="mb-dd-4">
                         <span class="fw-bold">{{ question_form.instance.number_and_part }}</span>
                         {{ question_form.instance.description }}
+                        ({{ question_form.instance.how_marked }}{% if question_form.instance.read_only %} + read only{% endif %})
                         </div>
                     </div>
 
