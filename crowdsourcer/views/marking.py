@@ -207,8 +207,13 @@ class OverviewView(ListView):
                     ).values_list("authority_id", flat=True)
                     args.append(authorities)
 
+                # we pass the question list but we want to ignore it because there could be different types of council
+                # included in assignments which throws the count off
                 response_counts = PublicAuthority.response_counts(
-                    *args, question_types=types, response_type=assignment.response_type
+                    *args,
+                    question_types=types,
+                    response_type=assignment.response_type,
+                    ignore_question_list=True,
                 ).distinct()
 
                 for count in response_counts:
