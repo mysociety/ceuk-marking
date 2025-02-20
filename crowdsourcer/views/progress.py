@@ -256,7 +256,7 @@ class VolunteerProgressView(UserPassesTestMixin, ListView):
         types = {
             "First Mark": Question.VOLUNTEER_TYPES,
             "Right of Reply": Question.VOLUNTEER_TYPES,
-            "Audit": ["volunteer", "national_volunteer", "foi", "national_data"],
+            "Audit": ["volunteer", "national_volunteer", "foi"],
         }
 
         for section in sections:
