@@ -1,0 +1,8 @@
+# crontab Example:
+# Timed tasks for crowdsourcer. Example file.
+
+PATH=/usr/local/bin:/usr/bin:/bin
+MAILTO=cron-crowdsourcer@mysociety.org
+
+# cache front page progress stats
+5 10 * * * crowdsourser /data/vhost/crowdsourcer/ceuk-marking/script/managecache_current_progress --session "Session Name"
