@@ -7,11 +7,11 @@ from django.urls import reverse
 from django.views.generic import FormView, ListView, TemplateView
 
 from crowdsourcer.forms import SessionPropertyForm
+from crowdsourcer.marking import get_assignment_progress, get_cached_assignment_progress
 from crowdsourcer.models import (
     Assigned,
     MarkingSession,
     PublicAuthority,
-    Question,
     ResponseType,
     SessionProperties,
     SessionPropertyValues,
@@ -157,89 +157,22 @@ class OverviewView(ListView):
 
             return context
 
-        assignments = (
-            context["assignments"]
-            .distinct("user_id", "section_id", "response_type_id")
-            .select_related("section", "response_type")
-        )
-
-        types = Question.VOLUNTEER_TYPES
-        if self.request.current_stage.type == "Audit":
-            types = ["volunteer", "national_volunteer", "foi"]
-
-        first_mark = ResponseType.objects.get(type="First Mark")
-
-        progress = []
-        question_cache = {}
-        for assignment in assignments:
-            assignment_user = assignment.user
-            if hasattr(assignment_user, "marker"):
-                stage = assignment_user.marker.response_type
+        progress = None
+        if user.has_perm("crowdsourcer.can_view_all_responses"):
+            if hasattr(user, "marker"):
+                m = user.marker
+                response_type = m.response_type.type
             else:
-                stage = first_mark
+                response_type = self.request.current_stage.type
+            progress = get_cached_assignment_progress(
+                f"{self.request.current_session.label} {response_type}"
+            )
 
-            if question_cache.get(assignment.section_id, None) is not None:
-                question_list = question_cache[assignment.section_id]
-            else:
-                questions = Question.objects.filter(
-                    section=assignment.section, how_marked__in=types
-                )
-                question_list = list(questions.values_list("id", flat=True))
-                question_cache[assignment.section_id] = question_list
-
-            total = 0
-            complete = 0
-            started = 0
-
-            if assignment.section is not None:
-                args = [
-                    question_list,
-                    assignment.section.title,
-                    assignment.user,
-                    self.request.current_session,
-                ]
-                if assignment.authority_id is not None:
-                    authorities = Assigned.objects.filter(
-                        active=True,
-                        user=assignment.user_id,
-                        section=assignment.section_id,
-                        response_type=stage,
-                    ).values_list("authority_id", flat=True)
-                    args.append(authorities)
-
-                # we pass the question list but we want to ignore it because there could be different types of council
-                # included in assignments which throws the count off
-                response_counts = PublicAuthority.response_counts(
-                    *args,
-                    question_types=types,
-                    response_type=assignment.response_type,
-                    ignore_question_list=True,
-                ).distinct()
-
-                for count in response_counts:
-                    total += 1
-                    if count.num_responses is not None and count.num_responses > 0:
-                        started += 1
-                    if count.num_responses == count.num_questions:
-                        complete += 1
-
-            if assignment.response_type is None:
-                section_link = "home"
-            elif assignment.response_type.type == "First Mark":
-                section_link = "section_authorities"
-            elif assignment.response_type.type == "Right of Reply":
-                section_link = "authority_ror_authorities"
-            elif assignment.response_type.type == "Audit":
-                section_link = "audit_section_authorities"
-
-            progress.append(
-                {
-                    "assignment": assignment,
-                    "complete": complete,
-                    "started": started,
-                    "total": total,
-                    "section_link": section_link,
-                }
+        if progress is None:
+            progress = get_assignment_progress(
+                context["assignments"],
+                self.request.current_session.label,
+                self.request.current_stage.type,
             )
 
         context["sessions"] = MarkingSession.objects.filter(active=True)
