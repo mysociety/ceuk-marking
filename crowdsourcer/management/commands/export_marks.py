@@ -171,6 +171,7 @@ class Command(BaseCommand):
                     "topic",
                     "clarifications",
                     "groups",
+                    "previous_year_question",
                 ]
             ]
 
@@ -187,6 +188,10 @@ class Command(BaseCommand):
 
                 groups = [g.description for g in question.questiongroup.all()]
 
+                prev_question = ""
+                if question.previous_question:
+                    prev_question = question.previous_question.number_and_part
+
                 question_data.append(
                     [
                         question.number_and_part,
@@ -200,6 +205,7 @@ class Command(BaseCommand):
                         question.topic,
                         question.clarifications,
                         ",".join(groups),
+                        prev_question,
                     ]
                 )
 
