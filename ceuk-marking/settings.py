@@ -60,6 +60,10 @@ WELCOME_EMAIL = getattr(local_config, "WELCOME_EMAIL", {})
 # make sure CSRF checking still works behind load balancers
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
+# this can be a problem on the assignments screen. the default only allows
+# making 140ish assignments, whereas this should cover over 400.
+DATA_UPLOAD_MAX_NUMBER_FIELDS = 3000
+
 LOGIN_REDIRECT_URL = "home"
 LOGOUT_REDIRECT_URL = "home"
 
