@@ -90,6 +90,7 @@ class BaseAllAuthorityProgressView(UserPassesTestMixin, ListView):
                         question__section__marking_session=self.request.current_session,
                         authority=OuterRef("pk"),
                         response_type=response_type,
+                        question__how_marked__in=self.types,
                     )
                     .exclude(id__in=Response.null_responses(stage_name=self.stage))
                     .values("authority")
@@ -293,6 +294,7 @@ class VolunteerProgressView(UserPassesTestMixin, ListView):
                                 question__questiongroup=OuterRef("questiongroup"),
                                 authority=OuterRef("pk"),
                                 response_type=rt,
+                                question__how_marked__in=types[rt.type],
                             )
                             .exclude(id__in=Response.null_responses(stage_name=rt.type))
                             .values("authority")

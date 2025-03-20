@@ -283,6 +283,8 @@ class PublicAuthority(models.Model):
                 "question__section__title": section,
                 "question__section__marking_session": marking_session,
             }
+        if question_types:
+            args["question__how_marked__in"] = question_types
 
         authorities = authorities.annotate(
             num_responses=Subquery(
