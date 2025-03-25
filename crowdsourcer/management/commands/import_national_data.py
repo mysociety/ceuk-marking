@@ -94,13 +94,20 @@ class Command(BaseCommand):
 
     def get_df(self, sheet, details):
         header_row = details.get("header_row", 0)
-        df = pd.read_excel(
-            self.question_file,
-            sheet_name=sheet[0:31],
-            header=header_row,
-        )
+        df = None
+        try:
+            df = pd.read_excel(
+                self.question_file,
+                sheet_name=sheet[0:31],
+                header=header_row,
+            )
 
-        df = df.dropna(axis="index", how="all")
+            df = df.dropna(axis="index", how="all")
+        except ValueError as e:
+            self.print_info(
+                f"{YELLOW}problem reading {sheet}: {e}{NOBOLD}",
+                1,
+            )
 
         return df
 
@@ -110,8 +117,8 @@ class Command(BaseCommand):
 
     def popuplate_council_lookup(self):
         lookup = {}
-        try:
-            df = self.get_df("council names", {})
+        df = self.get_df("Council Names", {})
+        if df is not None:
             for _, row in df.iterrows():
                 lookup[row["local-authority-code"]] = row["gss-code"]
         except ValueError:
@@ -400,6 +407,9 @@ class Command(BaseCommand):
         )
         self.print_info("")
         df = self.get_df(sheet, details)
+        if df is None:
+            return
+
         q = self.get_question(details)
         if q is None:
             self.print_info(
