@@ -212,13 +212,16 @@ class Command(BaseCommand):
                 score = 0
                 desc = "No"
         else:
+            desc = None
             if details.get("options"):
                 for opt in details["options"]:
                     if opt["score"] == score:
                         desc = opt["desc"]
                         break
-            else:
-                desc = None
+                    if opt["desc"] == score:
+                        desc = score
+                        score = opt["score"]
+                        break
 
         return desc, score
 
