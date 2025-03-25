@@ -116,18 +116,48 @@ class Command(BaseCommand):
             Response.objects.filter(question=q, response_type=self.rt).delete()
 
     def popuplate_council_lookup(self):
-        lookup = {}
+        lookup = {
+            "local-authority-code": {},
+            "official-name": {},
+            "nice-name": {},
+            "alt-names": {},
+        }
         df = self.get_df("Council Names", {})
         if df is not None:
+            df = df.rename(columns={df.columns[3]: "local-authority-code"})
             for _, row in df.iterrows():
-                lookup[row["local-authority-code"]] = row["gss-code"]
-        except ValueError:
+                for col in ["local-authority-code", "official-name", "nice-name"]:
+                    lookup[col][row[col]] = row["gss-code"]
+                for name in row["alt-names"].split(","):
+                    name = name.strip().lower()
+                    lookup["alt-names"][name] = row["gss-code"]
+        else:
             self.print_info(
                 f"{YELLOW}No council names tab found so not populating council lookup{NOBOLD}",
                 1,
             )
 
         self.council_lookup = lookup
+
+    def get_gss_code_for_council(self, council):
+        gss = None
+        if not isinstance(council, str):
+            return None
+        council = council.strip()
+        for lookup in [
+            "local-authority-code",
+            "official-name",
+            "nice-name",
+            "alt-names",
+        ]:
+            if self.council_lookup[lookup].get(council):
+                gss = self.council_lookup[lookup][council]
+                break
+            if self.council_lookup[lookup].get(council.lower()):
+                gss = self.council_lookup[lookup][council.lower()]
+                break
+
+        return gss
 
     def get_question(self, details):
         q = None
@@ -197,7 +227,7 @@ class Command(BaseCommand):
         auto_zero = 0
         bad_authority_count = 0
         if details.get("gss_col", details.get("council_col", None)) is not None:
-            for _, row in df.iterrows():
+            for i, row in df.iterrows():
                 if details.get("skip_check", None) is not None:
                     skip_check = details["skip_check"]
                     if (
@@ -236,16 +266,17 @@ class Command(BaseCommand):
                     ) and not pd.isna(row["manually added local-authority-code"]):
                         code = row["manually added local-authority-code"]
 
-                    gss = self.council_lookup.get(
-                        code,
-                        None,
-                    )
+                    gss = self.get_gss_code_for_council(code)
 
                 if gss is None:
                     value = row[council_col]
-                    args = {"name": value}
-                    if details.get("gss_col", None) is not None:
-                        args = {"unique_id": value}
+                    gss = self.get_gss_code_for_council(value)
+                    if gss is not None:
+                        args = {"unique_id": gss}
+                    else:
+                        args = {"name": value}
+                        if details.get("gss_col", None) is not None:
+                            args = {"unique_id": value}
                 else:
                     args = {"unique_id": gss}
 
@@ -253,7 +284,9 @@ class Command(BaseCommand):
                     authority = PublicAuthority.objects.get(**args)
                 except PublicAuthority.DoesNotExist:
                     bad_authority_count += 1
-                    self.print_info(f"no authority found for code {code}, {args}", 1)
+                    self.print_info(
+                        f"no authority found for code {code}, {args} on line {i}", 1
+                    )
                     continue
 
                 # doing it this way prevents a lot of annoying output from the above
