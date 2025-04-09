@@ -442,6 +442,17 @@ class Command(BaseCommand):
             1,
         )
         self.print_info("")
+        q_number_and_part = f"{details['number']}{details.get('number_part', '')}"
+        if (
+            not self.completed.get(details["section"])
+            or q_number_and_part not in self.completed[details["section"]]
+        ):
+            self.print_info(
+                f"{YELLOW}not marked complete so skipping {details['section']}, {details['number']}, {details.get('number_part', '')}{NOBOLD}",
+                1,
+            )
+            return
+
         df = self.get_df(sheet, details)
         if df is None:
             return
@@ -483,6 +494,7 @@ class Command(BaseCommand):
         with open(self.config_file) as conf_file:
             config = json.load(conf_file)
 
+        self.completed = config.get("completed", {})
         self.sheets = config["sheets"]
         self.ca_sheets = config["ca_sheets"]
 
