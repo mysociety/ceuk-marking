@@ -144,6 +144,16 @@ class Command(BaseCommand):
         if not isinstance(council, str):
             return None
         council = council.strip()
+        subs = (
+            (r" UA$", ""),
+            (r" LB$", ""),
+            (r" CC$", " County Council"),
+            (r" BC$", " Borough Council"),
+            (r" MD$", ""),
+        )
+        for s in subs:
+            council = re.sub(s[0], s[1], council)
+
         for lookup in [
             "local-authority-code",
             "official-name",
