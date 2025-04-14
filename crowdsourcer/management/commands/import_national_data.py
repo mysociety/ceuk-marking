@@ -196,7 +196,11 @@ class Command(BaseCommand):
                 points_map = details["points_map"].get(
                     authority.type, details["points_map"]["default"]
                 )
-                score = points_map[f"{desc}"]
+                try:
+                    score = points_map[f"{desc}"]
+                except KeyError:
+                    self.print_info(f"{RED}bad negative points desc: {desc}{NOBOLD}", 1)
+                    desc = "None"
                 if details["type"] == "yes_no":
                     desc = "Yes"
             else:
@@ -210,7 +214,7 @@ class Command(BaseCommand):
                 score = 1
             else:
                 score = 0
-                desc = "No"
+                desc = "Evidence doesn't meet criteria"
         else:
             desc = None
             if details.get("options"):
@@ -271,17 +275,33 @@ class Command(BaseCommand):
 
                     gss = self.get_gss_code_for_council(code)
 
+                args = None
                 if gss is None:
-                    value = row[council_col]
-                    gss = self.get_gss_code_for_council(value)
-                    if gss is not None:
-                        args = {"unique_id": gss}
-                    else:
-                        args = {"name": value}
-                        if details.get("gss_col", None) is not None:
-                            args = {"unique_id": value}
+                    value = None
+                    try:
+                        value = row[council_col]
+                    except KeyError:
+                        self.print_info(
+                            f"{RED}no council column found {council_col}{NOBOLD}", 1
+                        )
+                        print(df.columns)
+
+                    if value:
+                        gss = self.get_gss_code_for_council(value)
+                        if gss is not None:
+                            args = {"unique_id": gss}
+                        else:
+                            args = {"name": value}
+                            if details.get("gss_col", None) is not None:
+                                args = {"unique_id": value}
                 else:
                     args = {"unique_id": gss}
+
+                if args is None:
+                    self.print_info(
+                        f"{RED}could not work out council args for line {i}{NOBOLD}", 1
+                    )
+                    continue
 
                 try:
                     authority = PublicAuthority.objects.get(**args)
@@ -392,6 +412,7 @@ class Command(BaseCommand):
                 count += 1
             if details.get("default_if_missing", None) is not None:
                 default = details["default_if_missing"]
+                option = None
                 try:
                     if type(default) is int:
                         option = Option.objects.get(question=q, score=default)
@@ -399,7 +420,7 @@ class Command(BaseCommand):
                         option = Option.objects.get(question=q, description=default)
                 except Option.DoesNotExist:
                     self.print_info(
-                        f"{YELLOW}No matching default response for {q.number}, {default}{NOBOLD}",
+                        f"{RED}No matching default response for {q.number}, {default}{NOBOLD}",
                         1,
                     )
 
