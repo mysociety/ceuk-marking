@@ -420,6 +420,33 @@ class Response(models.Model):
 
         return cls.objects.filter(option__isnull=True, multi_option__isnull=True)
 
+    @classmethod
+    def get_response_for_question(
+        cls,
+        session=None,
+        section=None,
+        question_number=None,
+        question_part=None,
+        response_type=None,
+        authority=None,
+    ):
+        args = {
+            "question__section__marking_session__label": session,
+            "question__section__title": section,
+            "question__number": question_number,
+            "response_type__type": response_type,
+            "authority__name": authority,
+        }
+        if question_part:
+            args["question__number_part"] = question_part
+
+        try:
+            r = cls.objects.get(**args)
+        except Response.DoesNotExist:
+            r = None
+
+        return r
+
 
 class Assigned(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
