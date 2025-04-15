@@ -844,12 +844,19 @@ class ExportWithMarksTestCase(BaseCommandTestCase):
         r = Response.objects.get(question_id=271, authority_id=1)
         r.option_id = 206
         r.save()
-        r = Response.objects.get(question_id=272, authority_id=1)
-        r.option_id = 205
-        r.save()
 
         self.call_command("export_marks", session="Default")
+        percent, raw, linear = write_mock.call_args[0]
 
+        self.assertEquals(raw, self.expected_raw)
+        self.assertEquals(percent, self.expected_percent)
+        self.assertEquals(linear, self.expected_linear)
+
+        s = MarkingSession.objects.get(label="Default")
+        s.label = "Scorecards 2023"
+        s.save()
+
+        self.call_command("export_marks", session="Scorecards 2023")
         expected_linear = deepcopy(self.expected_linear)
 
         expected_linear[0] = (
@@ -872,6 +879,58 @@ class ExportWithMarksTestCase(BaseCommandTestCase):
         self.assertEquals(raw, expected_raw)
         self.assertEquals(percent, expected_percent)
         self.assertEquals(linear, expected_linear)
+
+    @mock.patch("crowdsourcer.management.commands.export_marks.Command.write_files")
+    def test_export_with_question_answer_exception(self, write_mock):
+        c = SessionConfig.objects.get(marking_session=self.session, name="exceptions")
+        c.json_value = {
+            "answer_exceptions": {
+                "Buildings & Heating": [
+                    {
+                        "question_number": "4",
+                        "question_part": None,
+                        "answer": "None",
+                        "ignore": ["4", "5"],
+                    }
+                ]
+            }
+        }
+        c.save()
+
+        self.call_command("export_marks", session="Default")
+        percent, raw, linear = write_mock.call_args[0]
+
+        self.assertEquals(linear, self.expected_linear)
+        self.assertEquals(raw, self.expected_raw)
+        self.assertEquals(percent, self.expected_percent)
+
+        r = Response.objects.get(question_id=272, authority_id=1)
+        r.option_id = 4
+        r.save()
+
+        self.call_command("export_marks", session="Default")
+
+        expected_linear = deepcopy(self.expected_linear)
+        expected_linear[0] = (
+            "Aberdeen City Council",
+            "S12000033",
+            "Buildings & Heating",
+            2,
+            7,
+        )
+
+        expected_raw = deepcopy(self.expected_raw)
+        expected_raw[0]["Buildings & Heating"] = 2
+        expected_raw[0]["total"] = 2
+
+        expected_percent = deepcopy(self.expected_percent)
+        expected_percent[0]["raw_total"] = 0.06
+
+        percent, raw, linear = write_mock.call_args[0]
+
+        self.assertEquals(linear, expected_linear)
+        self.assertEquals(raw, expected_raw)
+        self.assertEquals(percent, expected_percent)
 
 
 class ExportWithMarksNegativeQTestCase(BaseCommandTestCase):

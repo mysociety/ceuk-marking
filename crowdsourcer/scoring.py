@@ -196,6 +196,9 @@ def q_is_exception(q, section, group, country, council, session):
 
 
 def update_with_housing_exceptions(exceptions, session):
+    if session.label != "Scorecards 2023":
+        return exceptions
+
     rt = ResponseType.objects.get(type="Audit")
     try:
         q = Question.objects.get(
@@ -226,7 +229,30 @@ def update_with_housing_exceptions(exceptions, session):
     return exceptions
 
 
-def get_maxes_for_council(scoring, group, country, council, session):
+def get_score_based_exceptions(section, council, session, response_type):
+    config_exceptions = get_exceptions(session)
+
+    all_exceptions = []
+    if config_exceptions.get("answer_exceptions") and config_exceptions[
+        "answer_exceptions"
+    ].get(section):
+        exceptions = config_exceptions["answer_exceptions"][section]
+        for exception in exceptions:
+            r = Response.get_response_for_question(
+                session=session,
+                section=section,
+                response_type=response_type,
+                authority=council,
+                question_number=exception["question_number"],
+                question_part=exception["question_part"],
+            )
+            if r and r.option.description == exception["answer"]:
+                all_exceptions = all_exceptions + exception["ignore"]
+
+    return all_exceptions
+
+
+def get_maxes_for_council(scoring, group, country, council, session, response_type):
     maxes = deepcopy(scoring["section_maxes"])
     weighted_maxes = deepcopy(scoring["section_weighted_maxes"])
     config_exceptions = get_exceptions(session)
@@ -249,6 +275,11 @@ def get_maxes_for_council(scoring, group, country, council, session):
             all_exceptions = all_exceptions + exceptions
         except KeyError:
             pass
+
+        exceptions = get_score_based_exceptions(
+            section, council.name, session, response_type
+        )
+        all_exceptions = all_exceptions + exceptions
 
         for q in all_exceptions:
             try:
@@ -431,7 +462,7 @@ def get_section_weighting(section, council_group, session):
     return 0
 
 
-def calculate_council_totals(scoring, session):
+def calculate_council_totals(scoring, session, response_type):
     section_totals = defaultdict(dict)
     totals = {}
     scoring["council_maxes"] = {}
@@ -447,6 +478,7 @@ def calculate_council_totals(scoring, session):
             scoring["council_countries"][council],
             scoring["councils"][council],
             session,
+            response_type,
         )
         scoring["council_maxes"][council] = {
             "raw": deepcopy(council_max),
@@ -501,7 +533,7 @@ def calculate_council_totals(scoring, session):
     scoring["section_totals"] = section_totals
 
 
-def get_scoring_object(session):
+def get_scoring_object(session, response_type="Audit"):
     scoring = {}
 
     council_gss_map, groups, countries, types, control = PublicAuthority.maps()
@@ -518,7 +550,7 @@ def get_scoring_object(session):
 
     get_section_maxes(scoring, session)
     get_section_scores(scoring, session)
-    calculate_council_totals(scoring, session)
+    calculate_council_totals(scoring, session, response_type)
 
     return scoring
 
