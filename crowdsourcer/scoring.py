@@ -302,6 +302,13 @@ def get_maxes_for_council(scoring, group, country, council, session, response_ty
             except KeyError:
                 print(f"no question found for exception {section}, {q}")
 
+    group_maxes = deepcopy(scoring["group_maxes"])
+    for section, groups in maxes.items():
+        for group, max_score in groups.items():
+            group_maxes[group] += maxes[section][group]
+
+    maxes["group_maxes"] = group_maxes
+
     return maxes, weighted_maxes
 
 
@@ -532,7 +539,7 @@ def calculate_council_totals(scoring, session, response_type):
             weighted_total += weighted_score
 
         percent_total = 0
-        if scoring["group_maxes"][council_group] > 0:
+        if council_max["group_maxes"][council_group] > 0:
             percent_total = round(total / scoring["group_maxes"][council_group], 2)
         totals[council] = {
             "raw_total": total,
