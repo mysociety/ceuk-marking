@@ -241,6 +241,7 @@ class BaseCommandTestCase(TestCase):
         out = StringIO()
         call_command(
             command,
+            quiet=True,
             *args,
             stdout=out,
             stderr=StringIO(),

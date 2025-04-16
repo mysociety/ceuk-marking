@@ -9,6 +9,7 @@ from crowdsourcer.scoring import (
     clear_exception_cache,
     get_all_question_data,
     get_scoring_object,
+    scoring_quiet,
 )
 
 
@@ -82,6 +83,9 @@ class Command(BaseCommand):
         *args,
         **options,
     ):
+        if quiet:
+            scoring_quiet()
+
         self.questions_only = questions_only
 
         # make sure we're not using old cached exceptions

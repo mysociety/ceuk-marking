@@ -23,6 +23,8 @@ NEW_COUNCILS = [
     "Somerset Council",
 ]
 
+VERBOSE = True
+
 
 def get_scoring_config(marking_session, name):
     conf = SessionConfig.get_config(marking_session, name)
@@ -75,7 +77,17 @@ def weighting_to_points(weighting="low", max_points=0):
     return points
 
 
-def get_section_maxes(scoring, session):
+def scoring_quiet():
+    global VERBOSE
+    VERBOSE = False
+
+
+def scoring_print(*args):
+    if VERBOSE:
+        print(*args)
+
+
+def get_section_maxes(scoring, session, quiet=False):
     section_maxes = defaultdict(dict)
     section_weighted_maxes = defaultdict(dict)
     group_totals = defaultdict(int)
@@ -394,11 +406,11 @@ def get_section_scores(scoring, session):
                 scoring["councils"][score["authority__name"]],
                 session,
             ):
-                print(f"exception: {q}")
+                scoring_print(f"exception: {q}")
                 continue
 
             if score["score"] is None:
-                print(
+                scoring_print(
                     "score is None:",
                     score["authority__name"],
                     section.title,
@@ -410,7 +422,7 @@ def get_section_scores(scoring, session):
             if scoring["negative_q"][section.title].get(q, None) is None and (
                 q_max is None or q_max == 0
             ):
-                print(
+                scoring_print(
                     "Max score is None or 0:",
                     score["authority__name"],
                     section.title,
@@ -458,7 +470,7 @@ def get_section_weighting(section, council_group, session):
     ):
         return section_weightings[section][council_group]
 
-    print(f"No weighting for {section} and {council_group}")
+    scoring_print(f"No weighting for {section} and {council_group}")
     return 0
 
 
@@ -499,16 +511,15 @@ def calculate_council_totals(scoring, session, response_type):
             else:
                 percentage_score = score / council_max[section][council_group]
 
-                weighted_score = (
-                    scoring["weighted_scores"][council][section]
-                    / council_weighted_max[section][council_group]
-                ) * get_section_weighting(section, council_group, session)
-                weighted_score = round(weighted_score, 2)
-
                 unweighted_percentage = (
                     scoring["weighted_scores"][council][section]
                     / council_weighted_max[section][council_group]
                 )
+
+                weighted_score = unweighted_percentage * get_section_weighting(
+                    section, council_group, session
+                )
+                weighted_score = round(weighted_score, 2)
 
             section_totals[council][section] = {
                 "raw": score,
@@ -749,7 +760,7 @@ def get_all_question_data(scoring, marking_session=None, response_type="Audit"):
         try:
             max_score = scoring["q_maxes"][section][q_number]
         except (KeyError, TypeError):
-            print(f"No max score found for {section}, {q_number}, setting to 0")
+            scoring_print(f"No max score found for {section}, {q_number}, setting to 0")
             max_score = 0
 
         data = [
@@ -768,7 +779,7 @@ def get_all_question_data(scoring, marking_session=None, response_type="Audit"):
             try:
                 max_weighted = scoring["q_section_weighted_maxes"][section][q_number]
             except (KeyError, TypeError):
-                print(f"No section max weighted for {section}, {q_number}")
+                scoring_print(f"No section max weighted for {section}, {q_number}")
                 max_weighted = 0
 
             if q_data[1] == "-":
