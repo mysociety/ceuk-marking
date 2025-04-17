@@ -186,6 +186,22 @@ class Command(BaseCommand):
 
         return q
 
+    def get_points_map_conf(self, authority, config):
+        points_map = config["points_map"]
+        if config.get("points_map_option"):
+            c = config["points_map_option"]
+            q_score = Response.get_response_for_question(
+                session=self.session,
+                section=c["section"],
+                question_number=c["question_number"],
+                response_type="Audit",
+                authority=authority.name,
+            )
+            if q_score == c["response"]:
+                points_map = c["map"]
+
+        return points_map
+
     def get_score(self, q, row, details, authority):
         q_type = details.get("type", "")
         score = row[details["score_col"]]
@@ -197,14 +213,18 @@ class Command(BaseCommand):
             match = re.match(r".*-(\d%).*", score)
             if match:
                 score = match.group(1)
+            if score == "No Penalty Mark":
+                score = 0
 
         if details.get("negative", False):
             if score != 0:
                 desc = score
                 if type(score) is str and score.find("-") == -1:
                     desc = f"-{score}"
-                points_map = details["points_map"].get(
-                    authority.type, details["points_map"]["default"]
+                points_map_conf = self.get_points_map_conf(authority, details)
+                points_map = points_map_conf.get(
+                    authority.country,
+                    points_map_conf.get(authority.type, points_map_conf["default"]),
                 )
                 try:
                     score = points_map[f"{desc}"]
@@ -217,7 +237,7 @@ class Command(BaseCommand):
                 if details["type"] == "yes_no":
                     desc = "No"
                 else:
-                    desc = "None"
+                    desc = "No Penalty Mark"
         elif q_type == "yes_no":
             if score == "Yes" or score == "1" or score == 1:
                 desc = "Yes"
@@ -294,7 +314,6 @@ class Command(BaseCommand):
                         self.print_info(
                             f"{RED}no council column found {council_col}{NOBOLD}", 1
                         )
-                        print(df.columns)
 
                     if value:
                         gss = self.get_gss_code_for_council(value)
