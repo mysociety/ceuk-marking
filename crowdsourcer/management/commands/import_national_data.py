@@ -279,7 +279,7 @@ class Command(BaseCommand):
                         continue
 
                 gss_col = details.get("gss_col", "Local Authority Code")
-                if row.get(gss_col):
+                if row.get(gss_col) and not pd.isna(row.get(gss_col)):
                     gss = row[gss_col]
                     code = gss
                 else:
