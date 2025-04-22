@@ -244,6 +244,11 @@ session_patterns = [
         stats.AvailableResponseOptionsView.as_view(),
         name="available_options_json",
     ),
+    path(
+        "stats/changed_auto_points",
+        stats.CheckAutomaticPointsView.as_view(),
+        name="changed_auto_points",
+    ),
     # audit screens
     path(
         "section/audit/<section_title>/authorities/",

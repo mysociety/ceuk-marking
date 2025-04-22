@@ -1,0 +1,87 @@
+{% extends 'crowdsourcer/base.html' %}
+
+{% load crowdsourcer_tags %}
+
+{% block content %}
+{% if show_login %}
+<h1 class="mb-4">Sign in</h1>
+<a href="{% url 'login' %}">Sign in</a>
+{% else %}
+<h1 class="mb-4">Changed Auto Points Responses</h1>
+
+{% if error %}
+    <p class="text-danger">
+        ERROR: {{ error }}
+    </p>
+{% endif %}
+
+<p>
+    This is a list of audit responses where we the answer differs from the automatic points answer.
+</p>
+
+<p>
+    <small>NB: This does not check for missing answers.</small>
+</p>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Authority</th>
+            <th>Response</th>
+            <th>Page No</th>
+            <th>Notes</th>
+            <th>Link</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for section, questions in bad_responses.items %}
+            {% for question, responses in questions.items %}
+                {% if responses %}
+                <tr>
+                    <th colspan="4">
+                        {{ section }} {{ question }}
+                    <th>
+                </tr>
+                {% for response in responses %}
+                    <tr>
+                        <td colspan="5">
+                            {{ response.saved.authority }}
+                        </td>
+                    </tr>
+                        <td>current</td>
+                        <td>
+                            {{ response.saved.option.description }}
+                        </td>
+                        <td>
+                            {{ response.saved.page_number }}
+                        </td>
+                        <td>
+                            {{ response.saved.evidence }}
+                        </td>
+                        <td>
+                            {{ response.saved.evidence_links|join:"<br>" }}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>expected</td>
+                        <td>
+                            {{ response.expected.option }}
+                        </td>
+                        <td>
+                            {{ response.expected.page_number }}
+                        </td>
+                        <td>
+                            {{ response.expected.evidence }}
+                        </td>
+                        <td>
+                            {{ response.expected.public_notes }}
+                        </td>
+                    </tr>
+                {% endfor %}
+                {% endif %}
+            {% endfor %}
+        {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+{% endblock %}

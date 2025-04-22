@@ -38,6 +38,9 @@
         <a class="list-group-item list-group-item-action d-flex align-items-center justify-content-between" href="{% session_url 'duplicate_responses' %}">
             Responses with duplicate answers
         </a>
+        <a class="list-group-item list-group-item-action d-flex align-items-center justify-content-between" href="{% session_url 'changed_auto_points' %}">
+            Responses with differing auto points
+        </a>
         <a class="list-group-item list-group-item-action d-flex align-items-center justify-content-between" href="{% session_url 'raw_and_weighted_totals_csv' %}">
             <span class="me-3">Raw and weighted scores and totals</span>
             {% include 'crowdsourcer/includes/csv-badge.html' %}

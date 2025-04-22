@@ -3,12 +3,14 @@ import logging
 import re
 from collections import defaultdict
 
+from django.conf import settings
 from django.contrib.auth.mixins import UserPassesTestMixin
 from django.db.models import Count
 from django.http import HttpResponse, JsonResponse
 from django.utils.text import slugify
 from django.views.generic import ListView, TemplateView
 
+import pandas as pd
 from django_filters.views import FilterView
 
 from crowdsourcer.filters import ResponseFilter
@@ -20,6 +22,7 @@ from crowdsourcer.models import (
     Response,
     ResponseType,
     Section,
+    SessionConfig,
     SessionPropertyValues,
 )
 from crowdsourcer.scoring import (
@@ -979,3 +982,265 @@ class AvailableResponseOptionsView(StatsUserTestMixin, ListView):
             data.append({"description": o.description, "id": o.id})
 
         return JsonResponse({"results": data})
+
+
+class CheckAutomaticPointsView(StatsUserTestMixin, TemplateView):
+    context_object_name = "responses"
+    template_name = "crowdsourcer/changed_automatic_points.html"
+
+    cols = {
+        "answer": "answer in GRACE",
+        "section": "section",
+        "authority_type": "council type",
+        "authority_country": "council country",
+        "authority_list": "council list",
+        "page_number": "page no",
+        "public_notes": "evidence link",
+        "evidence": "evidence notes",
+    }
+
+    def scrub_council_type(self, types):
+        type_map = {
+            "COMB": "COMB",
+            "CTY": "CTY",
+            "LGD": "LGD",
+            "MD": "MTD",
+            "MTD": "MTD",
+            "UTA": "UTA",
+            "COI": "COI",
+            "NMD": "NMD",
+            "DIS": "DIS",
+            "CC": "LBO",
+            "LBO": "LBO",
+            "SCO": "UTA",
+            "WPA": "UTA",
+            "NID": "UTA",
+            "UA": "UTA",
+            "SRA": "COMB",
+        }
+        scrubbed = []
+        for t in types:
+            t = t.strip()
+            if type_map.get(t) is not None:
+                scrubbed.append(type_map[t])
+            else:
+                self.print_error(f"bad council type {t}")
+        return scrubbed
+
+    def get_config(self):
+        try:
+            c = SessionConfig.objects.get(
+                marking_session=self.request.current_session, name="automatic_points"
+            )
+            conf = c.value
+        except SessionConfig.DoesNotExist:
+            conf = {
+                "data_subdir": None,
+                "points_file": "automatic_points.csv",
+                "option_map_file": None,
+            }
+
+        return conf
+
+    def get_df(self, file_name, data_subdir=None):
+        data_dir = settings.BASE_DIR / "data"
+        if data_subdir:
+            data_dir = data_dir / data_subdir
+
+        file = data_dir / file_name
+        try:
+            df = pd.read_csv(file)
+        except FileNotFoundError:
+            return None
+
+        return df
+
+    def get_points_file(self):
+        df = self.get_df(self.conf["points_file"], self.conf.get("data_subdir"))
+
+        if df is not None:
+            df[self.cols["answer"]] = df[self.cols["answer"]].astype(str)
+
+        return df
+
+    def get_option_map(self):
+        df = self.get_df(self.conf["option_map_file"], self.conf.get("data_subdir"))
+
+        df.question = df.question.astype(str)
+
+        option_map = defaultdict(dict)
+        for _, option in df.iterrows():
+            if option_map[option["section"]].get(option["question"]) is None:
+                option_map[option["section"]][option["question"]] = {}
+
+            option_map[option["section"]][option["question"]][option["prev_option"]] = (
+                option["new_option"]
+            )
+
+        return option_map
+
+    def get_mapped_answer(self, answer, q, answer_map):
+        if (
+            answer_map.get(q.section.title) is not None
+            and answer_map[q.section.title].get(q.number_and_part) is not None
+            and answer_map[q.section.title][q.number_and_part].get(answer) is not None
+        ):
+            return answer_map[q.section.title][q.number_and_part][answer]
+
+        return answer
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        bad_responses = defaultdict(dict)
+
+        self.conf = self.get_config()
+
+        points = self.get_points_file()
+        if points is None:
+            context["error"] = "Could not find points file"
+            return context
+
+        answer_map = self.get_option_map()
+
+        for _, point in points.iterrows():
+            copy_last_year = False
+            if point[self.cols["section"]] == "Practice":
+                continue
+
+            if pd.isna(point["question number"]):
+                continue
+
+            if point[self.cols["section"]] == "":
+                continue
+
+            c_args = {}
+            if (
+                point.get(self.cols["authority_type"]) is not None
+                and pd.isna(point[self.cols["authority_type"]]) is False
+            ):
+                types = point[self.cols["authority_type"]].strip()
+                if types != "":
+                    types = self.scrub_council_type(types.split(","))
+                    c_args["type__in"] = types
+
+            if (
+                point.get(self.cols["authority_country"], None) is not None
+                and pd.isna(point[self.cols["authority_country"]]) is False
+            ):
+                countries = point[self.cols["authority_country"]].strip()
+                if countries != "":
+                    countries = countries.split(",")
+                    c_args["country__in"] = [c.lower() for c in countries]
+
+            if (
+                point.get(self.cols["authority_list"]) is not None
+                and pd.isna(point[self.cols["authority_list"]]) is False
+            ):
+                councils = point[self.cols["authority_list"]].strip()
+                if councils != "" and "Single-Tier" not in councils.split(","):
+                    councils = [c.strip() for c in councils.split(",")]
+                    c_args = {"name__in": councils}
+
+            councils = PublicAuthority.objects.filter(
+                marking_session=self.request.current_session, **c_args
+            )
+            q_args = {"number": point["question number"]}
+            if (
+                not pd.isna(point["question part"])
+                and point.get("question part", None) is not None
+            ):
+                q_args["number_part"] = point["question part"].strip()
+
+            try:
+                question = Question.objects.get(
+                    section__marking_session=self.request.current_session,
+                    section__title=point[self.cols["section"]],
+                    **q_args,
+                )
+            except Question.DoesNotExist:
+                continue
+
+            if not pd.isna(point["copy last year answer"]):
+                if point["copy last year answer"] == "Y":
+                    copy_last_year = True
+
+            responses = Response.objects.filter(
+                authority__in=councils,
+                question=question,
+                response_type__type="Audit",
+            )
+            bad_q_responses = []
+            for r in responses.all():
+                if copy_last_year:
+                    try:
+                        prev_response = Response.objects.get(
+                            authority=r.authority,
+                            question=question.previous_question,
+                            response_type__type="Audit",
+                        )
+                    except Response.DoesNotExist:
+                        continue
+
+                    if prev_response.option:
+                        past_answer = self.get_mapped_answer(
+                            prev_response.option.description, question, answer_map
+                        )
+                    else:
+                        continue
+                    page_number = prev_response.page_number
+                    if not pd.isna(point[self.cols["page_number"]]):
+                        page_number = point[self.cols["page_number"]]
+
+                    public_notes = prev_response.public_notes
+                    if not pd.isna(point[self.cols["public_notes"]]):
+                        public_notes = point[self.cols["public_notes"]]
+
+                    evidence = prev_response.evidence
+                    if not pd.isna(point[self.cols["evidence"]]):
+                        evidence = point[self.cols["evidence"]]
+
+                    if (
+                        r.option.description != past_answer
+                        or r.page_number != page_number
+                        or r.public_notes != public_notes
+                        or r.evidence != evidence
+                    ):
+                        bad_response = {
+                            "saved": r,
+                            "expected": {
+                                "option": past_answer,
+                                "page_number": page_number,
+                                "public_notes": public_notes,
+                                "evidence": evidence,
+                            },
+                        }
+                        bad_q_responses.append(bad_response)
+                else:
+                    answer = self.get_mapped_answer(
+                        point[self.cols["answer"]], question, answer_map
+                    )
+
+                    if (
+                        r.option.description != answer
+                        or r.page_number != point["page no"]
+                        or r.public_notes != point["evidence link"]
+                        or r.evidence != point["evidence notes"]
+                    ):
+                        bad_response = {
+                            "saved": r,
+                            "expected": {
+                                "option": answer,
+                                "page_number": point[self.cols["page_number"]],
+                                "public_notes": point[self.cols["public_notes"]],
+                                "evidence": point[self.cols["evidence"]],
+                            },
+                        }
+                        bad_q_responses.append(bad_response)
+
+            bad_responses[point[self.cols["section"]]][
+                question.number_and_part
+            ] = bad_q_responses
+
+        context["bad_responses"] = dict(bad_responses)
+
+        return context
