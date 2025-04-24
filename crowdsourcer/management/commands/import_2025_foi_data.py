@@ -3,11 +3,11 @@ from collections import defaultdict
 
 from django.conf import settings
 from django.contrib.auth.models import User
-from django.core.management.base import BaseCommand
 
 import pandas as pd
 from mysoc_dataset import get_dataset_url
 
+from crowdsourcer.import_utils import BaseImporter
 from crowdsourcer.models import (
     MarkingSession,
     Option,
@@ -19,11 +19,13 @@ from crowdsourcer.models import (
 )
 
 
-class Command(BaseCommand):
+class Command(BaseImporter):
     help = "import FOI data"
 
     sheet_map = None
     use_csvs = False
+    commit = False
+    quiet = False
 
     foi_file = settings.BASE_DIR / "data" / "scorecards-2025" / "fois.xlsx"
     foi_dir = settings.BASE_DIR / "data" / "foi_csvs"
@@ -227,6 +229,22 @@ class Command(BaseCommand):
         },
     }
 
+    q9a_map = {
+        "B&H (CA) Q9": {
+            "section": "Buildings & Heating & Green Skills (CA)",
+            "question": 9,
+            "question_part": "a",
+        }
+    }
+
+    q9b_map = {
+        "B&H (CA) Q9": {
+            "section": "Buildings & Heating & Green Skills (CA)",
+            "question": 9,
+            "question_part": "b",
+        },
+    }
+
     authority_name_map = {
         "Lincoln City Council": "City of Lincoln",
         "King's Lynn and West Norfolk Borough Council": "Kings Lynn and West Norfolk Borough Council",
@@ -247,6 +265,22 @@ class Command(BaseCommand):
             action="store_true",
             help="only import transport q11",
         )
+
+        parser.add_argument(
+            "--response_type",
+            action="store",
+            required=True,
+            help="Response Type",
+        )
+        parser.add_argument(
+            "--add_urls_only",
+            action="store_true",
+            help="if there isn't a URL then add one, otherwise do nothing",
+        )
+
+        parser.add_argument("--commit", action="store_true", help="commit things")
+
+        parser.add_argument("--quiet", action="store_true", help="output less")
 
     def populate_url_map(self):
         df = pd.read_csv(
@@ -616,6 +650,9 @@ class Command(BaseCommand):
                 sheets[sheet] = f"{map_name} {m.group(2)}"
 
         sheets["CA.Transport.ZeroEmissionBuses "] = "Transport Q4c"
+        sheets["Transport.Q11.Roads"] = "roads"
+        sheets["Transport.Q11.Airports"] = "airports"
+        sheets["CA.B&H.GreenSkillsCourses (9a a"] = "B&H (CA) Q9"
         return sheets
 
     def get_df(self, name):
@@ -659,7 +696,84 @@ class Command(BaseCommand):
 
         return authority
 
-    def process_sheet(self, sheet_map, council_lookup, rt, u, ms, combined=False):
+    def get_question(self, section, details):
+        if details.get("question_part", None) is not None:
+            q = Question.objects.get(
+                section=section,
+                number=details["question"],
+                number_part=details["question_part"],
+            )
+        else:
+            q = Question.objects.get(
+                section=section,
+                number=details["question"],
+            )
+
+        return q
+
+    def add_missing_urls(self, sheet_map, council_lookup, rt, u, ms):
+        sheets = self.get_sheets()
+        self.sheet_map = sheet_map
+        for sheet, name in sheets.items():
+            details = sheet_map.get(name)
+            if details is None:
+                continue
+
+            if details.get("skip"):
+                print(f"skipping {details['section']} {details['question']} for now")
+                continue
+
+            section = Section.objects.get(title=details["section"], marking_session=ms)
+            q = self.get_question(section, details)
+
+            print(f"{details['section']} {q.number_and_part}")
+
+            df = self.get_df(sheet)
+            count = 0
+            missing = 0
+            existing = 0
+            for _, row in df.iterrows():
+                authority = row["public_body"]
+                authority = self.get_authority(authority, council_lookup)
+                if authority is None:
+                    continue
+
+                if authority.questiongroup not in q.questiongroup.all():
+                    continue
+
+                try:
+                    r = Response.objects.get(
+                        authority=authority,
+                        question=q,
+                        response_type=rt,
+                    )
+                except Response.DoesNotExist:
+                    missing += 1
+                    continue
+
+                if not r.public_notes and self.url_map.get(row["request_url"]):
+                    r.public_notes = self.url_map.get(row["request_url"])
+                    self.print_debug(
+                        f"Updating URL for {section.title}, {q.number_and_part}, {authority.name}"
+                    )
+                    r.save()
+                    count += 1
+                else:
+                    existing += 1
+
+            self.print_success(
+                f"updated {count} urls, {existing} already present, {missing} responses missing"
+            )
+
+    def process_sheet(
+        self,
+        sheet_map,
+        council_lookup,
+        rt,
+        u,
+        ms,
+        combined=False,
+    ):
         sheets = self.get_sheets(combined)
         self.sheet_map = sheet_map
         for sheet, name in sheets.items():
@@ -678,17 +792,7 @@ class Command(BaseCommand):
 
             section = Section.objects.get(title=details["section"], marking_session=ms)
 
-            if details.get("question_part", None) is not None:
-                q = Question.objects.get(
-                    section=section,
-                    number=details["question"],
-                    number_part=details["question_part"],
-                )
-            else:
-                q = Question.objects.get(
-                    section=section,
-                    number=details["question"],
-                )
+            q = self.get_question(section, details)
 
             # if q.how_marked != "foi":
             # print(f"Question unexpectedly not an FOI one: {name}")
@@ -991,7 +1095,20 @@ class Command(BaseCommand):
         if options["use_csvs"]:
             self.use_csvs = True
 
-        rt = ResponseType.objects.get(type="First Mark")
+        if options["commit"]:
+            self.commit = True
+
+        if options["quiet"]:
+            self.quiet = True
+
+        response_type = options["response_type"]
+
+        try:
+            rt = ResponseType.objects.get(type=response_type)
+        except ResponseType.DoesNotExist:
+            self.print_error(f"No such response type: {response_type}")
+            return
+
         ms = MarkingSession.objects.get(label="Scorecards 2025")
         u, _ = User.objects.get_or_create(
             username="FOI_importer",
@@ -1002,7 +1119,39 @@ class Command(BaseCommand):
 
         self.populate_url_map()
         council_lookup = self.get_council_lookup()
-        self.process_sheet(self.non_combined_sheet_map, council_lookup, rt, u, ms)
-        self.process_sheet(self.combined_sheet_map, council_lookup, rt, u, ms)
-        self.process_q11(council_lookup, rt, u, ms)
-        self.process_ca_q9(council_lookup, rt, u, ms)
+
+        if not self.commit:
+            self.print_info("call with --commit to save updates")
+
+        with self.get_atomic_context(self.commit):
+            if options["add_urls_only"]:
+                self.add_missing_urls(
+                    self.non_combined_sheet_map, council_lookup, rt, u, ms
+                )
+                self.add_missing_urls(
+                    self.combined_sheet_map, council_lookup, rt, u, ms
+                )
+                self.add_missing_urls(self.q11_map, council_lookup, rt, u, ms)
+                self.add_missing_urls(self.q9a_map, council_lookup, rt, u, ms)
+                self.add_missing_urls(self.q9b_map, council_lookup, rt, u, ms)
+            else:
+                self.process_sheet(
+                    self.non_combined_sheet_map,
+                    council_lookup,
+                    rt,
+                    u,
+                    ms,
+                )
+                self.process_sheet(
+                    self.combined_sheet_map,
+                    council_lookup,
+                    rt,
+                    u,
+                    ms,
+                )
+                self.process_q11(
+                    council_lookup, rt, u, ms, add_urls_only=options["add_urls_only"]
+                )
+                self.process_ca_q9(
+                    council_lookup, rt, u, ms, add_urls_only=options["add_urls_only"]
+                )
