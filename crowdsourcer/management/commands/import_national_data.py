@@ -248,6 +248,8 @@ class Command(BaseCommand):
         else:
             desc = None
             if details.get("options"):
+                if details.get("options_map"):
+                    score = details["options_map"].get(score, score)
                 for opt in details["options"]:
                     if opt["score"] == score:
                         desc = opt["desc"]
