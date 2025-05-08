@@ -178,6 +178,20 @@ class Question(models.Model):
     def options(self):
         return Option.objects.filter(question=self).order_by("ordering", "score")
 
+    @classmethod
+    def get_question_from_number_and_part(cls, number_and_part, section):
+        q_parts = re.search(r"(\d+)([a-z]?)", number_and_part).groups()
+        args = {"number": q_parts[0], "section__title": section}
+        if len(q_parts) == 2 and q_parts[1] != "":
+            args["number_part"] = q_parts[1]
+
+        try:
+            q = cls.objects.get(**args)
+        except cls.DoesNotExist:
+            return None
+
+        return q
+
 
 class AuthorityData(models.Model):
     authority = models.ForeignKey("PublicAuthority", on_delete=models.CASCADE)

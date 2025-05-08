@@ -259,7 +259,10 @@ def get_score_based_exceptions(section, council, session, response_type):
                 question_part=exception["question_part"],
             )
             if r and r.option.description == exception["answer"]:
-                all_exceptions = all_exceptions + exception["ignore"]
+                for question in exception["ignore"]:
+                    q = Question.get_question_from_number_and_part(question, section)
+                    if q and r.authority.questiongroup in q.questiongroup.all():
+                        all_exceptions.append(question)
 
     return all_exceptions
 
