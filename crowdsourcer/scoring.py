@@ -16,12 +16,14 @@ from crowdsourcer.models import (
     SessionConfig,
 )
 
-NEW_COUNCILS = [
-    "Cumberland Council",
-    "Westmorland and Furness Council",
-    "North Yorkshire Council",
-    "Somerset Council",
-]
+NEW_COUNCILS = {
+    "Scorecards 2023": [
+        "Cumberland Council",
+        "Westmorland and Furness Council",
+        "North Yorkshire Council",
+        "Somerset Council",
+    ]
+}
 
 VERBOSE = True
 
@@ -401,7 +403,7 @@ def get_section_scores(scoring, session):
             if weighted[score["authority__name"]].get(section.title, None) is None:
                 continue
 
-            if score["authority__name"] in NEW_COUNCILS:
+            if score["authority__name"] in NEW_COUNCILS.get(session.label, {}):
                 score["score"] = 0
                 score["points"] = 0
 
