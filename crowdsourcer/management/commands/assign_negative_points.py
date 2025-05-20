@@ -1,27 +1,15 @@
 import json
-import math
-import numbers
-import re
 
 from django.conf import settings
 from django.contrib.auth.models import User
 
-import pandas as pd
-
 from crowdsourcer.import_utils import BaseImporter
 from crowdsourcer.models import (
     MarkingSession,
-    Option,
-    PublicAuthority,
     Question,
     Response,
     ResponseType,
 )
-
-YELLOW = "\033[33m"
-RED = "\033[31m"
-GREEN = "\033[32m"
-NOBOLD = "\033[0m"
 
 
 class Command(BaseImporter):
@@ -52,21 +40,56 @@ class Command(BaseImporter):
             help="Save the responses to the database",
         )
 
-    def update_responses(self, question):
+    def get_question(self, details):
         args = {
-            "section__title": question["section"],
+            "section__title": details["section"],
             "section__marking_session": self.session,
-            "number": question["number"],
+            "number": details["number"],
         }
 
-        if question.get("number_part"):
-            args["number_part"] = question["number_part"]
+        if details.get("number_part"):
+            args["number_part"] = details["number_part"]
 
-        q = Question.objects.get(**args)
+        try:
+            q = Question.objects.get(**args)
+        except Question.DoesNotExist:
+            q = None
+
+        return q
+
+    def update_responses(self, question):
+        q = self.get_question(question)
 
         for r in Response.objects.filter(question=q, response_type=self.rt):
+            points_map = None
+            if question.get("dependent_q"):
+                dependent_q = self.get_question(question["dependent_q"])
+
+                if dependent_q:
+                    try:
+                        dependent_r = Response.objects.get(
+                            authority=r.authority,
+                            response_type=self.rt,
+                            question=dependent_q,
+                        )
+                        points_map = question["points_map"].get(
+                            dependent_r.option.description,
+                            question["points_map"]["default"],
+                        )
+                    except Response.DoesNotExist:
+                        points_map = question["points_map"]["default"]
+                else:
+                    points_map = question["points_map"]["default"]
+
+                points_map = points_map.get(
+                    r.authority.country,
+                    points_map.get(r.authority.type, points_map["default"]),
+                )
             if r.option:
-                points = question.get(r.option.description, 0)
+                if points_map:
+                    points = points_map.get(r.option.description, 0)
+                else:
+                    points = question.get(r.option.description, 0)
                 self.print_debug(
                     f"updating {q.number_and_part} for {r.authority} to {points}"
                 )
@@ -76,7 +99,13 @@ class Command(BaseImporter):
             elif r.multi_option:
                 points = 0
                 for o in r.multi_option.all():
-                    points += question.get(o.description, 0)
+                    if points_map:
+                        points += points_map.get(o.description, 0)
+                    else:
+                        points += question.get(o.description, 0)
+                self.print_debug(
+                    f"updating {q.number_and_part} for {r.authority} to {points}"
+                )
                 r.points = points
                 r.user = self.user
                 r.save()
