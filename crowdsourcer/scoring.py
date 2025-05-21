@@ -735,7 +735,9 @@ def get_all_question_data(scoring, marking_session=None, response_type="Audit"):
     session = MarkingSession.objects.get(label=marking_session)
     responses = (
         Response.objects.filter(
-            response_type=rt, question__section__marking_session=session
+            authority__marking_session=session,
+            response_type=rt,
+            question__section__marking_session=session,
         )
         .annotate(multi_count=Count("multi_option__pk"))
         .order_by(
