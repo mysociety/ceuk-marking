@@ -195,6 +195,7 @@ class Command(BaseCommand):
                 session=self.session,
                 section=c["section"],
                 question_number=c["question_number"],
+                question_part=c.get("question_part"),
                 response_type="Audit",
                 authority=authority.name,
             )
