@@ -150,6 +150,7 @@ class Command(BaseCommand):
             (r" CC$", " County Council"),
             (r" BC$", " Borough Council"),
             (r" MD$", ""),
+            (r" & ", " and "),
         )
         for s in subs:
             council = re.sub(s[0], s[1], council)
@@ -452,6 +453,11 @@ class Command(BaseCommand):
                 except Option.DoesNotExist:
                     self.print_info(
                         f"{RED}No matching default response for {q.number}, {default}{NOBOLD}",
+                        1,
+                    )
+                except Option.MultipleObjectsReturned:
+                    self.print_info(
+                        f"{RED}multiple matching default responses for {q.number}, {default}{NOBOLD}",
                         1,
                     )
 
