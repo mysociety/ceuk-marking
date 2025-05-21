@@ -134,17 +134,28 @@ def get_section_maxes(scoring, session, quiet=False):
                 section=section, questiongroup=group
             ).filter(question_type="negative")
 
+            negative_exceptions = get_scoring_config(session, "negative_exceptions")
+            if negative_exceptions.get(section.title):
+                negative_exceptions = negative_exceptions[section.title]
+            else:
+                negative_exceptions = []
+
             max_score = 0
             for m in maxes:
-                q_section_maxes[
-                    number_and_part(m["question__number"], m["question__number_part"])
-                ] = m["highest"]
+                q_number = number_and_part(
+                    m["question__number"], m["question__number_part"]
+                )
+                if q_number in negative_exceptions:
+                    continue
+                q_section_maxes[q_number] = m["highest"]
                 max_score += m["highest"]
 
             for m in totals:
                 q_number = number_and_part(
                     m["question__number"], m["question__number_part"]
                 )
+                if q_number in negative_exceptions:
+                    continue
                 if (
                     score_exceptions.get(section.title, None) is not None
                     and score_exceptions[section.title].get(q_number, None) is not None
@@ -159,6 +170,10 @@ def get_section_maxes(scoring, session, quiet=False):
             for q in negatives:
                 q_section_negatives[q.number_and_part] = 1
                 q_section_maxes[q.number_and_part] = 0
+
+            for q in negative_exceptions:
+                q_section_negatives[q] = 1
+                q_section_maxes[q] = 0
 
             weighted_max = 0
             for q in questions:

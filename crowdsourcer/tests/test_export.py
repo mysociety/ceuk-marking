@@ -332,6 +332,60 @@ class ExportNoMarksTestCase(BaseCommandTestCase):
         self.assertEquals(scoring["q_maxes"], max_questions)
         self.assertEquals(scoring["section_weighted_maxes"], local_max_w)
 
+    def test_max_calculation_with_negative_override(self):
+        SessionConfig.objects.create(
+            marking_session=self.session,
+            config_type="json",
+            name="negative_exceptions",
+            json_value={"Buildings & Heating": ["5"]},
+        )
+
+        scoring = {}
+        get_section_maxes(scoring, self.session)
+
+        local_max_section = max_section.copy()
+        local_max_section["Buildings & Heating"] = {
+            "Single Tier": 11,
+            "District": 10,
+            "County": 11,
+            "Northern Ireland": 7,
+            "Combined Authority": 0,
+        }
+
+        local_max_totals = max_totals.copy()
+        local_max_totals = {
+            "Single Tier": 34,
+            "District": 33,
+            "County": 31,
+            "Northern Ireland": 28,
+            "Combined Authority": 0,
+        }
+
+        local_max_w = max_weighted.copy()
+        local_max_w["Buildings & Heating"] = {
+            "Single Tier": 12,
+            "District": 10,
+            "County": 12,
+            "Northern Ireland": 9,
+            "Combined Authority": 0,
+        }
+        local_max_questions = max_questions.copy()
+        local_max_questions["Buildings & Heating"] = {
+            "1": 2,
+            "3": 0,
+            "4": 4,
+            "5": 0,
+            "9": 1,
+            "10": 1,
+            "11": 2,
+            "12": 1,
+        }
+
+        self.assertEquals(scoring["q_maxes"], local_max_questions)
+        self.assertEquals(scoring["section_weighted_maxes"], local_max_w)
+        self.assertEquals(scoring["group_maxes"], local_max_totals)
+        self.assertEquals(scoring["section_maxes"], local_max_section)
+
     @mock.patch("crowdsourcer.management.commands.export_marks.Command.write_files")
     def test_export_with_no_marks(self, write_mock):
         c = SessionConfig.objects.get(marking_session=self.session, name="exceptions")
