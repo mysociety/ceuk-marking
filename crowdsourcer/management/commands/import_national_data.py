@@ -191,16 +191,19 @@ class Command(BaseCommand):
         points_map = config["points_map"]
         if config.get("points_map_option"):
             c = config["points_map_option"]
-            q_score = Response.get_response_for_question(
-                session=self.session,
-                section=c["section"],
-                question_number=c["question_number"],
-                question_part=c.get("question_part"),
-                response_type="Audit",
-                authority=authority.name,
-            )
-            if q_score == c["response"]:
+            if c.get("councils") and authority.name in c["councils"]:
                 points_map = c["map"]
+            else:
+                q_score = Response.get_response_for_question(
+                    session=self.session,
+                    section=c["section"],
+                    question_number=c["question_number"],
+                    question_part=c.get("question_part"),
+                    response_type="Audit",
+                    authority=authority.name,
+                )
+                if q_score == c["response"]:
+                    points_map = c["map"]
 
         return points_map
 

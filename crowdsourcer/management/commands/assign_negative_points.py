@@ -85,6 +85,12 @@ class Command(BaseImporter):
                     r.authority.country,
                     points_map.get(r.authority.type, points_map["default"]),
                 )
+            elif (
+                question.get("points_map_councils")
+                and r.authority.name in question["points_map_councils"]
+            ):
+                points_map = question["points_map"]["council"]
+
             if r.option:
                 if points_map:
                     points = points_map.get(r.option.description, 0)
