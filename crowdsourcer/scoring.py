@@ -315,6 +315,7 @@ def get_maxes_for_council(scoring, group, country, council, session, response_ty
         )
         all_exceptions = all_exceptions + exceptions
 
+        all_exceptions = set(all_exceptions)
         for q in all_exceptions:
             try:
                 maxes[section][group] -= scoring["q_maxes"][section][q]
