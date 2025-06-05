@@ -682,6 +682,7 @@ def get_response_data(
     include_name=True,
     process_links=False,
     marking_session=None,
+    is_negative=False,
 ):
     score = 0
     answer = ""
@@ -710,7 +711,7 @@ def get_response_data(
         else:
             score = 0
 
-    if response.question.question_type == "negative":
+    if response.question.question_type == "negative" or is_negative:
         score = response.points
 
     links = response.public_notes
@@ -773,10 +774,14 @@ def get_all_question_data(scoring, marking_session=None, response_type="Audit"):
             "negatively_marked",
         ]
     ]
+
+    negative_exceptions = scoring["negative_q"]
+
     for response in responses:
         section = response.question.section.title
         q_number = response.question.number_and_part
         council = response.authority.name
+        is_negative = negative_exceptions[section].get(q_number)
 
         if response.authority.do_not_mark:
             continue
@@ -791,7 +796,9 @@ def get_all_question_data(scoring, marking_session=None, response_type="Audit"):
         ):
             continue
 
-        q_data = get_response_data(response, include_name=False, process_links=True)
+        q_data = get_response_data(
+            response, include_name=False, process_links=True, is_negative=is_negative
+        )
 
         try:
             max_score = scoring["q_maxes"][section][q_number]
@@ -810,7 +817,7 @@ def get_all_question_data(scoring, marking_session=None, response_type="Audit"):
             *q_data,
         ]
 
-        if response.question.question_type != "negative":
+        if response.question.question_type != "negative" and not is_negative:
             negative = "No"
             try:
                 max_weighted = scoring["q_section_weighted_maxes"][section][q_number]

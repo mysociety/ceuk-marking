@@ -179,9 +179,11 @@ class Command(BaseCommand):
                 ]
             ]
 
+            negative_exceptions = scoring.get("negative_q", {})
             for question in questions:
                 section = question.section.title
                 q_no = question.number_and_part
+                is_negative = negative_exceptions.get(section, {}).get(q_no)
 
                 max_score = 0
                 if (
@@ -196,12 +198,16 @@ class Command(BaseCommand):
                 if question.previous_question:
                     prev_question = question.previous_question.number_and_part
 
+                q_type = question.question_type
+                if is_negative:
+                    q_type = "negative"
+
                 question_data.append(
                     [
                         question.number_and_part,
                         question.section.title,
                         question.description,
-                        question.question_type,
+                        q_type,
                         max_score,
                         question.weighting,
                         question.how_marked,
