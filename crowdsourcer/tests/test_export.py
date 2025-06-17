@@ -970,16 +970,18 @@ class ExportWithMarksTestCase(BaseCommandTestCase):
             "Aberdeen City Council",
             "S12000033",
             "Buildings & Heating",
-            2,
+            1,
             7,
         )
 
         expected_raw = deepcopy(self.expected_raw)
-        expected_raw[0]["Buildings & Heating"] = 2
-        expected_raw[0]["total"] = 2
+        expected_raw[0]["Buildings & Heating"] = 1
+        expected_raw[0]["total"] = 1
 
         expected_percent = deepcopy(self.expected_percent)
-        expected_percent[0]["raw_total"] = 0.06
+        expected_percent[0]["Buildings & Heating"] = 0.05
+        expected_percent[0]["raw_total"] = 0.03
+        expected_percent[0]["weighted_total"] = 0.01
 
         percent, raw, linear = write_mock.call_args[0]
 

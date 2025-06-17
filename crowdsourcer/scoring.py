@@ -198,7 +198,7 @@ def get_section_maxes(scoring, session, quiet=False):
     scoring["negative_q"] = negative_q
 
 
-def q_is_exception(q, section, group, country, council, session):
+def q_is_exception(q, section, group, country, council, session, response_type):
     config_exceptions = get_exceptions(session)
     all_exceptions = []
     try:
@@ -218,6 +218,11 @@ def q_is_exception(q, section, group, country, council, session):
         all_exceptions = all_exceptions + exceptions
     except KeyError:
         pass
+
+    exceptions = get_score_based_exceptions(
+        section, council.name, session, response_type
+    )
+    all_exceptions = all_exceptions + exceptions
 
     if q in all_exceptions:
         return True
@@ -384,6 +389,7 @@ def get_section_scores(scoring, session):
     raw_scores, weighted = get_blank_section_scores(session)
 
     score_exceptions = get_score_exceptions(session)
+    rt = ResponseType.objects.get(type="Audit")
 
     for section in Section.objects.filter(marking_session=session):
         options = (
@@ -439,6 +445,7 @@ def get_section_scores(scoring, session):
                 scoring["council_countries"][score["authority__name"]],
                 scoring["councils"][score["authority__name"]],
                 session,
+                response_type=rt,
             ):
                 scoring_print(f"exception: {q}")
                 continue
@@ -791,8 +798,9 @@ def get_all_question_data(scoring, marking_session=None, response_type="Audit"):
             section,
             scoring["council_groups"][council],
             scoring["council_countries"][council],
-            scoring["councils"][council],
+            response.authority,
             session,
+            response.response_type,
         ):
             continue
 
