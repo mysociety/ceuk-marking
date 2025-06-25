@@ -82,13 +82,13 @@ class Command(BaseCommand):
                     scoring["council_maxes"][council]["weighted"][section][
                         scoring["council_groups"][council]
                     ],
-                    round(scores["unweighted_percentage"] * 100),
-                    round(scores["weighted"] * 100),
+                    scores["unweighted_percentage"],
+                    scores["weighted"],
                     "",
                 ]
 
                 rows.append(row)
-            total = round(scoring["council_totals"][council]["weighted_total"] * 100)
+            total = scoring["council_totals"][council]["weighted_total"]
             rows.append(
                 [
                     council,
@@ -102,7 +102,7 @@ class Command(BaseCommand):
                     "-",
                     "-",
                     "-",
-                    total,
+                    f"{total:.2f}",
                 ]
             )
 
