@@ -225,3 +225,5 @@ class Command(BaseCommand):
             self.write_files(percent, raw, linear, questions=question_data)
         else:
             self.write_files(percent, raw, linear)
+
+        self.stdout.write("All files processed")
