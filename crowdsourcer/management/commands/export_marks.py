@@ -21,11 +21,11 @@ class Command(BaseCommand):
         base_dir = settings.BASE_DIR / "data" / session_slug
         base_dir.mkdir(mode=0o755, exist_ok=True)
 
-        self.section_scores_file = base_dir / "raw_sections_marks.csv"
+        self.section_scores_file = base_dir / "raw_section_marks.csv"
         self.council_section_scores_file = base_dir / "raw_council_section_marks.csv"
         self.total_scores_file = base_dir / "all_section_scores.csv"
-        self.question_scores_file = base_dir / "individual_answers.csv"
-        self.questions_file = base_dir / "questions.csv"
+        self.question_scores_file = base_dir / "all_answer_data.csv"
+        self.questions_file = base_dir / "question_data.csv"
 
     def add_arguments(self, parser):
         parser.add_argument(
