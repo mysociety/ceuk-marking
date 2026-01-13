@@ -102,6 +102,102 @@ class UnassignInactiveTestCase(BaseCommandTestCase):
         )
 
 
+class AnonymiseOldUsersTestCase(BaseCommandTestCase):
+    fixtures = [
+        "authorities.json",
+        "basics.json",
+        "non_example_users.json",
+        "questions.json",
+        "options.json",
+        "assignments.json",
+        "responses.json",
+    ]
+
+    def setUp(self):
+        self.session = MarkingSession.objects.get(label="Default")
+
+    def test_anonymises_accounts(self):
+        count = User.objects.filter(email__endswith="example.net").count()
+        self.assertEquals(count, 0, "no example.net emails")
+        count = User.objects.count()
+        self.assertEquals(count, 6, "correct pre anonymise email count")
+        count = User.objects.filter(email__endswith="climateemergency.uk").count()
+        self.assertEquals(count, 1, "correct pre run CEUK email count")
+        count = User.objects.filter(is_active=True).count()
+        self.assertEquals(count, 6, "correct pre run is active count")
+
+        self.call_command(
+            "anonymise_old_users",
+            date="2023-01-01",
+            commit=True,
+        )
+
+        count = User.objects.filter(email__endswith="example.net").count()
+        self.assertEquals(count, 4, "correct post run example.net email count")
+        count = User.objects.filter(email__endswith="climateemergency.uk").count()
+        self.assertEquals(count, 1, "correct post run CEUK email count")
+        count = User.objects.filter(is_active=True).count()
+        self.assertEquals(count, 2, "correct post run is active count")
+
+    def test_respects_cutoff_date(self):
+        count = User.objects.filter(email__endswith="example.net").count()
+        self.assertEquals(count, 0, "no example.net emails")
+        count = User.objects.count()
+        self.assertEquals(count, 6, "correct pre anonymise email count")
+
+        self.call_command(
+            "anonymise_old_users",
+            date="2022-01-01",
+            commit=True,
+        )
+
+        count = User.objects.filter(email__endswith="example.net").count()
+        self.assertEquals(count, 0, "correct post run example.net email count")
+
+    def test_ignores_staff_accounts(self):
+        count = User.objects.filter(email__endswith="example.net").count()
+        self.assertEquals(count, 0, "no example.net emails")
+        count = User.objects.count()
+        self.assertEquals(count, 6, "correct pre anonymise email count")
+
+        a = User.objects.get(email="volunteer_admin@myemailisthebest.org")
+        a.is_staff = True
+        a.save()
+
+        self.call_command(
+            "anonymise_old_users",
+            date="2023-01-01",
+            commit=True,
+        )
+
+        count = User.objects.filter(email__endswith="example.net").count()
+        self.assertEquals(count, 3, "correct post run example.net email count")
+
+        a = User.objects.get(email="volunteer_admin@myemailisthebest.org")
+        self.assertIsNotNone(a, "staff account ignored")
+
+    def test_anonymises_names_and_emails(self):
+        u = User.objects.get(pk=2)
+        self.assertEquals(
+            u.email, "marker@emailprovider.com", "pre anonymising email correct"
+        )
+        self.assertEquals(u.first_name, "A", "pre anonymising first name correct")
+        self.assertEquals(u.last_name, "Marker", "pre anonymising last name correct")
+
+        self.call_command(
+            "anonymise_old_users",
+            date="2023-01-01",
+            commit=True,
+        )
+
+        u = User.objects.get(pk=2)
+        self.assertEquals(
+            u.email, "user_2@example.net", "post anonymising email changed"
+        )
+        self.assertEquals(u.first_name, "", "post anonymising first name changed")
+        self.assertEquals(u.last_name, "", "post anonymising last name changed")
+
+
 class ImportCouncilsTestCase(BaseCommandTestCase):
     fixtures = [
         "authorities.json",
