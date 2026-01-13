@@ -25,7 +25,17 @@ def rollback_atomic() -> Generator[None, None, None]:
         pass
 
 
-class BaseImporter(BaseCommand):
+class BaseTransactionCommand(BaseCommand):
+    def get_atomic_context(self, commit):
+        if commit:
+            atomic_context = atomic()
+        else:
+            atomic_context = rollback_atomic()
+
+        return atomic_context
+
+
+class BaseImporter(BaseTransactionCommand):
     YELLOW = "\033[33m"
     RED = "\033[31m"
     GREEN = "\033[32m"
@@ -126,11 +136,3 @@ class BaseImporter(BaseCommand):
             self.print_error(f"No such Marking Session {session}")
 
         return (rt, ms)
-
-    def get_atomic_context(self, commit):
-        if commit:
-            atomic_context = atomic()
-        else:
-            atomic_context = rollback_atomic()
-
-        return atomic_context
