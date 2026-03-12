@@ -134,8 +134,10 @@ class Command(BaseCommand):
 
         self.get_column_names(**kwargs)
 
-        for section in Section.objects.exclude(title__contains="(CA)").filter(
-            marking_session=session
+        for section in (
+            Section.objects.exclude(title__contains="(CA)")
+            .exclude(title__contains="(MA)")
+            .filter(marking_session=session)
         ):
             print(section)
             header = 2
