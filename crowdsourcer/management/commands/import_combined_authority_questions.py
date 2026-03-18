@@ -73,6 +73,12 @@ class Command(BaseCommand):
             help="only import yes_no foi questions to fix problem",
         )
 
+        parser.add_argument(
+            "--combined",
+            action="store_true",
+            help="use CA as section postfix and not MA",
+        )
+
     def get_column_names(self, **kwargs):
         column_list = kwargs.get("column_list", None)
         column_list = settings.BASE_DIR / "data" / column_list
@@ -121,25 +127,39 @@ class Command(BaseCommand):
         if foi_yes_no_fix:
             self.stdout.write("Only importing Yes/No FOI questions")
 
+        title_postfix = "(MA)"
+        if kwargs["combined"]:
+            title_postfix = "(CA)"
         for section in Section.objects.filter(
-            marking_session=session, title__contains="(CA)"
+            marking_session=session, title__contains=title_postfix
         ):
             header = 2
             sheet_name = self.sheet_map.get(section.title, section.title)
             print(sheet_name)
-            df = pd.read_excel(
-                self.question_file,
-                sheet_name=sheet_name,
-            )
+            try:
+                df = pd.read_excel(
+                    self.question_file,
+                    sheet_name=sheet_name,
+                )
+            except ValueError as e:
+                self.stderr.write(f"problem opening file: {e}")
+                f = pd.ExcelFile(self.question_file)
+                self.stderr.write("available sheet name are:")
+                self.stderr.write(", ".join(f.sheet_names))
+                return
 
             if "Question" in df.columns:
                 header = 0
             else:
                 found_header = False
                 for index, row in df.iterrows():
-                    for i in [2, 3]:
+                    for i in [1, 2, 3]:
                         q_cell = row.iat[i]
-                        if type(q_cell) is str and q_cell.strip() == "Question":
+
+                        if type(q_cell) is str and q_cell.strip() in [
+                            "Question",
+                            "Question no.",
+                        ]:
                             header = index + 1
                             found_header = True
                             break
@@ -174,6 +194,8 @@ class Command(BaseCommand):
                 "Edits",
                 "Total Points Available when weighted",
                 "Weighting",
+                "Drop down box options for no mark awarded (internal)",
+                "Column 1",
             ]
             for col in drop_cols:
                 if col in df.columns:
@@ -188,7 +210,13 @@ class Command(BaseCommand):
             for i in range(1, options):
                 columns.append(f"option_{i}")
 
-            df.columns = columns
+            try:
+                df.columns = columns
+            except ValueError as e:
+                self.stderr.write(f"Problem replacing columns: {e}")
+                self.stderr.write("Current columns: " + ", ".join(df.columns))
+                self.stderr.write("New columns: " + ", ".join(columns))
+                continue
 
             for index, row in df.iterrows():
                 if pd.isna(row["question_no"]):
@@ -278,6 +306,8 @@ class Command(BaseCommand):
                     defaults=defaults,
                 )
 
+                q.questiongroup.add(group)
+
                 if kwargs["text_only"]:
                     continue
 
@@ -350,5 +380,3 @@ class Command(BaseCommand):
                             description="No",
                             defaults={"score": 0, "ordering": 2},
                         )
-
-                q.questiongroup.add(group)

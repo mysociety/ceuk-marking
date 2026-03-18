@@ -174,6 +174,8 @@ class Command(BaseCommand):
                 "2023 Criteria",
                 "2023 Clarifications",
                 "Previous Criteria from 2023 Scorecards",
+                "Drop down box options for no mark awarded (internal)",
+                "Column 1",
             ]
             for col in drop_cols:
                 if col in df.columns:
@@ -185,11 +187,19 @@ class Command(BaseCommand):
             if "Drop down box options for no mark awarded (internal)" not in df.columns:
                 columns.remove("no_mark_options")
 
+            self.stderr.write("Current columns: " + ", ".join(df.columns))
+
             options = len(df.columns) - len(columns) + 1
             for i in range(1, options):
                 columns.append(f"option_{i}")
 
-            df.columns = columns
+            try:
+                df.columns = columns
+            except ValueError as e:
+                self.stderr.write(f"Problem replacing columns: {e}")
+                self.stderr.write("Current columns: " + ", ".join(df.columns))
+                self.stderr.write("New columns: " + ", ".join(columns))
+                continue
 
             for index, row in df.iterrows():
                 q_no = row["question_no"]
