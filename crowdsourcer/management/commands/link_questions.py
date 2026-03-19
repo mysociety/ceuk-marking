@@ -12,6 +12,13 @@ class Command(BaseCommand):
 
     overrides = {}
 
+    ca_sessions = ["Scorecards 2025", "Scorecards 2023"]
+    ma_sessions = ["Scorecards 2027"]
+
+    section_map = {
+        "Buildings & Heating (MA)": "Buildings & Heating & Green Skills (CA)",
+    }
+
     def add_arguments(self, parser):
         parser.add_argument(
             "--current",
@@ -75,6 +82,17 @@ class Command(BaseCommand):
 
         return questions
 
+    def get_previous_section(self, section):
+        if (
+            self.current.label in self.ma_sessions
+            and self.previous.label in self.ca_sessions
+        ):
+            if self.section_map.get(section):
+                section = self.section_map[section]
+            else:
+                section = section.replace("MA", "CA")
+        return section
+
     def handle(self, *args, **kwargs):
         sessions_exist = self.setup_sessions(*args, **kwargs)
         if not sessions_exist:
@@ -97,11 +115,12 @@ class Command(BaseCommand):
                 else:
                     prev_question_no = q_no
 
-                if previous_questions[section].get(prev_question_no) is None:
+                prev_section = self.get_previous_section(section)
+                if previous_questions[prev_section].get(prev_question_no) is None:
                     self.stderr.write(f"No matching question for {q_no} in {section}")
                     continue
                 else:
-                    prev_question = previous_questions[section][prev_question_no]
+                    prev_question = previous_questions[prev_section][prev_question_no]
 
                 question.previous_question = prev_question
                 question.save()
