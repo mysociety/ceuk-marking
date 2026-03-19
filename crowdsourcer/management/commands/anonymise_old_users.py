@@ -70,7 +70,9 @@ class Command(BaseTransactionCommand):
                 if self.verbosity > 1:
                     self.stdout.write(marker.user.email)
 
-                marker.user.email = self.generate_anon_email(marker.user.pk)
+                anon_email = self.generate_anon_email(marker.user.pk)
+                marker.user.username = anon_email
+                marker.user.email = anon_email
                 marker.user.first_name = ""
                 marker.user.last_name = ""
                 marker.user.is_active = False
