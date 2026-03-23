@@ -181,6 +181,7 @@ class Command(BaseCommand):
             df = df.dropna(axis="index", how="all")
             drop_cols = [
                 "Climate Justice/Adaptation Tag",
+                "Climate Justice/Adaptation",
                 "Is this question or criteria changing?",
                 "Change proposed",
                 "New Criteria",
