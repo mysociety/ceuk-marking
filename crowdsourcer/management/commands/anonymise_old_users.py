@@ -1,3 +1,4 @@
+from django.contrib.auth.models import User
 from django.db.models import Q
 
 from dateutil import parser, tz
@@ -28,6 +29,15 @@ class Command(BaseTransactionCommand):
 
     def generate_anon_email(self, id: int):
         return f"user_{id}@example.net"
+
+    def anonymise_user(self, user):
+        anon_email = self.generate_anon_email(user.pk)
+        user.username = anon_email
+        user.email = anon_email
+        user.first_name = ""
+        user.last_name = ""
+        user.is_active = False
+        user.save()
 
     def handle(
         self,
@@ -70,12 +80,20 @@ class Command(BaseTransactionCommand):
                 if self.verbosity > 1:
                     self.stdout.write(marker.user.email)
 
-                anon_email = self.generate_anon_email(marker.user.pk)
-                marker.user.username = anon_email
-                marker.user.email = anon_email
-                marker.user.first_name = ""
-                marker.user.last_name = ""
-                marker.user.is_active = False
-                marker.user.save()
+                self.anonymise_user(marker.user)
+
+            non_marker_users_to_anon = User.objects.filter(
+                date_joined__lt=end_date, email__contains="@"
+            )
+            exclusions = Q(is_staff=True) | Q(is_superuser=True)
+            for domain in self.domains_to_exclude:
+                exclusions.add(Q(email__endswith=domain), Q.OR)
+
+            for user in non_marker_users_to_anon.exclude(exclusions):
+                count += 1
+                if self.verbosity > 1:
+                    self.stdout.write(user.email)
+
+                self.anonymise_user(user)
 
         self.stdout.write(f"Anonymised {count} accounts")
