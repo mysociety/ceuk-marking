@@ -225,6 +225,11 @@ class Command(BaseImporter):
                     f"no matching question for {point['section']}, {q_args}"
                 )
                 continue
+            except Question.MultipleObjectsReturned:
+                self.print_error(
+                    f"multiple matching questions for {point['section']}, {q_args}"
+                )
+                continue
 
             copy_last_year = False
             if not pd.isna(point["copy last year answer"]):
@@ -288,6 +293,11 @@ class Command(BaseImporter):
                     except Option.DoesNotExist:
                         self.print_error(
                             f"no matching option for {question.number_and_part}, {point['section']} - '{prev_response.option.description}'"
+                        )
+                        continue
+                    except AttributeError as e:
+                        self.print_error(
+                            f"Problem getting previous answer for {question.number_and_part}, {point['section']} - '{e}'"
                         )
                         continue
 
