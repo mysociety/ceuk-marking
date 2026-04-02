@@ -165,6 +165,7 @@ class Command(BaseCommand):
             df = df.dropna(axis="index", how="all")
             drop_cols = [
                 "Climate Justice/Adaptation Tag",
+                "Climate Justice/Adaptation",
                 "Is this question or criteria changing?",
                 "Change proposed",
                 "New Criteria",
@@ -176,6 +177,11 @@ class Command(BaseCommand):
                 "Previous Criteria from 2023 Scorecards",
                 "Drop down box options for no mark awarded (internal)",
                 "Column 1",
+                "# of data points",
+                "# of raw points",
+                "# of points",
+                "Weighted score",
+                "weighted score",
             ]
             for col in drop_cols:
                 if col in df.columns:
@@ -314,6 +320,7 @@ class Command(BaseCommand):
                             "No Penalty Mark",
                             "No evidence found",
                             "Evidence does not meet criteria",
+                            "Evidence doesn't meet criteria",
                             "No response from FOI",
                         ]
                     )

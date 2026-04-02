@@ -197,6 +197,10 @@ class Command(BaseCommand):
                 "Weighting",
                 "Drop down box options for no mark awarded (internal)",
                 "Column 1",
+                "Weighted score",
+                "weighted score",
+                "# of data points",
+                "# of points",
             ]
             for col in drop_cols:
                 if col in df.columns:
