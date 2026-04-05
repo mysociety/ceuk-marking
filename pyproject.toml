@@ -19,7 +19,7 @@ django-simple-history = "^3.2.0"
 mysoc-dataset = "^0.3.0"
 django-json-widget = "^2.0.1"
 django-filter = "^24.3"
-requests = "2.32.4"
+requests = "2.33.0"
 
 [tool.poetry.group.dev.dependencies]
 black = "^24.4.2"
