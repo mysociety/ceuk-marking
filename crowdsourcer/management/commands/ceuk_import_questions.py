@@ -368,8 +368,13 @@ class Command(BaseCommand):
                     else:
                         o, c = Option.objects.update_or_create(
                             question=q,
-                            description="No",
+                            description="Evidence doesn't meet criteria",
                             defaults={"score": 0, "ordering": 2},
+                        )
+                        o, c = Option.objects.update_or_create(
+                            question=q,
+                            description="No evidence found",
+                            defaults={"score": 0, "ordering": 3},
                         )
 
                 q.questiongroup.clear()
