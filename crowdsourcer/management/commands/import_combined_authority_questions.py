@@ -323,9 +323,14 @@ class Command(BaseCommand):
                     Option.objects.filter(question=q).delete()
 
                 if row.get("no_mark_options") is not None:
+                    required_no_mark = []
                     no_mark_options = row["no_mark_options"].splitlines()
                 else:
                     no_mark_options = []
+                    required_no_mark = [
+                        "Evidence doesn't meet criteria",
+                        "No evidence found",
+                    ]
 
                 if q.question_type != "yes_no":
                     no_mark_options.extend(
@@ -333,6 +338,7 @@ class Command(BaseCommand):
                             "No Penalty Mark",
                             "No evidence found",
                             "Evidence does not meet criteria",
+                            "Evidence doesn't meet criteria",
                             "No response from FOI",
                         ]
                     )
@@ -353,6 +359,9 @@ class Command(BaseCommand):
                         # a bulk operation on the df as we don't know how many option cols there are
                         if pd.isna(row[option_col]) or desc == "":
                             continue
+                        # you need to harmonize
+                        if desc == "Evidence does not meet criteria":
+                            desc = "Evidence doesn't meet criteria"
                         score = 1
                         ordering = i
                         if q.question_type == "tiered":
@@ -361,6 +370,15 @@ class Command(BaseCommand):
                             no_mark_seen = no_mark_seen + 1
                             score = 0
                             ordering = 100 + ordering
+                        o, c = Option.objects.update_or_create(
+                            question=q,
+                            description=desc,
+                            defaults={"score": score, "ordering": ordering},
+                        )
+                    for desc in required_no_mark:
+                        no_mark_seen = no_mark_seen + 1
+                        score = 0
+                        ordering = 100 + ordering
                         o, c = Option.objects.update_or_create(
                             question=q,
                             description=desc,
