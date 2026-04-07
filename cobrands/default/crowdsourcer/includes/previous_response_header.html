@@ -1,5 +1,13 @@
+{% if marking_session.label == 'Scorecards 2025' %}
 <h3 class="h5 text-muted mb-3 mb-lg-4">Scorecards 2023 Marking</h3>
 
 <p>
   Below shows the final marks that were awarded for this Council during the 2023 Scorecards
 </p>
+{% elif marking_session.label == 'Scorecards 2027' %}
+<h3 class="h5 text-muted mb-3 mb-lg-4">Scorecards 2025 Marking</h3>
+
+<p>
+  Below shows the final marks that were awarded for this Council during the 2025 Scorecards
+</p>
+{% endif %}
