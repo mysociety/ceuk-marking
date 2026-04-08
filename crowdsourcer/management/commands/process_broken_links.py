@@ -20,5 +20,6 @@ class Command(BaseCommand):
         df = pd.read_csv(file)
         df = df.dropna(how="any")
         df = df.loc[~df["status_code"].isin([200, 301, 302])]
+        df = df.drop_duplicates(subset="url")
 
         df.to_csv("data/broken_links.csv")
