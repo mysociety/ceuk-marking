@@ -325,6 +325,7 @@ class Command(BaseCommand):
                             "Evidence does not meet criteria",
                             "Evidence doesn't meet criteria",
                             "No response from FOI",
+                            "Council doesn't own or manage social housing",
                         ]
                     )
 
