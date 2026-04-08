@@ -22,7 +22,7 @@ class Command(BaseCommand):
         df = pd.read_csv(file)
         df = df.astype({"validated_url": str})
 
-        link_parts_re = re.compile(".*\((?P<code>\d+)\):\s+(?P<url>https?:[^ ]*)")
+        link_parts_re = re.compile(r".*\((?P<code>\d+)\):\s+(?P<url>https?:[^ ]*)")
 
         bad_links = []
         for _, row in df.iterrows():
