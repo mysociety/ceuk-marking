@@ -125,6 +125,12 @@ class Command(BaseCommand):
         )
 
         parser.add_argument(
+            "--council_types_to_exclude",
+            action="store",
+            help="comma separated list of council types not to assign to, defaults to COMB",
+        )
+
+        parser.add_argument(
             "--add_users", action="store_true", help="add users to database"
         )
 
@@ -159,6 +165,11 @@ class Command(BaseCommand):
         if options["preferred_councils"]:
             self.column_names.append("preferred_councils")
             self.usecols.append("Nations/London")
+
+        if options["council_types_to_exclude"]:
+            self.excluded_types = options["council_types_to_exclude"].split(",")
+        else:
+            self.excluded_types = ["COMB"]
 
         if options["debug"]:
             self.debug = True
@@ -221,6 +232,7 @@ class Command(BaseCommand):
 
             if pd.isna(user_type):
                 self.stdout.write(f"{YELLOW}No user type for {row['email']}{NOBOLD}")
+                user_type = "scorecards_volunteering"
                 continue
 
             num_councils = self.get_assignment_count(
@@ -295,15 +307,25 @@ class Command(BaseCommand):
                 )
                 continue
 
-            councils = re.split("[,/]", row["council_area"])
+            try:
+                councils = re.split("[,/]", row["council_area"])
+            except TypeError:
+                self.stdout.write(
+                    f"{RED}Bad council data: {row['council_area']}{NOBOLD}"
+                )
+                councils = []
+
             councils = [self.authority_map.get(c, c) for c in councils]
 
-            own_council = PublicAuthority.objects.filter(name__icontains=councils[0])
-            if len(councils) > 1:
-                for council in councils[1:]:
-                    own_council = own_council | PublicAuthority.objects.filter(
-                        name__icontains=council
-                    )
+            if councils:
+                own_council = PublicAuthority.objects.filter(
+                    name__icontains=councils[0]
+                )
+                if len(councils) > 1:
+                    for council in councils[1:]:
+                        own_council = own_council | PublicAuthority.objects.filter(
+                            name__icontains=council
+                        )
 
             if response_type != "First Mark":
                 own_council = own_council | PublicAuthority.objects.filter(
@@ -348,7 +370,9 @@ class Command(BaseCommand):
             councils_to_assign = PublicAuthority.objects.filter(
                 marking_session=session
             ).exclude(
-                Q(id__in=assigned_councils) | Q(type="COMB") | Q(do_not_mark=True)
+                Q(id__in=assigned_councils)
+                | Q(type__in=self.excluded_types)
+                | Q(do_not_mark=True)
             )
 
             preferred_councils = councils_to_assign
