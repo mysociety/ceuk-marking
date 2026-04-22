@@ -6,6 +6,14 @@ import django_filters
 from crowdsourcer.models import Option, Question, Response, ResponseType, Section
 
 
+class LoginFilter(django_filters.filters.DateRangeFilter):
+    choices = [*django_filters.filters.DateRangeFilter.choices, ("never", "Never")]
+    filters = {
+        **django_filters.filters.DateRangeFilter.filters,
+        "never": lambda qs, _: qs.filter(**{"last_login": None}),
+    }
+
+
 def filter_not_empty(queryset, name, value):
     lookup = "__".join([name, "isnull"])
     return queryset.filter(**{lookup: not value})
@@ -26,6 +34,11 @@ class VolunteerFilter(django_filters.FilterSet):
     )
     # have to specify it like this otherwise bootstrap doesn't recognise it as a bound field
     username = django_filters.CharFilter(field_name="username", lookup_expr="icontains")
+
+    last_login = LoginFilter(
+        field_name="last_login",
+        # choices=((None, "Never"), ("2026-04-15", "A week ago")),
+    )
 
     class Meta:
         model = User

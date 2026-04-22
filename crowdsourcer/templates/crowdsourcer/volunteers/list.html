@@ -2,6 +2,7 @@
 
 {% load crowdsourcer_tags %}
 {% load django_bootstrap5 %}
+{% load humanize %}
 
 {% block content %}
 {% if show_login %}
@@ -41,6 +42,9 @@
                 {% bootstrap_field filter.form.username %}
             </div>
             <div class="col" style="min-width: 10rem">
+                {% bootstrap_field filter.form.last_login %}
+            </div>
+            <div class="col" style="min-width: 10rem">
                 <button type="submit" class="btn btn-primary btn-block mb-3 mb-md-4">Filter list</button>
             </div>
         </div>
@@ -54,6 +58,7 @@
                 <th>Section</th>
                 <th>Assignments</th>
                 <th>Active</th>
+                <th>Last Login</th>
             </tr>
         </thead>
         <tbody>
@@ -77,6 +82,9 @@
                 </td>
                 <td>
                     {{ volunteer.is_active }}
+                </td>
+                <td>
+                    {{ volunteer.last_login | naturalday }}
                 </td>
             </tr>
           {% endfor %}
