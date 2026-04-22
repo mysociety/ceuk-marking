@@ -150,7 +150,15 @@ class SectionAdmin(admin.ModelAdmin):
 
 @admin.register(MarkingSession)
 class MarkingSessionAdmin(admin.ModelAdmin):
-    pass
+    list_display = (
+        "label",
+        "active",
+        "default",
+    )
+    list_editable = (
+        "active",
+        "default",
+    )
 
 
 @admin.register(SessionProperties)
