@@ -1104,3 +1104,98 @@ class SendWelcomeEmails(BaseCommandTestCase):
         )
         self.assertEquals(len(mail.outbox), 0)
         self.assertRegex(err, r"No config found for session: Default")
+
+
+class CopyPreviousAnswersTestCase(BaseCommandTestCase):
+    fixtures = [
+        "authorities.json",
+        "basics.json",
+        "users.json",
+        "copy_test_data.json",
+    ]
+
+    initial_response_count = 8
+
+    def test_command(self):
+        self.assertEquals(Response.objects.count(), self.initial_response_count)
+        self.call_command(
+            "copy_previous_answers",
+            commit=True,
+            verbose=True,
+            old="Default",
+            new="Second Session",
+            section="Transport",
+            question="2",
+        )
+
+        # only adds 2 as one of the authorities is only in default session
+        self.assertEquals(Response.objects.count(), self.initial_response_count + 2)
+
+        a = PublicAuthority.objects.get(name="Aberdeenshire Council")
+        r = Response.objects.get(authority=a, question_id=2004)
+        self.assertEquals(r.option.pk, 2041)
+
+    def test_mismatched_question_types_ignored(self):
+        self.assertEquals(Response.objects.count(), self.initial_response_count)
+        _, stderr = self.call_command(
+            "copy_previous_answers",
+            commit=True,
+            verbose=True,
+            old="Default",
+            new="Second Session",
+            section="Waste Reduction & Food",
+            question="1",
+        )
+
+        self.assertEquals(Response.objects.count(), self.initial_response_count)
+        self.assertRegex(stderr, r"Question types do not match")
+
+    def test_mismatched_options(self):
+        self.assertEquals(Response.objects.count(), self.initial_response_count)
+        _, stderr = self.call_command(
+            "copy_previous_answers",
+            commit=True,
+            verbose=True,
+            old="Default",
+            new="Second Session",
+            section="Transport",
+            question="1",
+        )
+
+        self.assertEquals(Response.objects.count(), self.initial_response_count + 2)
+        self.assertRegex(stderr, r"No matching option for No")
+
+    def test_option_mapping(self):
+        self.assertEquals(Response.objects.count(), self.initial_response_count)
+        _, stderr = self.call_command(
+            "copy_previous_answers",
+            commit=True,
+            verbose=True,
+            old="Default",
+            new="Second Session",
+            section="Transport",
+            response_map="crowdsourcer/tests/data/copy_map.csv",
+            question="1",
+        )
+
+        self.assertEquals(Response.objects.count(), self.initial_response_count + 3)
+        self.assertEqual(stderr, "")
+
+    def test_ca_to_ma_section(self):
+        a = PublicAuthority.objects.get(name="Aberdeen City Council")
+        s = MarkingSession.objects.get(label="Scorecards 2027")
+        a.marking_session.add(s)
+        a.save()
+
+        self.assertEquals(Response.objects.count(), self.initial_response_count)
+        _, stderr = self.call_command(
+            "copy_previous_answers",
+            commit=True,
+            verbose=True,
+            old="Default",
+            new="Scorecards 2027",
+            section="Transport (CA)",
+            question="1",
+        )
+        self.assertEqual(stderr, "")
+        self.assertEquals(Response.objects.count(), self.initial_response_count + 1)

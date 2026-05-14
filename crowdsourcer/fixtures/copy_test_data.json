@@ -1,0 +1,651 @@
+[
+{
+  "model": "crowdsourcer.markingsession",
+  "pk": 3,
+  "fields": {
+    "label": "Scorecards 2027",
+    "start_date": "2023-03-01",
+    "active": true
+  }
+},
+{
+  "model": "crowdsourcer.section",
+  "pk": 101,
+  "fields": {
+    "marking_session": 1,
+    "title": "Transport (CA)"
+  }
+},
+{
+  "model": "crowdsourcer.section",
+  "pk": 23,
+  "fields": {
+    "marking_session": 2,
+    "title": "Waste Reduction & Food"
+  }
+},
+{
+  "model": "crowdsourcer.section",
+  "pk": 31,
+  "fields": {
+    "marking_session": 3,
+    "title": "Transport (MA)"
+  }
+},
+{
+  "model": "crowdsourcer.question",
+  "pk": 1,
+  "fields": {
+    "number": 1,
+    "number_part": "",
+    "description": "Has the council completed extensive retrofit work on any of its significant buildings to make them low carbon?",
+    "criteria": "Criteria met if the council have done any of the following extensive retrofit works for any one of its significant buildings:\n- created on-site renewable energy\n- whole building retrofitting, including heat pump installations\n- extensive insulation of walls and floors\n- replacing gas boilers or installing a combined heating system\n\nAdditional points awarded if the retrofit has been awarded a standard such as BREEAM Refurbishment and fit-out (any level), AECB Retrofit standard (Bronze, Silver or Gold) or any other recognised standard.",
+    "section": 1,
+    "clarifications": "Significant council buildings refers to leisure centres, libraries, council town halls or offices, community centres, schools & colleges (not academies or private schools) or care homes.\n\nExtensive retrofit (sometimes called deep retrofit) refers to significant works of size or scale that result in a fundamental change to the building structure and/or services. This could be a collection of lots of small retrofit enhancements, or a single larger and disruptive measure, such as installing a combined heat system. \n\nThe work must be completed, not in progress.",
+    "topic": "Council buildings - retrofit",
+    "weighting": "low",
+    "how_marked": "volunteer",
+    "question_type": "tiered",
+    "last_update": "2022-12-19T13:40:36.0Z",
+    "created": "2022-12-19T13:40:36.075Z",
+    "questiongroup": [
+      1,
+      2,
+      3,
+      4
+    ]
+  }
+},
+{
+  "model": "crowdsourcer.question",
+  "pk": 2,
+  "fields": {
+    "number": 2,
+    "number_part": "",
+    "description": "Are the council's operations powered by renewable energy?  ",
+    "criteria": "Criteria met if the council has a green tariff that is 100% renewable or if the council creates its own energy equivalent to 20% of more of its energy consumption through energy from waste. \n\nAdditional points awarded if the council has a green tariff with Green Energy UK plc, Good Energy Limited or Ecotricity, or if the council creates its own renewable energy equivalent to 20% or its energy consumption. This could be through on-site energy generation, or if the council has built or bought a solar/wind farm elsewhere. \n",
+    "section": 1,
+    "clarifications": "This includes all energy that the council is directly responsible for, in council offices and any other buildings leased and managed by the council where the council pays the energy tariff. \nThis includes all electricity used in these buildings (not gas). \nThis does not include homes owned or managed by the council.",
+    "topic": "Council buildings - renewable energy tariff",
+    "weighting": "low",
+    "how_marked": "foi",
+    "question_type": "foi",
+    "last_update": "2022-12-19T13:40:36.0Z",
+    "created": "2022-12-19T13:40:36.075Z",
+    "questiongroup": [
+      1,
+      2,
+      3,
+      4
+    ]
+  }
+},
+{
+  "model": "crowdsourcer.question",
+  "pk": 3,
+  "fields": {
+    "number": 1,
+    "number_part": "",
+    "description": "Is the council transitioning their vehicle fleet to electric?",
+    "criteria": "Criteria met if over 10% of the council's fleet are electric vehicles.",
+    "section": 2,
+    "clarifications": "A council's fleet includes council owned or leased vehicles, and may include street cleaners and waste collection vehicles.",
+    "topic": "Council Fleet",
+    "weighting": "low",
+    "how_marked": "volunteer",
+    "question_type": "yes_no",
+    "last_update": "2022-12-19T13:40:36.0Z",
+    "created": "2022-12-19T13:40:36.075Z",
+    "questiongroup": [
+      1,
+      2,
+      3,
+      4
+    ]
+  }
+},
+{
+  "model": "crowdsourcer.question",
+  "pk": 4,
+  "fields": {
+    "number": 2,
+    "number_part": null,
+    "description": "Has the council set up or supported a shared transport scheme that can be used across their whole area?",
+    "criteria": "Criteria met for each type of scheme where a member of the public can hire a vehicle (e.g. car/scooter/bike/mobility device) within the local authorities area.\n\nThe following schemes will be awarded points:\n- Car share scheme of any size in the area. Including:\n        - Community car clubs.\n        - Car clubs provided by private companies\n        - Hiring of council vehicles when not in use\n- Bike share scheme\n- E-bike or cargo bike share scheme\n- E-scooter scheme\n- Mobility Devices\n- Wheels 2 Work scheme\n\nTrial schemes that are active at the time of marking will be accepted.",
+    "section": 2,
+    "clarifications": "Marked mainly using Coordinated Mobility's publicly available data on shared transport schemes.",
+    "topic": "Shared Transport Schemes",
+    "weighting": "low",
+    "how_marked": "volunteer",
+    "question_type": "yes_no",
+    "last_update": "2022-12-19T13:40:36.0Z",
+    "created": "2022-12-19T13:40:36.075Z",
+    "questiongroup": [
+      1,
+      2,
+      3,
+      4
+    ]
+  }
+},
+{
+  "model": "crowdsourcer.question",
+  "pk": 5,
+  "fields": {
+    "number": 1,
+    "number_part": null,
+    "description": "A Waste Reduction & Food question?",
+    "criteria": "",
+    "section": 7,
+    "clarifications": "",
+    "topic": "Foods",
+    "weighting": "low",
+    "how_marked": "volunteer",
+    "question_type": "yes_no",
+    "last_update": "2022-12-19T13:40:36.0Z",
+    "created": "2022-12-19T13:40:36.075Z",
+    "questiongroup": [
+      1,
+      2,
+      3,
+      4
+    ]
+  }
+},
+{
+  "model": "crowdsourcer.question",
+  "pk": 2001,
+  "fields": {
+    "number": 1,
+    "number_part": "",
+    "description": "Has the council completed extensive retrofit work on any of its significant buildings to make them low carbon?",
+    "criteria": "Criteria met if the council have done any of the following extensive retrofit works for any one of its significant buildings:\n- created on-site renewable energy\n- whole building retrofitting, including heat pump installations\n- extensive insulation of walls and floors\n- replacing gas boilers or installing a combined heating system\n\nAdditional points awarded if the retrofit has been awarded a standard such as BREEAM Refurbishment and fit-out (any level), AECB Retrofit standard (Bronze, Silver or Gold) or any other recognised standard.",
+    "section": 21,
+    "clarifications": "Significant council buildings refers to leisure centres, libraries, council town halls or offices, community centres, schools & colleges (not academies or private schools) or care homes.\n\nExtensive retrofit (sometimes called deep retrofit) refers to significant works of size or scale that result in a fundamental change to the building structure and/or services. This could be a collection of lots of small retrofit enhancements, or a single larger and disruptive measure, such as installing a combined heat system. \n\nThe work must be completed, not in progress.",
+    "topic": "Council buildings - retrofit",
+    "weighting": "low",
+    "how_marked": "volunteer",
+    "question_type": "yes_no",
+    "last_update": "2022-12-19T13:40:36.0Z",
+    "created": "2022-12-19T13:40:36.075Z",
+    "questiongroup": [
+      1,
+      2,
+      3,
+      4
+    ]
+  }
+},
+{
+  "model": "crowdsourcer.question",
+  "pk": 2002,
+  "fields": {
+    "number": 2,
+    "number_part": "",
+    "description": "Are the council's operations powered by renewable energy?  ",
+    "criteria": "Criteria met if the council has a green tariff that is 100% renewable or if the council creates its own energy equivalent to 20% of more of its energy consumption through energy from waste. \n\nAdditional points awarded if the council has a green tariff with Green Energy UK plc, Good Energy Limited or Ecotricity, or if the council creates its own renewable energy equivalent to 20% or its energy consumption. This could be through on-site energy generation, or if the council has built or bought a solar/wind farm elsewhere. \n",
+    "section": 21,
+    "clarifications": "This includes all energy that the council is directly responsible for, in council offices and any other buildings leased and managed by the council where the council pays the energy tariff. \nThis includes all electricity used in these buildings (not gas). \nThis does not include homes owned or managed by the council.",
+    "topic": "Council buildings - renewable energy tariff",
+    "weighting": "low",
+    "how_marked": "foi",
+    "question_type": "foi",
+    "last_update": "2022-12-19T13:40:36.0Z",
+    "created": "2022-12-19T13:40:36.075Z",
+    "questiongroup": [
+      1,
+      2,
+      3,
+      4
+    ]
+  }
+},
+{
+  "model": "crowdsourcer.question",
+  "pk": 2003,
+  "fields": {
+    "number": 1,
+    "number_part": "",
+    "description": "Is the council transitioning their vehicle fleet to electric?",
+    "criteria": "Criteria met if over 10% of the council's fleet are electric vehicles.",
+    "section": 22,
+    "clarifications": "A council's fleet includes council owned or leased vehicles, and may include street cleaners and waste collection vehicles.",
+    "topic": "Council Fleet",
+    "weighting": "low",
+    "how_marked": "volunteer",
+    "question_type": "yes_no",
+    "last_update": "2022-12-19T13:40:36.0Z",
+    "created": "2022-12-19T13:40:36.075Z",
+    "questiongroup": [
+      1,
+      2,
+      3,
+      4
+    ]
+  }
+},
+{
+  "model": "crowdsourcer.question",
+  "pk": 2004,
+  "fields": {
+    "number": 2,
+    "number_part": null,
+    "description": "Has the council set up or supported a shared transport scheme that can be used across their whole area?",
+    "criteria": "Criteria met for each type of scheme where a member of the public can hire a vehicle (e.g. car/scooter/bike/mobility device) within the local authorities area.\n\nThe following schemes will be awarded points:\n- Car share scheme of any size in the area. Including:\n        - Community car clubs.\n        - Car clubs provided by private companies\n        - Hiring of council vehicles when not in use\n- Bike share scheme\n- E-bike or cargo bike share scheme\n- E-scooter scheme\n- Mobility Devices\n- Wheels 2 Work scheme\n\nTrial schemes that are active at the time of marking will be accepted.",
+    "section": 22,
+    "clarifications": "Marked mainly using Coordinated Mobility's publicly available data on shared transport schemes.",
+    "topic": "Shared Transport Schemes",
+    "weighting": "low",
+    "how_marked": "volunteer",
+    "question_type": "yes_no",
+    "last_update": "2022-12-19T13:40:36.0Z",
+    "created": "2022-12-19T13:40:36.075Z",
+    "questiongroup": [
+      1,
+      2,
+      3,
+      4
+    ]
+  }
+},
+{
+  "model": "crowdsourcer.question",
+  "pk": 2005,
+  "fields": {
+    "number": 1,
+    "number_part": null,
+    "description": "A Waste Reduction & Food question?",
+    "criteria": "",
+    "section": 23,
+    "clarifications": "",
+    "topic": "Foods",
+    "weighting": "low",
+    "how_marked": "volunteer",
+    "question_type": "multiple_choice",
+    "last_update": "2022-12-19T13:40:36.0Z",
+    "created": "2022-12-19T13:40:36.075Z",
+    "questiongroup": [
+      1,
+      2,
+      3,
+      4
+    ]
+  }
+},
+{
+  "model": "crowdsourcer.question",
+  "pk": 1101,
+  "fields": {
+    "number": 1,
+    "number_part": null,
+    "description": "A Transport (CA) question?",
+    "criteria": "",
+    "section": 101,
+    "clarifications": "",
+    "topic": "Foods",
+    "weighting": "low",
+    "how_marked": "volunteer",
+    "question_type": "multiple_choice",
+    "last_update": "2022-12-19T13:40:36.0Z",
+    "created": "2022-12-19T13:40:36.075Z",
+    "questiongroup": [
+      1,
+      2,
+      3,
+      4
+    ]
+  }
+},
+{
+  "model": "crowdsourcer.question",
+  "pk": 3001,
+  "fields": {
+    "number": 1,
+    "number_part": null,
+    "description": "A Transport (MA) question?",
+    "criteria": "",
+    "section": 31,
+    "clarifications": "",
+    "topic": "Foods",
+    "weighting": "low",
+    "how_marked": "volunteer",
+    "question_type": "multiple_choice",
+    "last_update": "2022-12-19T13:40:36.0Z",
+    "created": "2022-12-19T13:40:36.075Z",
+    "questiongroup": [
+      1,
+      2,
+      3,
+      4
+    ]
+  }
+},
+{
+  "model": "crowdsourcer.option",
+  "pk": 31,
+  "fields": {
+    "question": 3,
+    "score": 1,
+    "description": "Yes",
+    "last_update": "2022-12-19T13:40:36.0Z",
+    "created": "2022-12-19T13:40:36.075Z",
+    "ordering": 1
+  }
+},
+{
+  "model": "crowdsourcer.option",
+  "pk": 32,
+  "fields": {
+    "question": 3,
+    "score": 0,
+    "description": "No",
+    "last_update": "2022-12-19T13:40:36.0Z",
+    "created": "2022-12-19T13:40:36.075Z",
+    "ordering": 100
+  }
+},
+{
+  "model": "crowdsourcer.option",
+  "pk": 41,
+  "fields": {
+    "question": 4,
+    "score": 1,
+    "description": "Yes",
+    "last_update": "2022-12-19T13:40:36.0Z",
+    "created": "2022-12-19T13:40:36.075Z",
+    "ordering": 1
+  }
+},
+{
+  "model": "crowdsourcer.option",
+  "pk": 42,
+  "fields": {
+    "question": 4,
+    "score": 0,
+    "description": "No",
+    "last_update": "2022-12-19T13:40:36.0Z",
+    "created": "2022-12-19T13:40:36.075Z",
+    "ordering": 100
+  }
+},
+{
+  "model": "crowdsourcer.option",
+  "pk": 51,
+  "fields": {
+    "question": 5,
+    "score": 1,
+    "description": "Yes",
+    "last_update": "2022-12-19T13:40:36.0Z",
+    "created": "2022-12-19T13:40:36.075Z",
+    "ordering": 1
+  }
+},
+{
+  "model": "crowdsourcer.option",
+  "pk": 52,
+  "fields": {
+    "question": 5,
+    "score": 0,
+    "description": "No",
+    "last_update": "2022-12-19T13:40:36.0Z",
+    "created": "2022-12-19T13:40:36.075Z",
+    "ordering": 100
+  }
+},
+{
+  "model": "crowdsourcer.option",
+  "pk": 1101,
+  "fields": {
+    "question": 1101,
+    "score": 0,
+    "description": "No",
+    "last_update": "2022-12-19T13:40:36.0Z",
+    "created": "2022-12-19T13:40:36.075Z",
+    "ordering": 100
+  }
+},
+{
+  "model": "crowdsourcer.option",
+  "pk": 2031,
+  "fields": {
+    "question": 2003,
+    "score": 1,
+    "description": "Yes",
+    "last_update": "2022-12-19T13:40:36.0Z",
+    "created": "2022-12-19T13:40:36.075Z",
+    "ordering": 1
+  }
+},
+{
+  "model": "crowdsourcer.option",
+  "pk": 2032,
+  "fields": {
+    "question": 2003,
+    "score": 0,
+    "description": "Nope",
+    "last_update": "2022-12-19T13:40:36.0Z",
+    "created": "2022-12-19T13:40:36.075Z",
+    "ordering": 2
+  }
+},
+{
+  "model": "crowdsourcer.option",
+  "pk": 2041,
+  "fields": {
+    "question": 2004,
+    "score": 1,
+    "description": "Yes",
+    "last_update": "2022-12-19T13:40:36.0Z",
+    "created": "2022-12-19T13:40:36.075Z",
+    "ordering": 1
+  }
+},
+{
+  "model": "crowdsourcer.option",
+  "pk": 2042,
+  "fields": {
+    "question": 2004,
+    "score": 0,
+    "description": "No",
+    "last_update": "2022-12-19T13:40:36.0Z",
+    "created": "2022-12-19T13:40:36.075Z",
+    "ordering": 100
+  }
+},
+{
+  "model": "crowdsourcer.option",
+  "pk": 2051,
+  "fields": {
+    "question": 2005,
+    "score": 0,
+    "description": "First Response",
+    "last_update": "2022-12-19T13:40:36.0Z",
+    "created": "2022-12-19T13:40:36.075Z",
+    "ordering": 100
+  }
+},
+{
+  "model": "crowdsourcer.option",
+  "pk": 2052,
+  "fields": {
+    "question": 2005,
+    "score": 0,
+    "description": "Second Response",
+    "last_update": "2022-12-19T13:40:36.0Z",
+    "created": "2022-12-19T13:40:36.075Z",
+    "ordering": 100
+  }
+},
+{
+  "model": "crowdsourcer.option",
+  "pk": 3001,
+  "fields": {
+    "question": 3001,
+    "score": 0,
+    "description": "No",
+    "last_update": "2022-12-19T13:40:36.0Z",
+    "created": "2022-12-19T13:40:36.075Z",
+    "ordering": 100
+  }
+},
+{
+  "model": "crowdsourcer.response",
+  "pk": 31,
+  "fields": {
+    "authority": 1,
+    "question": 3,
+    "user": 2,
+    "option": 31,
+    "response_type": 3,
+    "public_notes": "public notrs",
+    "page_number": "0",
+    "evidence": null,
+    "private_notes": "private notes",
+    "revision_type": null,
+    "revision_notes": null,
+    "created": "2023-03-15T17:22:10+0000",
+    "last_update": "2023-03-15T17:22:10+0000",
+    "multi_option": []
+  }
+},
+{
+  "model": "crowdsourcer.response",
+  "pk": 32,
+  "fields": {
+    "authority": 2,
+    "question": 3,
+    "user": 2,
+    "option": 32,
+    "response_type": 3,
+    "public_notes": "public notrs",
+    "page_number": "0",
+    "evidence": null,
+    "private_notes": "private notes",
+    "revision_type": null,
+    "revision_notes": null,
+    "created": "2023-03-15T17:22:10+0000",
+    "last_update": "2023-03-15T17:22:10+0000",
+    "multi_option": []
+  }
+},
+{
+  "model": "crowdsourcer.response",
+  "pk": 33,
+  "fields": {
+    "authority": 3,
+    "question": 3,
+    "user": 2,
+    "option": 31,
+    "response_type": 3,
+    "public_notes": "public notrs",
+    "page_number": "0",
+    "evidence": null,
+    "private_notes": "private notes",
+    "revision_type": null,
+    "revision_notes": null,
+    "created": "2023-03-15T17:22:10+0000",
+    "last_update": "2023-03-15T17:22:10+0000",
+    "multi_option": []
+  }
+},
+{
+  "model": "crowdsourcer.response",
+  "pk": 41,
+  "fields": {
+    "authority": 2,
+    "question": 4,
+    "user": 2,
+    "option": 41,
+    "response_type": 3,
+    "public_notes": "public notrs",
+    "page_number": "0",
+    "evidence": null,
+    "private_notes": "private notes",
+    "revision_type": null,
+    "revision_notes": null,
+    "created": "2023-03-15T17:22:10+0000",
+    "last_update": "2023-03-15T17:22:10+0000",
+    "multi_option": []
+  }
+},
+{
+  "model": "crowdsourcer.response",
+  "pk": 42,
+  "fields": {
+    "authority": 3,
+    "question": 4,
+    "user": 2,
+    "option": 42,
+    "response_type": 3,
+    "public_notes": "public notrs",
+    "page_number": "0",
+    "evidence": null,
+    "private_notes": "private notes",
+    "revision_type": null,
+    "revision_notes": null,
+    "created": "2023-03-15T17:22:10+0000",
+    "last_update": "2023-03-15T17:22:10+0000",
+    "multi_option": []
+  }
+},
+{
+  "model": "crowdsourcer.response",
+  "pk": 43,
+  "fields": {
+    "authority": 4,
+    "question": 4,
+    "user": 2,
+    "option": 41,
+    "response_type": 3,
+    "public_notes": "public notrs",
+    "page_number": "0",
+    "evidence": null,
+    "private_notes": "private notes",
+    "revision_type": null,
+    "revision_notes": null,
+    "created": "2023-03-15T17:22:10+0000",
+    "last_update": "2023-03-15T17:22:10+0000",
+    "multi_option": []
+  }
+},
+{
+  "model": "crowdsourcer.response",
+  "pk": 55,
+  "fields": {
+    "authority": 1,
+    "question": 5,
+    "user": 2,
+    "option": 51,
+    "response_type": 3,
+    "public_notes": "public notrs",
+    "page_number": "0",
+    "evidence": null,
+    "private_notes": "private notes",
+    "revision_type": null,
+    "revision_notes": null,
+    "created": "2023-03-15T17:22:10+0000",
+    "last_update": "2023-03-15T17:22:10+0000",
+    "multi_option": []
+  }
+},
+{
+  "model": "crowdsourcer.response",
+  "pk": 1101,
+  "fields": {
+    "authority": 1,
+    "question": 1101,
+    "user": 2,
+    "option": 1101,
+    "response_type": 3,
+    "public_notes": "public notrs",
+    "page_number": "0",
+    "evidence": null,
+    "private_notes": "private notes",
+    "revision_type": null,
+    "revision_notes": null,
+    "created": "2023-03-15T17:22:10+0000",
+    "last_update": "2023-03-15T17:22:10+0000",
+    "multi_option": []
+  }
+}
+]
