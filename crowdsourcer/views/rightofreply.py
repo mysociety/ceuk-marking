@@ -3,6 +3,7 @@ import logging
 from collections import defaultdict
 
 from django.core.exceptions import PermissionDenied
+from django.db.models import Q
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
@@ -93,11 +94,13 @@ class AuthorityRORSectionList(ListView):
 
         if authority.type == "COMB":
             sections = Section.objects.filter(
-                title__contains="(CA)", marking_session=self.request.current_session
-            )
+                Q(title__contains="(MA)") | Q(title__contains="(CA)")
+            ).filter(marking_session=self.request.current_session)
         else:
-            sections = Section.objects.exclude(title__contains="(CA)").filter(
-                marking_session=self.request.current_session
+            sections = (
+                Section.objects.exclude(title__contains="(CA)")
+                .exclude(title__contains="(MA)")
+                .filter(marking_session=self.request.current_session)
             )
 
         return sections
