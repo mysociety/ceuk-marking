@@ -139,6 +139,12 @@ class Command(BaseCommand):
         )
 
         parser.add_argument(
+            "--ignore_existing_assignments",
+            action="store_true",
+            help="assign to people with existing assignments",
+        )
+
+        parser.add_argument(
             "--dry_run",
             action="store_true",
             help="run everything and then undo changes. Helpful to check if assigment weighting is good",
@@ -301,7 +307,10 @@ class Command(BaseCommand):
                     marking_session=session,
                     response_type=rt,
                 )
-            if existing_assignments.count() > 0:
+            if (
+                existing_assignments.count() > 0
+                and not options["ignore_existing_assignments"]
+            ):
                 self.stdout.write(
                     f"{YELLOW}Existing assignments: {row['email']}{NOBOLD}"
                 )
