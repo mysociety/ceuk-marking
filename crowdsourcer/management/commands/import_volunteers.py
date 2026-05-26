@@ -326,6 +326,7 @@ class Command(BaseCommand):
 
             councils = [self.authority_map.get(c, c) for c in councils]
 
+            own_council = None
             if councils:
                 own_council = PublicAuthority.objects.filter(
                     name__icontains=councils[0]
@@ -356,7 +357,9 @@ class Command(BaseCommand):
                 ).values_list("authority_id", flat=True)
             )
 
-            own_council_list = list(own_council.values_list("id", flat=True))
+            own_council_list = []
+            if own_council:
+                own_council_list = list(own_council.values_list("id", flat=True))
             assigned_councils = assigned_councils + own_council_list
 
             included_types = []
