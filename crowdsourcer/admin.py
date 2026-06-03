@@ -6,6 +6,7 @@ from django_json_widget.widgets import JSONEditorWidget
 
 from crowdsourcer.models import (
     Assigned,
+    AuthorityData,
     Marker,
     MarkingSession,
     Option,
@@ -76,12 +77,18 @@ class OptionAdmin(admin.ModelAdmin):
     )
 
 
+class AuthorityDataInline(admin.TabularInline):
+    model = AuthorityData
+    extra = 1
+
+
 @admin.register(PublicAuthority)
 class PublicAuthorityAdmin(admin.ModelAdmin):
     list_display = ("name", "questiongroup")
     list_filter = ["questiongroup", "do_not_mark", "marking_session"]
     search_fields = ["name"]
     ordering = ["name"]
+    inlines = [AuthorityDataInline]
 
 
 @admin.register(Question)
