@@ -10,6 +10,7 @@ from crowdsourcer.models import (
     Assigned,
     MarkingSession,
     PublicAuthority,
+    Question,
     Response,
     ResponseType,
     SessionConfig,
@@ -337,6 +338,33 @@ class TestSaveView(BaseTestCase):
 
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
+
+    def test_questions_visible(self):
+        url = reverse(
+            "authority_ror", args=("Aberdeenshire Council", "Buildings & Heating")
+        )
+        response = self.client.get(url)
+        form = response.context["form"]
+
+        self.assertEqual(len(form.forms), 11)
+
+        q = Question.objects.get(
+            section__title="Buildings & Heating",
+            section__marking_session__label="Default",
+            number=7,
+        )
+
+        q.how_marked = "national_data_ror_visible"
+        q.question_type = "national_data_ror_visible"
+        q.save()
+
+        url = reverse(
+            "authority_ror", args=("Aberdeenshire Council", "Buildings & Heating")
+        )
+        response = self.client.get(url)
+        form = response.context["form"]
+
+        self.assertEqual(len(form.forms), 12)
 
     def test_display_option(self):
         response = Response.objects.get(

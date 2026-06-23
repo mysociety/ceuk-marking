@@ -125,6 +125,7 @@ class Question(models.Model):
     MARKING_TYPES = [
         ("foi", "FOI"),
         ("national_data", "National Data"),
+        ("national_data_ror_visible", "National Data visible in Right of Reply"),
         ("volunteer", "Volunteer Research"),
         ("national_volunteer", "National Data and Volunteer Research"),
     ]

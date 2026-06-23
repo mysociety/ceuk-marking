@@ -175,7 +175,12 @@ class AuthorityRORSectionQuestions(BaseQuestionView):
     response_type = "Right of Reply"
     log_start = "ROR form"
     title_start = "Right of Reply - "
-    how_marked_in = ["volunteer", "national_volunteer", "foi"]
+    how_marked_in = [
+        "volunteer",
+        "national_volunteer",
+        "foi",
+        "national_data_ror_visible",
+    ]
     read_only_questions = False
 
     def get_template_names(self):

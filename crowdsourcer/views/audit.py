@@ -24,7 +24,13 @@ class AuthorityAuditSectionQuestions(BaseQuestionView):
     response_type = "Audit"
     log_start = "Audit form"
     title_start = "Audit - "
-    how_marked_in = ["volunteer", "national_volunteer", "foi", "national_data"]
+    how_marked_in = [
+        "volunteer",
+        "national_volunteer",
+        "foi",
+        "national_data",
+        "national_data_ror_visible",
+    ]
 
     def get_initial_obj(self):
         initial = super().get_initial_obj()

@@ -337,7 +337,10 @@ class AuditResponseForm(ModelForm):
                 self.add_error(option_field, "This field is required")
 
         else:
-            if self.question_obj.how_marked == "national_data":
+            if (
+                self.question_obj.how_marked == "national_data"
+                or self.question_obj.how_marked == "national_data_ror_visible"
+            ):
                 mandatory = self.mandatory_if_national
             elif str(response) in ["No", "None", "No evidence found"]:
                 mandatory = self.mandatory_if_no
