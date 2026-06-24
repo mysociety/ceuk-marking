@@ -275,6 +275,20 @@ class AuthorityRORSectionQuestions(BaseQuestionView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["ror_user"] = True
+
+        current_year = 2025
+        previous_year = 2023
+        previous_year_text = "Spring 2023"
+
+        if self.request.current_session.label == "Scorecards 2027":
+            current_year = 2027
+            previous_year = 2025
+            previous_year_text = "Autumn 2024"
+
+        context["current_year"] = current_year
+        context["previous_year"] = previous_year
+        context["previous_year_text"] = previous_year_text
+
         return context
 
 
