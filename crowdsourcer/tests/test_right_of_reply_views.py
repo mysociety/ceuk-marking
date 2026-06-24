@@ -1,4 +1,5 @@
 import io
+from collections import defaultdict
 
 from django.contrib.auth.models import User
 from django.test import TestCase
@@ -11,6 +12,7 @@ from crowdsourcer.models import (
     MarkingSession,
     PublicAuthority,
     Question,
+    QuestionGroup,
     Response,
     ResponseType,
     SessionConfig,
@@ -677,6 +679,17 @@ class TestChallengeView(BaseTestCase):
 
 
 class TestCSVDownloadView(BaseTestCase):
+    def get_q_object(self, df):
+        obj = defaultdict(dict)
+
+        for _, r in df.iterrows():
+            q_no = r["question_no"]
+            if r["section"] == "Additional information":
+                q_no = r["question"]
+            obj[r["section"]][q_no] = r
+
+        return obj
+
     def get_download_df(self):
         url = reverse("authority_ror_download", args=("Aberdeenshire Council",))
         response = self.client.get(url)
@@ -699,9 +712,11 @@ class TestCSVDownloadView(BaseTestCase):
     def test_download(self):
         df = self.get_download_df()
 
-        self.assertEqual(df.shape[0], 2)
-        b_and_h_q4 = df.iloc[0]
-        b_and_h_q5 = df.iloc[1]
+        self.assertEqual(df.shape[0], 25)
+        qs = self.get_q_object(df)
+        b_and_h_q4 = qs["Buildings & Heating"]["4"]
+        b_and_h_q5 = qs["Buildings & Heating"]["5"]
+        b_and_h_q6 = qs["Buildings & Heating"]["6"]
 
         self.assertEqual(b_and_h_q4.question_no, "4")
         self.assertEqual(
@@ -719,6 +734,36 @@ class TestCSVDownloadView(BaseTestCase):
         self.assertEqual(b_and_h_q5.council_evidence, "We do not agree for reasons")
         self.assertEqual(b_and_h_q5.agree_with_mark, "No")
         self.assertEqual(b_and_h_q5.council_notes, "a council objection")
+
+        self.assertEqual(b_and_h_q6.question_no, "6")
+        self.assertEqual(
+            b_and_h_q6.first_mark_response,
+            "",
+        )
+        self.assertEqual(b_and_h_q6.agree_with_mark, "")
+
+    def test_only_includes_relevant_questions(self):
+        df = self.get_download_df()
+
+        self.assertEqual(df.shape[0], 25)
+        qs = self.get_q_object(df)
+        b_and_h_q5 = qs["Buildings & Heating"]["5"]
+        self.assertTrue(b_and_h_q5 is not None)
+        b_and_h_q6 = qs["Buildings & Heating"]["6"]
+        self.assertTrue(b_and_h_q6 is not None)
+
+        q = Question.objects.get(section__title="Buildings & Heating", number=6)
+        qg = QuestionGroup.objects.get(description="Single Tier")
+        q.questiongroup.remove(qg)
+
+        df = self.get_download_df()
+
+        self.assertEqual(df.shape[0], 24)
+        qs = self.get_q_object(df)
+        b_and_h_q5 = qs["Buildings & Heating"]["5"]
+        self.assertTrue(b_and_h_q5 is not None)
+        b_and_h_q6 = qs["Buildings & Heating"].get("6")
+        self.assertIsNone(b_and_h_q6)
 
     def test_download_with_two_councils(self):
         self.user.marker.authority = None
@@ -740,7 +785,7 @@ class TestCSVDownloadView(BaseTestCase):
         )
 
         df = self.get_download_df()
-        self.assertEqual(df.shape[0], 2)
+        self.assertEqual(df.shape[0], 25)
 
         url = reverse("authority_ror_download", args=("Adur District Council",))
         response = self.client.get(url)
@@ -755,8 +800,9 @@ class TestCSVDownloadView(BaseTestCase):
         )
 
         df = self.get_download_df()
-        self.assertEqual(df.shape[0], 3)
-        prop = df.iloc[2]
+        self.assertEqual(df.shape[0], 26)
+        qs = self.get_q_object(df)
+        prop = qs["Additional information"]["Right of Reply Property"]
 
         self.assertEqual(prop.section, "Additional information")
         self.assertEqual(prop.question, "Right of Reply Property")

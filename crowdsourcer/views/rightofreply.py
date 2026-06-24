@@ -357,22 +357,49 @@ class AuthorityRORCSVView(ListView):
             )
         )
 
-        by_section = defaultdict(dict)
+        return self.get_grouped_responses(responses)
 
+    def get_audit_responses(self, responses):
+        return self.get_grouped_responses(responses)
+
+    def get_grouped_responses(self, responses):
+        by_section = defaultdict(dict)
         for r in responses:
+            answer = ""
             if r.option:
-                by_section[r.question.section.title][
-                    r.question.number_and_part
-                ] = r.option.description
+                answer = r.option.description
             elif r.multi_option:
                 answers = r.multi_option.values_list("description", flat=True)
-                by_section[r.question.section.title][r.question.number_and_part] = (
-                    ", ".join(answers)
-                )
-            else:
-                by_section[r.question.section.title][r.question.number_and_part] = ""
+                answer = ", ".join(answers)
+            by_section[r.question.section.title][r.question.number_and_part] = {
+                "answer": answer,
+                "response": r,
+            }
 
         return by_section
+
+    def get_questions(self):
+        questions = Question.objects.filter(
+            section__marking_session=self.request.current_session,
+            questiongroup=self.authority.questiongroup,
+            how_marked__in=[
+                "volunteer",
+                "foi",
+                "national_volunteer",
+                "national_data_ror_visible",
+            ],
+        )
+
+        return questions
+
+    def get_response_for_question(self, question, responses):
+        response = None
+        if responses.get(question.section.title) and responses[
+            question.section.title
+        ].get(question.number_and_part):
+            response = responses[question.section.title][question.number_and_part]
+
+        return response
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -390,26 +417,40 @@ class AuthorityRORCSVView(ListView):
         )
 
         first_mark_responses = self.get_first_mark_responses()
+        audit_responses = self.get_audit_responses(context["responses"])
 
-        for response in context["responses"]:
-            first_mark_response = ""
-            if first_mark_responses.get(
-                response.question.section.title
-            ) and first_mark_responses[response.question.section.title].get(
-                response.question.number_and_part
-            ):
-                first_mark_response = first_mark_responses[
-                    response.question.section.title
-                ][response.question.number_and_part]
+        for question in self.get_questions():
+            first_mark_response = self.get_response_for_question(
+                question, first_mark_responses
+            )
+            audit_response = self.get_response_for_question(question, audit_responses)
+            agree_with_mark = ""
+            if audit_response is not None:
+                if audit_response["response"].agree_with_response:
+                    agree_with_mark = "Yes"
+                else:
+                    agree_with_mark = "No"
             rows.append(
                 [
-                    response.question.section.title,
-                    response.question.number_and_part,
-                    response.question.description,
-                    first_mark_response,
-                    "Yes" if response.agree_with_response else "No",
-                    response.evidence,
-                    response.private_notes,
+                    question.section.title,
+                    question.number_and_part,
+                    question.description,
+                    (
+                        first_mark_response["answer"]
+                        if first_mark_response is not None
+                        else ""
+                    ),
+                    agree_with_mark,
+                    (
+                        audit_response["response"].evidence
+                        if audit_response is not None
+                        else ""
+                    ),
+                    (
+                        audit_response["response"].private_notes
+                        if audit_response is not None
+                        else ""
+                    ),
                 ]
             )
 
