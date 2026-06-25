@@ -38,11 +38,13 @@ class Command(BaseImporter):
     warnings = []
     url_map = {}
 
-    sheet_section_map = {
+    sheet_section_map = {}
+    """
         "Buildings": "B&H",
         "Gov&Finance": "G&F",
         "Collab": "C&E",
     }
+    """
 
     # get round limits on length of sheet names
     non_combined_sheet_map = {
@@ -50,52 +52,54 @@ class Command(BaseImporter):
             "section": "Biodiversity",
             "question": 8,
             "type": "yes_no",
-            "twfy-project": 19,
+            "answer_column": "Grace Answer",
+            "evidence": ["How many planning ecologists does the council have?"],
         },
         "Buildings.Q2.CouncilOpsRenewableEnergy": {
             "section": "Buildings & Heating",
             "question": 2,
             "type": "tiered",
-            "twfy-project": 12,
+            "evidence": [
+                "What % of the council's energy use is powered by local renewable electricity sources or their own renewable electricity sources? If none, please state 0"
+            ],
         },
         "Buildings.Q3.Council Homes (EnergyEfficiency)": {
             "section": "Buildings & Heating",
             "question": 3,
             "type": "tiered",
-            "twfy-project": 13,
-            "include_notes_col_names": True,
-            "notes": [
-                "If yes, fill in the statistics provided. What % of homes have received an EPC rating of C or above?"
+            "evidence": [
+                "How many homes does the council manage or own?",
+                "If the council do own more than 100 homes and have provided a %, fill in the % given. What % of homes have received an EPC rating of C or above?",
+                "If % not provided, Number of buildings with an A rating:",
+                "If % not provided, Number of buildings with an B rating:",
+                "If % not provided, Number of buildings with a C rating:",
+                "If % not provided, Number of buildings with a D, E, F, G rating (combined):",
             ],
         },
         "Buildings.Q6.RetrofitStaff": {
             "section": "Buildings & Heating",
             "question": 6,
             "type": "yes_no",
-            "twfy-project": 18,
-            "include_notes_col_names": True,
-            "notes": ["Please list roles that work in this area"],
+            "evidence": ["Please list roles that work in this area"],
         },
-        "Buildings.G8.MEES": {
+        "Buildings.Q8.MEES": {
             "section": "Buildings & Heating",
             "question": 8,
             "type": "tiered",
-            "twfy-project": 17,
-            "include_notes_col_names": True,
             "answer_column": "Grace answer",
-            "notes": [
+            "notes_column": "Notes (please copy any relevant sentences covering answers to this question)",
+            "evidence": [
                 "How many MEES investigations: [number]",
+                "How many Compliance notices: [number]",
                 "How many Enforcement notices: [number]",
-                "How many Enforcement Actions: [number]",
+                "If provided as one single number, how many investigations, compliance or enforcement notices: [number]",
             ],
         },
         "Collab.Q3.Lobbying": {
             "section": "Collaboration & Engagement",
             "question": 3,
             "type": "yes_no",
-            "twfy-project": 16,
-            "include_notes_col_names": True,
-            "notes": [
+            "evidence": [
                 "Evidence provided for type of lobbying (letter/email/meeting/none provided:",
                 "Target of lobbying (UK national government, Welsh Government, Scottish Government, Northern Ireland Executive):",
                 "Council ask of government (government action/further council funding or support):",
@@ -105,8 +109,7 @@ class Command(BaseImporter):
             "section": "Collaboration & Engagement",
             "question": 12,
             "type": "yes_no",
-            "include_notes_col_names": True,
-            "notes": [
+            "evidence": [
                 "Does the agreement between the council and employee representative body (including recognised trade union) making explicit reference to contributing to climate change related work?",
                 "Were employee representatives bodies consulted during the development of the Climate Action Plan AND there are plans in place to continue engaging employee representative bodies in matters relating to the implementation of the Climate Action Plan?",
                 "Evidence provided (policy/agreement/consultation evidence/none provided)",
@@ -116,9 +119,10 @@ class Command(BaseImporter):
             "section": "Governance & Finance",
             "question": 8,
             "type": "multi",
-            "twfy-project": 14,
             "include_notes_col_names": True,
-            "notes": [
+            "evidence": [
+                "How many staff does the council directly employ?",
+                "How many staff spend 60% (0.6) or more of their time implementing the climate action plan/policies?",
                 "Please copy and paste the list of roles:",
             ],
         },
@@ -126,14 +130,19 @@ class Command(BaseImporter):
             "section": "Governance & Finance",
             "question": 9,
             "type": "multi",
-            "include_notes_col_names": True,
-            "notes": [
-                "Notes (please add in how many senior management have been trained if any)",
-                "Notes (please add in how many councillors have been trained if any and state if they are leadership or not)",
-                "If provided, please list the type of training:",
+            "evidence": [
+                "Have all senior management received climate awareness, carbon literacy or equivalent training since 1st January 2015?",
+                "Evidence (please add in how many senior management have been trained if any)",
+                "Have all councillors in leadership positions received climate awareness, carbon literacy or equivalent since 1st January 2015 and before 7th May 2026?",
+                "Evidence (please add in how many councillors have been trained if any and state if they are leadership or not)",
             ],
-            "twfy-project": 11,
         },
+        "skip": [
+            "Transport.Q11.Roads",
+            "Transport.Q11.Airports",
+            "MA.Transport.ZeroEmissionBuses ",
+            "MA.B&H.GreenSkillsCourses (9a a",
+        ],
     }
 
     q11_map = {
@@ -152,7 +161,7 @@ class Command(BaseImporter):
     }
 
     combined_sheet_map = {
-        "C&E Q3": {
+        "Collab.Q3.Lobbying": {
             "section": "Collaboration & Engagement (MA)",
             "question": 3,
             "question_part": "a",
@@ -164,7 +173,7 @@ class Command(BaseImporter):
                 "Council ask of government (government action/further council funding or support):",
             ],
         },
-        "C&E Q12": {
+        "Collab.Q12.EmployeeRep": {
             "section": "Collaboration & Engagement (MA)",
             "question": 10,
             "type": "yes_no",
@@ -175,16 +184,17 @@ class Command(BaseImporter):
                 "Evidence provided (policy/agreement/consultation evidence/none provided)",
             ],
         },
-        "B&H Q2": {
+        "Buildings.Q2.CouncilOpsRenewableEnergy": {
             "section": "Buildings & Heating (MA)",
             "question": 1,
             "type": "tiered",
         },
-        "Buildings & Heating & Skills 9a": {
+        "MA.B&H.GreenSkillsCourses (9a a": {
             "sheet": "Buildings & Heating & Skills 9",
             "section": "Buildings & Heating (MA)",
             "question": 9,
             "question_part": "a",
+            "grace_answer": "9a. Grace answer?",
             "type": "tiered",
         },
         "Buildings & Heating & Skills 9b": {
@@ -194,27 +204,27 @@ class Command(BaseImporter):
             "question_part": "b",
             "type": "tiered",
         },
-        "G&F Q8": {
+        "Gov&Finance.Q8.Climatestaff": {
             "section": "Governance & Finance (MA)",
             "question": 9,
             "type": "multi",
             "include_notes_col_names": True,
-            "notes": [
+            "evidence": [
                 "Please copy and paste the list of roles:",
             ],
         },
-        "G&F Q9": {
+        "Gov&Finance.Q9.ClimateTraining": {
             "section": "Governance & Finance (MA)",
             "question": 10,
             "type": "yes_no",
             "include_notes_col_names": True,
-            "notes": [
+            "evidence": [
                 "Notes (please add in how many senior management have been trained if any)",
                 "Notes (please add in how many councillors have been trained if any and state if they are leadership or not)",
                 "If provided, please list the type of training:",
             ],
         },
-        "Transport Q4c": {
+        "MA.Transport.ZeroEmissionBuses ": {
             "section": "Transport (MA)",
             "question": 4,
             "question_part": "c",
@@ -222,6 +232,15 @@ class Command(BaseImporter):
             "include_notes_col_names": True,
             "notes": ["Percentage of the bus fleet that is zero emission? [number]"],
         },
+        "skip": [
+            "Transport.Q11.Roads",
+            "Transport.Q11.Airports",
+            "Biodiversity.Q8.Planning Ecolog",
+            "Buildings.Q2.CouncilOpsRenewabl",
+            "Buildings.Q3.Council Homes (Ene",
+            "Buildings.Q6.RetrofitStaff",
+            "Buildings.Q8.MEES",
+        ],
     }
 
     q9a_map = {
@@ -283,17 +302,15 @@ class Command(BaseImporter):
         )
 
         for _, row in df.iterrows():
-            self.url_map[row["request_url"]] = row["request_private_link"]
-            self.url_map[row["project_url"]] = row["request_private_link"]
+            self.url_map[row["request_url"]] = row["new_private_link"]
+            # self.url_map[row["project_url"]] = row["new_private_link"]
 
         df = pd.read_csv(
             self.new_url_map_file,
         )
 
         for _, row in df.iterrows():
-            self.url_map[row["request_url"].strip()] = row[
-                "request_private_link"
-            ].strip()
+            self.url_map[row["request_url"].strip()] = row["new_private_link"].strip()
 
     def get_council_lookup(self):
         url = get_dataset_url(
@@ -478,7 +495,6 @@ class Command(BaseImporter):
             elif percent_staff >= 0.005:
                 description = "Equal to or more than 0.5%"
 
-        print(description)
         option = Option.objects.get(question=q, description=description)
 
         return option
@@ -549,36 +565,35 @@ class Command(BaseImporter):
         return defaults
 
     def get_defaults_for_q(self, name, q, row, details):
-        MINIMUM_CRITERIA_MET = 11
-
         defaults = self.get_standard_defaults(name, row)
 
-        if details.get("notes"):
-            notes = []
-            if defaults["private_notes"].strip() != "":
-                notes.append(defaults["private_notes"].strip())
-            for col in details["notes"]:
+        if details.get("evidence"):
+            evidence = []
+            if defaults.get("public_notes", "").strip() != "":
+                evidence.append(defaults["public_notes"].strip())
+            for col in details["evidence"]:
                 if not pd.isna(row[col]):
                     s = str(row[col]).strip()
                     if s != "":
-                        if details.get("include_notes_col_names"):
-                            notes.append(f"\n{col}")
+                        if details.get("skip_evidence_col_names"):
+                            evidence.append("\n")
                         else:
-                            notes.append("\n")
-                        notes.append(s)
-            defaults["private_notes"] = "\n".join(notes)
+                            evidence.append(f"\n{col}")
+                        evidence.append(s)
+            defaults["public_notes"] = "\n".join(evidence)
+
+        notes_col = details.get("notes_column", "Notes")
+        if not pd.isna(row[notes_col]):
+            defaults["private_notes"] = row[notes_col]
 
         q_details = self.sheet_map[name]
-        if pd.isna(row.iloc[MINIMUM_CRITERIA_MET]):
-            value = 0
+
+        answer_col = details.get("answer_column", "GRACE answer")
+        if answer_col in row and not pd.isna(row[answer_col]):
+            answer = row[answer_col]
         else:
-            try:
-                value = row.iloc[MINIMUM_CRITERIA_MET]
-            except ValueError:
-                self.warnings.append(
-                    f"bad data in row: {row.iloc[MINIMUM_CRITERIA_MET]}"
-                )
-                return None
+            self.print_error("nothing in answer column")
+            return None
 
         option_name = "option"
         if q_details["type"] == "tiered":
@@ -597,20 +612,16 @@ class Command(BaseImporter):
                 q, "Evidence doesn't meet criteria"
             )
         elif q_details["type"] == "yes_no":
-            if value == 1 or value == "Yes":
+            if answer == 1 or answer == "Yes":
                 defaults["option"] = self.get_option_for_question(q, "Yes")
-            elif value == 0 or value == "No":
+            elif answer == 0 or answer == "No":
                 defaults["option"] = self.get_option_for_question(
                     q, "Evidence does not meet criteria"
                 )
         elif q_details["type"] == "multi":
-            if name == "G&F Q8":
-                defaults["option"] = self.get_gf_8_answer(q, row, value)
-            elif name == "G&F Q9":
-                defaults["option"] = self.get_gf_9_answer(q, row, value)
-            elif name == "Transport Q4c":
-                defaults["option"] = self.get_tran_ca_4c(q, row, value)
+            defaults["option"] = self.get_option_for_question(q, answer)
         elif q_details["type"] == "tiered":
+            defaults["multi_option"] = self.get_option_for_question(q, answer)
             if name == "B&H Q2" or name == "Buildings & Heating & Skills 1":
                 defaults["multi_option"] = self.get_bh_2_answer(q, row, value)
             elif name == "B&H Q3":
@@ -622,6 +633,7 @@ class Command(BaseImporter):
             elif name == "Buildings & Heating & Skills 9b":
                 defaults["multi_option"] = self.get_bh_9b_answer(q, row, value)
         else:
+            self.print_error("could not work out how to apply answer")
             return None
 
         return defaults
@@ -634,15 +646,14 @@ class Command(BaseImporter):
 
         sheets = {}
         for sheet in ex.sheet_names:
+            if sheet == "Private links to access FOIs":
+                continue
             m = re.match(r"([\w&]+)\.(Q\d+)", sheet)
             if m:
                 map_name = self.sheet_section_map.get(m.group(1), m.group(1))
                 sheets[sheet] = f"{map_name} {m.group(2)}"
+            sheets[sheet] = sheet
 
-        sheets["CA.Transport.ZeroEmissionBuses "] = "Transport Q4c"
-        sheets["Transport.Q11.Roads"] = "roads"
-        sheets["Transport.Q11.Airports"] = "airports"
-        sheets["CA.B&H.GreenSkillsCourses (9a a"] = "B&H (CA) Q9"
         return sheets
 
     def get_df(self, name):
@@ -710,7 +721,9 @@ class Command(BaseImporter):
                 continue
 
             if details.get("skip"):
-                print(f"skipping {details['section']} {details['question']} for now")
+                self.print_info(
+                    f"skipping {details['section']} {details['question']} for now"
+                )
                 continue
 
             section = Section.objects.get(title=details["section"], marking_session=ms)
@@ -768,14 +781,20 @@ class Command(BaseImporter):
         self.sheet_map = sheet_map
         for sheet, name in sheets.items():
             details = sheet_map.get(name)
+            if name in sheet_map.get("skip", []):
+                continue
+
             if details is None:
+                self.print_error(f"no details for [{name}]")
                 continue
 
             if details.get("skip"):
-                print(f"skipping {details['section']} {details['question']} for now")
+                self.print_info(
+                    f"skipping {details['section']} {details['question']} for now"
+                )
                 continue
 
-            print(f"{details['section']} {details['question']}")
+            self.print_info(f"{details['section']} {details['question']}")
 
             self.warnings = []
             df = self.get_df(sheet)
@@ -788,9 +807,14 @@ class Command(BaseImporter):
             # print(f"Question unexpectedly not an FOI one: {name}")
             # continue
 
-            if "Notes" not in df.columns and not details.get("notes"):
-                print(f"No notes column for {name}, skipping")
-                print("---------")
+            notes_col = details.get("notes_column", "Notes")
+            if notes_col not in df.columns:
+                self.print_error(f"No notes column for {name}, skipping")
+                continue
+
+            answer_col = details.get("answer_column", "GRACE answer")
+            if answer_col not in df.columns:
+                self.print_error("no answer column, skipping")
                 continue
 
             for _, row in df.iterrows():
@@ -833,7 +857,7 @@ class Command(BaseImporter):
                     print(f" - {warning}")
                     print("---------")
 
-    def process_q11(self, council_lookup, rt, u, ms):
+    def process_q11(self, council_lookup, rt, u, ms, add_urls_only=False):
         self.warnings = []
         MINIMUM_CRITERIA_MET = 11
         NOTES = 15
@@ -963,8 +987,8 @@ class Command(BaseImporter):
                 print(f" - {warning}")
                 print("---------")
 
-    def process_ca_q9(self, council_lookup, rt, u, ms):
-        sheet = "CA.B&H.GreenSkillsCourses (9a a"
+    def process_ca_q9(self, council_lookup, rt, u, ms, add_urls_only=False):
+        sheet = "MA.B&H.GreenSkillsCourses (9a a"
 
         df = pd.read_excel(
             self.foi_file,
@@ -974,25 +998,27 @@ class Command(BaseImporter):
         df = df.dropna(axis="index", how="all")
 
         q9a = Question.objects.get(
-            section__title="Buildings & Heating & Green Skills (CA)",
+            section__title="Buildings & Heating (MA)",
             section__marking_session=ms,
             number=9,
             number_part="a",
         )
         q9b = Question.objects.get(
-            section__title="Buildings & Heating & Green Skills (CA)",
+            section__title="Buildings & Heating (MA)",
             section__marking_session=ms,
             number=9,
             number_part="b",
         )
 
-        print("Buildings & Heating & Green Skills (CA) Q9a&b")
+        print("Buildings & Heating (MA) Q9a&b")
 
         for _, row in df.iterrows():
             how_many_trained = row[
-                "How many people have been trained on green skills/green jobs courses between 1st Sept 2020 and 1st Sept 2023?"
+                "How many people have been trained on green skills/green jobs courses between 1st Sept 2021 and 1st Sept 2024?\n\nQuestion 9b"
             ]
-            courses = row["Total"]
+            courses = row[
+                "How many green skills/green jobs courses have been provided between 1st Sept 2021 and 1st Sept 2024?\n\nQuestion 9a"
+            ]
 
             if pd.isna(how_many_trained):
                 how_many_trained = 0
@@ -1005,10 +1031,10 @@ class Command(BaseImporter):
                 )
                 continue
 
-            if row["classification"] in ["Awaiting response", "Refused"]:
+            if row["status"] in ["Awaiting response", "Refused"]:
                 q9b_option = self.get_option_for_question(q9b, "No response from FOI")
                 q9a_option = self.get_option_for_question(q9a, "No response from FOI")
-            elif row["classification"] == "Data not held":
+            elif row["status"] == "Data not held":
                 q9b_option = self.get_option_for_question(
                     q9b, "Evidence doesn't meet criteria"
                 )
@@ -1110,6 +1136,17 @@ class Command(BaseImporter):
         self.populate_url_map()
         council_lookup = self.get_council_lookup()
 
+        key_map = {}
+        for k, v in self.non_combined_sheet_map.items():
+            key_map[k] = k[:31]
+
+        print(key_map)
+
+        for k, v in key_map.items():
+            if k != v:
+                self.non_combined_sheet_map[v] = self.non_combined_sheet_map[k]
+                self.non_combined_sheet_map.pop(k)
+
         if not self.commit:
             self.print_info("call with --commit to save updates")
 
@@ -1125,6 +1162,7 @@ class Command(BaseImporter):
                 self.add_missing_urls(self.q9a_map, council_lookup, rt, u, ms)
                 self.add_missing_urls(self.q9b_map, council_lookup, rt, u, ms)
             else:
+                print("non combined")
                 self.process_sheet(
                     self.non_combined_sheet_map,
                     council_lookup,
@@ -1132,6 +1170,8 @@ class Command(BaseImporter):
                     u,
                     ms,
                 )
+                print()
+                print("combined")
                 self.process_sheet(
                     self.combined_sheet_map,
                     council_lookup,
