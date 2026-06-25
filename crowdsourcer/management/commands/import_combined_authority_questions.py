@@ -204,6 +204,7 @@ class Command(BaseCommand):
                 "weighted score",
                 "# of data points",
                 "# of points",
+                "Comments",
             ]
             for col in drop_cols:
                 if col in df.columns:
