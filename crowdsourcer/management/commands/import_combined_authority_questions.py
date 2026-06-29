@@ -135,11 +135,13 @@ class Command(BaseCommand):
         ):
             header = 2
             sheet_name = self.sheet_map.get(section.title, section.title)
+            print()
             print(sheet_name)
             try:
                 df = pd.read_excel(
                     self.question_file,
                     sheet_name=sheet_name,
+                    dtype=str,
                 )
             except ValueError as e:
                 self.stderr.write(f"problem opening file: {e}")
@@ -227,6 +229,14 @@ class Command(BaseCommand):
                 self.stderr.write("New columns: " + ", ".join(columns))
                 continue
 
+            print("head")
+            print(df["question_type"].head(20))
+            print(df["question_type"].head(20))
+            print("unique")
+            print(df["question_type"].unique()[:20])
+            s = df["question_type"].astype(str).str.strip()
+            df["question_type"] = s
+
             for index, row in df.iterrows():
                 if pd.isna(row["question_no"]):
                     continue
@@ -248,6 +258,12 @@ class Command(BaseCommand):
                 how_marked = "volunteer"
                 question_type = "yes_no"
                 how_marked_row = str(row["how_marked"]).strip().lower()
+                print(q_no, q_part)
+                print(row["question_type"])
+                continue
+
+                if how_marked_row != "foi":
+                    continue
                 if not kwargs["text_only"]:
                     if how_marked_row == "foi":
                         how_marked = "foi"
@@ -256,6 +272,7 @@ class Command(BaseCommand):
 
                     if not pd.isna(row["question_type"]):
                         q_type = str(row["question_type"]).strip().lower()
+                        print(q_type)
                         if q_type == "tiered answer":
                             question_type = "tiered"
                         elif q_type == "tick all that apply":
@@ -347,6 +364,7 @@ class Command(BaseCommand):
                         ]
                     )
 
+                print(q.question_type)
                 if q.question_type in ["select_one", "tiered", "multiple_choice"]:
                     if not no_mark_options:
                         o, c = Option.objects.update_or_create(
@@ -388,6 +406,7 @@ class Command(BaseCommand):
                             description=desc,
                             defaults={"score": score, "ordering": ordering},
                         )
+                        print(desc)
                 elif q.question_type == "yes_no":
                     o, c = Option.objects.update_or_create(
                         question=q,
