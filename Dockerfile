@@ -15,6 +15,7 @@ RUN curl -sSL https://install.python-poetry.org | python -
 ENV PATH="/root/.local/bin:$PATH"
 WORKDIR $PYSETUP_PATH
 COPY poetry.lock pyproject.toml ./
+RUN poetry config keyring.enabled false
 RUN poetry install --no-root
 RUN mkdir -p /app/applogs
 # Not needed (mapping handled by docker-compose)
