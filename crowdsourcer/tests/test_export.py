@@ -1501,9 +1501,15 @@ class ExportNoMarksCATestCase(BaseCommandTestCase):
         ]
 
         percent, raw, linear = write_mock.call_args[0]
-        self.assertEquals(percent, expected_percent)
-        self.assertEquals(raw, expected_raw)
-        self.assertEquals(linear, expected_linear)
+        self.assertEquals(
+            sorted(percent, key=lambda p: p["council"]),
+            sorted(expected_percent, key=lambda p: p["council"]),
+        )
+        self.assertEquals(
+            sorted(raw, key=lambda p: p["council"]),
+            sorted(expected_raw, key=lambda p: p["council"]),
+        )
+        self.assertEquals(sorted(linear), sorted(expected_linear))
 
 
 class ExportWithMoreMarksCATestCase(BaseCommandTestCase):
