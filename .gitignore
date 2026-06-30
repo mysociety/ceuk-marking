@@ -3,7 +3,7 @@
 .static
 .coverage
 .media
-data
+/data/
 applogs
 
 conf/env
