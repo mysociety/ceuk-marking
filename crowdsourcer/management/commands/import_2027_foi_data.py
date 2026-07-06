@@ -426,6 +426,7 @@ class Command(BaseImporter):
 
         defaults = {
             "evidence": url,
+            "public_notes": "",
             "private_notes": notes,
             "council": row["public_body"],
         }
@@ -449,10 +450,6 @@ class Command(BaseImporter):
                             evidence.append(f"\n{col}")
                         evidence.append(s)
             defaults["public_notes"] = "\n".join(evidence)
-
-        notes_col = details.get("notes_column", "Additional Notes")
-        if not pd.isna(row[notes_col]):
-            defaults["private_notes"] = row[notes_col]
 
         answer_col = details.get("answer_column", "GRACE answer")
         if answer_col in row and not pd.isna(row[answer_col]):
