@@ -560,6 +560,7 @@ class Marker(models.Model):
     send_welcome_email = models.BooleanField(default=False)
     created = models.DateTimeField(auto_now_add=True)
     last_update = models.DateTimeField(auto_now=True)
+    first_login = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         permissions = [
