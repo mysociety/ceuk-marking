@@ -236,7 +236,7 @@ class Command(BaseImporter):
         "Gov&Finance.Q9.ClimateTraining": {
             "section": "Governance & Finance (MA)",
             "question": 10,
-            "type": "yes_no",
+            "type": "multi",
             "include_notes_col_names": True,
             "header": 1,
             "notes_column": "General notes",
