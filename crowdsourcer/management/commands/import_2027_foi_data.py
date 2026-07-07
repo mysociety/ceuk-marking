@@ -449,8 +449,8 @@ class Command(BaseImporter):
 
         if details.get("evidence"):
             evidence = []
-            if defaults.get("public_notes", "").strip() != "":
-                evidence.append(defaults["public_notes"].strip())
+            if defaults.get("private_notes", "").strip() != "":
+                evidence.append(defaults["private_notes"].strip())
             for col in details["evidence"]:
                 if not pd.isna(row[col]):
                     s = str(row[col]).strip()
