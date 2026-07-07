@@ -101,7 +101,11 @@
                       {% if q_form.orig.multi_option.values %}
                         <p>
                           {% for option in q_form.orig.multi_option.values %}
-                            {{ option.description }},
+                            {% if forloop.last %}
+                                {{ option.description }}
+                            {% else %}
+                                {{ option.description }},
+                            {% endif %}
                           {% empty %}
                             (none)
                           {% endfor %}
