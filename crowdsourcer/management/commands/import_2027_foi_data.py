@@ -295,6 +295,12 @@ class Command(BaseImporter):
         "Newcastle Upon Tyne, North Tyneside and Northumberland Combined Authority": "North of Tyne Combined Authority",
         "Liverpool City Region Combined Authority": "Liverpool City Region",
         "St Helens Metropolitan Borough Council": "St. Helens Borough Council",
+        "Barnsley Metropolitan Borough Council": "Barnsley Borough Council",
+        "Sheffield City Council": "Sheffield Council",
+        "Hull and East Yorkshire Combined Authority": "Hull and East Yorkshire Mayoral Combined Authority",
+        "York and North Yorkshire Combined Authority": "York and North Yorkshire Mayoral Combined Authority",
+        "Transport for London": "Greater London Authority",
+        "Transport for Greater Manchester": "Greater Manchester Combined Authority",
     }
 
     def add_arguments(self, parser):
