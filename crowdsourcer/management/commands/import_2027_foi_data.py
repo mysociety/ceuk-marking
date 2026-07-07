@@ -809,15 +809,19 @@ class Command(BaseImporter):
                 )
             else:
                 positive = False
-                for yes_response in ["Approved roads", "Approved Airports"]:
-                    if yes_response in answer:
+                for yes_response in [
+                    "Approved roads",
+                    "Approved Roads",
+                    "Approved Airports",
+                ]:
+                    if yes_response in [a.description for a in answer]:
                         positive = True
                         multi_option.append(
                             Option.objects.get(question=q, description=yes_response)
                         )
                 if not positive:
                     for no_response in ["No response from FOI", "No evidence found"]:
-                        if no_response in answer:
+                        if no_response in [a.description for a in answer]:
                             multi_option.append(
                                 Option.objects.get(question=q, description=no_response)
                             )
@@ -834,6 +838,7 @@ class Command(BaseImporter):
             )
 
             r.multi_option.set(multi_option)
+            r.save()
 
         if len(self.warnings) > 0:
             for warning in self.warnings:
