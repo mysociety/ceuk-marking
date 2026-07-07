@@ -303,6 +303,11 @@ class Command(BaseImporter):
         "Transport for Greater Manchester": "Greater Manchester Combined Authority",
     }
 
+    gss_map = {
+        "E08000019": "E08000039",  # sheffield
+        "E08000016": "E08000038",  # barnsley
+    }
+
     def add_arguments(self, parser):
         parser.add_argument(
             "--use_csvs", action="store_true", help="get data from directory of CSVs"
@@ -552,6 +557,7 @@ class Command(BaseImporter):
             if authority in council_lookup:
                 gss = council_lookup[authority]
 
+        gss = self.gss_map.get(gss, gss)
         try:
             authority = PublicAuthority.objects.get(unique_id=gss)
         except PublicAuthority.DoesNotExist:
