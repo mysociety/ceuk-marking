@@ -460,11 +460,11 @@ class Command(BaseImporter):
                         else:
                             evidence.append(f"\n{col}")
                         evidence.append(s)
-            defaults["public_notes"] = "\n".join(evidence)
+            defaults["private_notes"] = "\n".join(evidence)
 
         answer_col = details.get("answer_column", "GRACE answer")
         if answer_col in row and not pd.isna(row[answer_col]):
-            answer = row[answer_col]
+            answer = row[answer_col].strip()
         else:
             self.print_error(f"nothing in answer column for {row['public_body']}")
             return None
@@ -494,7 +494,11 @@ class Command(BaseImporter):
                 defaults["option"] = self.get_option_for_question(q, "Yes")
             elif answer == 0 or answer == "No":
                 defaults["option"] = self.get_option_for_question(
-                    q, "Evidence does not meet criteria"
+                    q, "Evidence doesn't meet criteria"
+                )
+            elif answer == "Evidence doesn't meet criteria":
+                defaults["option"] = self.get_option_for_question(
+                    q, "Evidence doesn't meet criteria"
                 )
         elif details["type"] == "multi":
             defaults["option"] = self.get_option_for_question(q, answer)
