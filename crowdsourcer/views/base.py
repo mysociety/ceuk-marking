@@ -3,11 +3,11 @@ import logging
 from django.conf import settings
 from django.contrib.auth.mixins import UserPassesTestMixin
 from django.contrib.auth.models import User
-from django.contrib.auth.signals import user_login_failed
+from django.contrib.auth.signals import user_logged_in, user_login_failed
 from django.core.exceptions import PermissionDenied
 from django.core.mail import mail_admins
 from django.db.models import Count, F, FloatField, OuterRef, Subquery
-from django.db.models.functions import Cast
+from django.db.models.functions import Cast, Now
 from django.dispatch import receiver
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
@@ -16,6 +16,7 @@ from django.views.generic import ListView, TemplateView
 from crowdsourcer.forms import ResponseForm, ResponseFormset
 from crowdsourcer.models import (
     Assigned,
+    Marker,
     PublicAuthority,
     Question,
     Response,
@@ -687,3 +688,16 @@ def log_failed_login(sender, credentials, **kwargs):
     logger.warning(
         f"Failed login attempt: Username '{username}' failed to authenticate. {msg}"
     )
+
+
+@receiver(user_logged_in)
+def set_first_login_time(sender, request, user, **kwargs):
+    try:
+        m = Marker.objects.get(user=user)
+    # not all users have a marker so skip if they don't
+    except Marker.DoesNotExist:
+        return
+
+    if m and not m.first_login:
+        m.first_login = Now()
+        m.save()

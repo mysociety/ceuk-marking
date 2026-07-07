@@ -37,6 +37,41 @@ class TestHomePage(TestCase):
         self.assertEqual(response.status_code, 200)
 
 
+class TestLogin(TestCase):
+    fixtures = [
+        "authorities.json",
+        "basics.json",
+        "users.json",
+    ]
+
+    def test_login(self):
+        u = User.objects.get(username="marker")
+        u.set_password("asecretpassword")
+        u.save()
+        m = Marker.objects.get(user=u)
+        self.assertIsNone(m.first_login)
+        response = self.client.post(
+            "/accounts/login/",
+            data={"username": "marker", "password": "asecretpassword"},
+        )
+        self.assertEqual(response.status_code, 302)
+
+        m.refresh_from_db()
+        self.assertIsNotNone(m.first_login)
+
+        first_login = m.first_login
+
+        self.client.logout()
+
+        response = self.client.post(
+            "/accounts/login/",
+            data={"username": "marker", "password": "asecretpassword"},
+        )
+        self.assertEqual(response.status_code, 302)
+        m.refresh_from_db()
+        self.assertEqual(m.first_login, first_login)
+
+
 class BaseTestCase(TestCase):
     fixtures = [
         "authorities.json",
