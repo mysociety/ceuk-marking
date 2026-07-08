@@ -1073,7 +1073,7 @@ class SendWelcomeEmails(BaseCommandTestCase):
         email = mail.outbox[0]
         self.assertEquals(
             email.subject,
-            "Registration link for CEUK Council Climate Scorecards Scoring System",
+            "Registration link for CEUK Council Climate Action Scorecards Scoring System: GRACE",
         )
         self.assertRegex(email.body, r"council’s contact to receive")
 
