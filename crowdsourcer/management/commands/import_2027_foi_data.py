@@ -215,10 +215,13 @@ class Command(BaseImporter):
                 "Were recognised trade unions or the employee forum consulted during the development of the Climate Action Plan AND there are plans in place to continue engaging them in matters relating to the implementation of the Climate Action Plan?",
             ],
         },
-        "Buildings.Q2.CouncilOpsRenewableEnergy": {
+        "Buildings.Q2.CouncilOpsRenewabl": {
             "section": "Buildings & Heating (MA)",
             "question": 1,
             "type": "tiered",
+            "evidence": [
+                "What % of the council's energy use is powered by local renewable electricity sources or their own renewable electricity sources? If none, please state 0"
+            ],
         },
         "Gov&Finance.Q8.Climatestaff": {
             "section": "Governance & Finance (MA)",
@@ -262,7 +265,6 @@ class Command(BaseImporter):
             "Transport.Q11.Roads",
             "Transport.Q11.Airports",
             "Biodiversity.Q8.Planning Ecolog",
-            "Buildings.Q2.CouncilOpsRenewabl",
             "Buildings.Q3.Council Homes (Ene",
             "Buildings.Q6.RetrofitStaff",
             "Buildings.Q8.MEES",
