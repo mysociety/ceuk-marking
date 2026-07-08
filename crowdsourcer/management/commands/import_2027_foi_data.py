@@ -108,7 +108,7 @@ class Command(BaseImporter):
         "Collab.Q3.Lobbying": {
             "section": "Collaboration & Engagement",
             "question": 3,
-            "type": "yes_no",
+            "type": "multi",
             "notes_column": "Notes",
             "answer_column": "GRACE Answer",
             "evidence": [
@@ -472,6 +472,9 @@ class Command(BaseImporter):
         if answer.lower().strip() == "tbc":
             self.print_error(f"tbc in answer column for {row['public_body']}")
             return None
+
+        if answer.lower().strip() == "no answer from foi":
+            answer = "No response from FOI"
 
         option_name = "option"
         if details["type"] == "tiered":
