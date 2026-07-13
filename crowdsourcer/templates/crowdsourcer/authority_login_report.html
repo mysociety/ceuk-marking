@@ -13,6 +13,7 @@
             <tr>
                 <th>Authority</th>
                 <th>Has Logged In</th>
+                <th>First Login <a href="?login_sort=asc">&#9650;</a>/<a href="?login_sort=desc">&#9660;</a></th>
             </tr>
         </thead>
         <tbody>
@@ -23,6 +24,9 @@
                 </td>
                 <td>
                     {% if authority.has_logged_in or authority.multi_has_logged_in %}Yes{% else %}No{% endif %}
+                </td>
+                <td>
+                    {{ authority.first_login }}
                 </td>
             </tr>
           {% endfor %}

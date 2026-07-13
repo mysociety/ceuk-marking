@@ -463,9 +463,22 @@ class AuthorityLoginReport(UserPassesTestMixin, ListView):
                     .order_by("-user__last_login")
                     .values("user__last_login")[:1]
                 ),
+                first_login=Subquery(
+                    Marker.objects.filter(
+                        authority=OuterRef("pk"),
+                        response_type__type="Right of Reply",
+                        marking_session=self.request.current_session,
+                    ).values("first_login")[:1]
+                ),
             )
             .order_by("has_logged_in", "name")
         )
+
+        if self.request.GET.get("login_sort"):
+            sort = "first_login"
+            if self.request.GET["login_sort"] == "desc":
+                sort = "-first_login"
+            authorities = authorities.order_by(sort)
 
         return authorities
 
