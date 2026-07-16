@@ -434,7 +434,9 @@ class Command(BaseImporter):
 
         url = self.url_map.get(row["request_url"], None)
         if url is None:
-            # print(f"no matching private url for {row['request_url']} - {name}")
+            self.print_error(
+                f"no matching private url for {row['request_url']} - {row['public_body']} {name}"
+            )
             url = row["request_url"]
 
         defaults = {
