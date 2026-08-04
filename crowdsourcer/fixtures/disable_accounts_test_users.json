@@ -1,0 +1,156 @@
+[
+{
+  "model": "auth.user",
+  "pk": 201,
+  "fields": {
+    "password": "thisisasecret",
+    "last_login": null,
+    "is_superuser": true,
+    "username": "account to disable",
+    "first_name": "",
+    "last_name": "",
+    "email": "todisable@example.org",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2022-12-19T13:40:36.075Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "pk": 202,
+  "fields": {
+    "password": "",
+    "last_login": null,
+    "is_superuser": false,
+    "username": "not logged in",
+    "first_name": "Anew",
+    "last_name": "Marker",
+    "email": "notloggedin@example.org",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2022-12-19T13:40:36.075Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "pk": 203,
+  "fields": {
+    "password": "",
+    "last_login": null,
+    "is_superuser": false,
+    "username": "recently logged in",
+    "first_name": "Anew",
+    "last_name": "Marker",
+    "email": "recent@example.org",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2022-12-19T13:40:36.075Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "pk": 204,
+  "fields": {
+    "password": "",
+    "last_login": null,
+    "is_superuser": false,
+    "username": "other response type",
+    "first_name": "Anew",
+    "last_name": "Marker",
+    "email": "other_response@example.org",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2022-12-19T13:40:36.075Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "pk": 205,
+  "fields": {
+    "password": "",
+    "last_login": null,
+    "is_superuser": false,
+    "username": "other session",
+    "first_name": "Anew",
+    "last_name": "Marker",
+    "email": "other_session@example.org",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2022-12-19T13:40:36.075Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "crowdsourcer.marker",
+  "pk": 201,
+  "fields": {
+    "user_id": 201,
+    "response_type_id": 1,
+    "send_welcome_email": true,
+    "last_update": "2022-12-19T13:40:36.0Z",
+    "created": "2022-12-19T13:40:36.075Z",
+    "first_login": "2022-12-19T13:40:36.075Z",
+    "marking_session": [1]
+  }
+},
+{
+  "model": "crowdsourcer.marker",
+  "pk": 202,
+  "fields": {
+    "user_id": 202,
+    "response_type_id": 1,
+    "send_welcome_email": true,
+    "last_update": "2022-12-19T13:40:36.0Z",
+    "created": "2022-12-19T13:40:36.075Z",
+    "marking_session": [1]
+  }
+},
+{
+  "model": "crowdsourcer.marker",
+  "pk": 203,
+  "fields": {
+    "user_id": 203,
+    "response_type_id": 1,
+    "send_welcome_email": true,
+    "last_update": "2022-12-19T13:40:36.0Z",
+    "created": "2022-12-19T13:40:36.075Z",
+    "first_login": "2022-12-19T13:40:36.075Z",
+    "marking_session": [1]
+  }
+},
+{
+  "model": "crowdsourcer.marker",
+  "pk": 204,
+  "fields": {
+    "user_id": 204,
+    "response_type_id": 2,
+    "send_welcome_email": true,
+    "last_update": "2022-12-19T13:40:36.0Z",
+    "created": "2022-12-19T13:40:36.075Z",
+    "first_login": "2022-12-19T13:40:36.075Z",
+    "marking_session": [1]
+  }
+},
+{
+  "model": "crowdsourcer.marker",
+  "pk": 205,
+  "fields": {
+    "user_id": 205,
+    "response_type_id": 1,
+    "send_welcome_email": true,
+    "last_update": "2022-12-19T13:40:36.0Z",
+    "created": "2022-12-19T13:40:36.075Z",
+    "first_login": "2022-12-19T13:40:36.075Z",
+    "marking_session": [2]
+  }
+}
+]

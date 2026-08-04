@@ -1,4 +1,5 @@
 import pathlib
+from datetime import datetime, timedelta
 from io import StringIO
 
 from django.contrib.auth.models import User
@@ -1183,3 +1184,140 @@ class CopyPreviousAnswersTestCase(BaseCommandTestCase):
         )
         self.assertEqual(stderr, "")
         self.assertEquals(Response.objects.count(), self.initial_response_count + 1)
+
+
+class ExpireAccountsWeeksAfterFirstLogin(BaseCommandTestCase):
+    fixtures = [
+        "basics.json",
+        "disable_accounts_test_users.json",
+    ]
+
+    def setUp(self):
+        now = datetime.now().astimezone()
+        five_weeks = timedelta(weeks=5)
+        five_weeks_ago = now - five_weeks
+
+        last_login_times = {
+            "todisable@example.org": five_weeks_ago,
+            "recent@example.org": now,
+            "other_response@example.org": five_weeks_ago,
+            "other_session@example.org": five_weeks_ago,
+        }
+
+        for email, login in last_login_times.items():
+            m = Marker.objects.get(user__email=email)
+            m.first_login = login
+            m.save()
+
+    def check_accounts_count(self, active, disabled):
+        self.assertEquals(User.objects.filter(is_active=True).count(), active)
+        self.assertEquals(User.objects.filter(is_active=False).count(), disabled)
+
+    def check_active_accounts(self, inactive, active):
+        for email in active:
+            self.assertTrue(
+                User.objects.filter(email=email, is_active=True).exists(),
+                f"{email} is active",
+            )
+
+        for email in inactive:
+            self.assertTrue(
+                User.objects.filter(email=email, is_active=False).exists(),
+                f"{email} is inactive",
+            )
+
+    def test_required_args(self):
+        self.check_accounts_count(5, 0)
+        with self.assertRaisesRegex(
+            CommandError,
+            r"following arguments are required: --session, --stage, --weeks_ago",
+        ):
+            self.call_command(
+                "disable-logins",
+            )
+        self.check_accounts_count(5, 0)
+
+    def test_basic_run(self):
+        self.check_accounts_count(5, 0)
+        self.call_command(
+            "disable-logins",
+            stage="First Mark",
+            session="Default",
+            weeks_ago=4,
+        )
+        self.check_accounts_count(5, 0)
+
+        self.call_command(
+            "disable-logins",
+            stage="First Mark",
+            session="Default",
+            weeks_ago=4,
+            commit=True,
+        )
+        self.check_active_accounts(
+            ["todisable@example.org"],
+            [
+                "recent@example.org",
+                "notloggedin@example.org",
+                "other_response@example.org",
+                "other_session@example.org",
+            ],
+        )
+        self.check_accounts_count(4, 1)
+
+    def test_other_response_type(self):
+        self.check_accounts_count(5, 0)
+
+        self.call_command(
+            "disable-logins",
+            stage="Right of Reply",
+            session="Default",
+            weeks_ago=4,
+            commit=True,
+        )
+
+        self.check_accounts_count(4, 1)
+        self.check_active_accounts(
+            ["other_response@example.org"],
+            [
+                "recent@example.org",
+                "notloggedin@example.org",
+                "other_session@example.org",
+                "todisable@example.org",
+            ],
+        )
+
+    def test_other_session(self):
+        self.check_accounts_count(5, 0)
+
+        self.call_command(
+            "disable-logins",
+            stage="First Mark",
+            session="Second Session",
+            weeks_ago=4,
+            commit=True,
+        )
+
+        self.check_accounts_count(4, 1)
+        self.check_active_accounts(
+            ["other_session@example.org"],
+            [
+                "recent@example.org",
+                "notloggedin@example.org",
+                "other_response@example.org",
+                "todisable@example.org",
+            ],
+        )
+
+    def test_longer_than_all_accounts(self):
+        self.check_accounts_count(5, 0)
+
+        self.call_command(
+            "disable-logins",
+            stage="First Mark",
+            session="Default",
+            weeks_ago=14,
+            commit=True,
+        )
+
+        self.check_accounts_count(5, 0)
