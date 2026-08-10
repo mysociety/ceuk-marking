@@ -155,6 +155,11 @@ session_patterns = [
         name="all_ror_marks_csv",
     ),
     path(
+        "stats/foi_ror_response_csv/",
+        stats.FoiRoRResponseCSVView.as_view(),
+        name="foi_ror_response_csv",
+    ),
+    path(
         "stats/all_audit_marks_csv/",
         stats.AllAuditMarksCSVView.as_view(),
         name="all_audit_marks_csv",

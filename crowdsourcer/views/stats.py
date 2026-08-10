@@ -413,6 +413,73 @@ class AllAnswerDataView(BaseScoresView):
         return context
 
 
+class FoiRoRResponseCSVView(StatsUserTestMixin, ListView):
+    context_object_name = "responses"
+    response_type = "Right of Reply"
+    file_name = "foi_ror_responses.csv"
+
+    def get_queryset(self):
+        return (
+            Response.objects.filter(
+                response_type__type=self.response_type,
+                question__section__marking_session=self.request.current_session,
+                question__how_marked="foi",
+            )
+            .select_related("question", "authority", "question__section")
+            .order_by(
+                "authority",
+                "question__section__title",
+                "question__number",
+                "question__number_part",
+            )
+        )
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        rows = [
+            [
+                "Authority",
+                "Section",
+                "Question",
+                "Agree with Response",
+                "Evidence",
+                "Notes",
+            ]
+        ]
+        for r in context["responses"].all():
+            agree = "-"
+            if r.agree_with_response:
+                agree = "Yes"
+            elif r.agree_with_response is not None:
+                agree = "No"
+
+            rows.append(
+                [
+                    r.authority.name,
+                    r.question.section.title,
+                    r.question.number_and_part,
+                    agree,
+                    r.evidence,
+                    r.private_notes,
+                ]
+            )
+
+        context["rows"] = rows
+
+        return context
+
+    def render_to_response(self, context, **response_kwargs):
+        response = HttpResponse(
+            content_type="text/csv",
+            headers={"Content-Disposition": f'attachment; filename="{self.file_name}"'},
+        )
+        writer = csv.writer(response)
+        for row in context["rows"]:
+            writer.writerow(row)
+        return response
+
+
 class WeightedScoresDataCSVView(BaseScoresView):
     file_name = "all_sections_scores.csv"
 
