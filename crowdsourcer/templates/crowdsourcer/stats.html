@@ -33,6 +33,9 @@
             <span class="me-3">{{ marking_session.entity_name|default:"Council" }} responsed to FOI in Right of Reply</span>
             {% include 'crowdsourcer/includes/csv-badge.html' %}
         </a>
+        <a class="list-group-item list-group-item-action d-flex align-items-center justify-content-between" href="{% session_url 'foi_marked_as_council_response' %}">
+            <span class="me-3">{{ marking_session.entity_name|default:"Council" }} marked as responding to FOI by Auditor</span>
+        </a>
         <a class="list-group-item list-group-item-action d-flex align-items-center justify-content-between" href="{% session_url 'stats_select_question' %}">
             Per question data
         </a>

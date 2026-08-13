@@ -480,6 +480,70 @@ class FoiRoRResponseCSVView(StatsUserTestMixin, ListView):
         return response
 
 
+class FoiCouncilMarkedAsRespondedCSVView(FoiRoRResponseCSVView):
+    def get_queryset(self):
+        return (
+            Response.objects.filter(
+                response_type__type=self.response_type,
+                question__section__marking_session=self.request.current_session,
+                question__how_marked="foi",
+                pk__in=Response.objects.filter(
+                    response_type__type="Audit",
+                    question__section__marking_session=self.request.current_session,
+                    foi_answer_in_ror=True,
+                ),
+            )
+            .select_related("question", "authority", "question__section")
+            .order_by(
+                "authority",
+                "question__section__title",
+                "question__number",
+                "question__number_part",
+            )
+        )
+
+
+class FoiCouncilMarkedAsRespondedView(StatsUserTestMixin, ListView):
+    context_object_name = "responses"
+    template_name = "crowdsourcer/foi_marked_as_responded.html"
+
+    def get_queryset(self):
+        print(
+            Response.objects.filter(
+                response_type__type="Audit",
+                question__section__marking_session=self.request.current_session,
+                foi_answer_in_ror=True,
+            ).values_list("pk", flat=True)
+        )
+        responses = (
+            Response.objects.filter(
+                response_type__type="Right of Reply",
+                question__section__marking_session=self.request.current_session,
+                question__how_marked="foi",
+                question__in=Response.objects.filter(
+                    response_type__type="Audit",
+                    question__section__marking_session=self.request.current_session,
+                    foi_answer_in_ror=True,
+                ).values_list("question__pk", flat=True),
+            )
+            .select_related("question", "authority", "question__section")
+            .order_by(
+                "authority",
+                "question__section__title",
+                "question__number",
+                "question__number_part",
+            )
+        )
+        print(responses)
+        return Response.objects.filter(
+            response_type__type="Audit",
+            question__section__marking_session=self.request.current_session,
+            foi_answer_in_ror=True,
+        ).select_related("question", "authority", "question__section")
+
+        return responses
+
+
 class WeightedScoresDataCSVView(BaseScoresView):
     file_name = "all_sections_scores.csv"
 

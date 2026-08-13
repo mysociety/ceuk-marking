@@ -160,6 +160,16 @@ session_patterns = [
         name="foi_ror_response_csv",
     ),
     path(
+        "stats/foi_marked_as_council_response_csv/",
+        stats.FoiCouncilMarkedAsRespondedCSVView.as_view(),
+        name="foi_marked_as_council_response_csv",
+    ),
+    path(
+        "stats/scores/foi_marked_as_council_response/",
+        stats.FoiCouncilMarkedAsRespondedView.as_view(),
+        name="foi_marked_as_council_response",
+    ),
+    path(
         "stats/all_audit_marks_csv/",
         stats.AllAuditMarksCSVView.as_view(),
         name="all_audit_marks_csv",

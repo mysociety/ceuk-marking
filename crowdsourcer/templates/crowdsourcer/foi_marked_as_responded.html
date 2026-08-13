@@ -1,0 +1,49 @@
+{% extends 'crowdsourcer/base.html' %}
+
+{% load crowdsourcer_tags %}
+
+{% block content %}
+{% if show_login %}
+<h1 class="mb-4">Sign in</h1>
+<a href="{% url 'login' %}">Sign in</a>
+{% else %}
+<h1 class="mb-4">FOI questions with Right of Reply response</h1>
+
+<p>
+    This is a list of FOI questions where Auditors checked the "Council responsed via Right of Reply" checkbox.
+</p>
+
+<p>
+    <small>Get the council responses <a href="{% session_url 'foi_marked_as_council_response_csv' %}">as a CSV</a></small>
+</p>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Authority</th>
+            <th>Section</th>
+            <th>Right of Reply</th>
+            <th>Audit</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for response in responses %}
+        <tr>
+            <td>
+                {{ response.authority.name }}
+            </td>
+            <td>
+                {{ response.question.section.title }}
+            </td>
+            <td>
+                <a href="{% session_url 'authority_ror' response.authority.name response.question.section.title %}#q{{ response.question.number_and_part }}">{{ response.question.number_and_part }}</a>
+            </td>
+            <td>
+                <a href="{% session_url 'authority_audit' response.authority.name response.question.section.title %}#q{{ response.question.number_and_part }}">{{ response.question.number_and_part }}</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+{% endblock %}
