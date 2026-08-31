@@ -85,7 +85,7 @@ class Command(BaseImporter):
                 marking_session=self.session,
                 first_login__isnull=False,
                 first_login__lt=cutoff,
-            )
+            ).exclude(user__is_active=False)
 
             self.print_info(
                 f"disabling {markers.count()} users with login before {cutoff.isoformat()}"
