@@ -47,9 +47,12 @@ class VolunteersView(VolunteerAccessMixin, FilterView):
     def get_filterset(self, filterset_class):
         fs = super().get_filterset(filterset_class)
 
-        fs.filters["assigned_section"].field.choices = Section.objects.filter(
-            marking_session=self.request.current_session
-        ).values_list("title", "title")
+        fs.filters["assigned_section"].field.choices = [
+            (s.title, s.title)
+            for s in Section.objects.filter(
+                marking_session=self.request.current_session
+            )
+        ]
         return fs
 
     def get_queryset(self):
