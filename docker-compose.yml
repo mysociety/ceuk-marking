@@ -1,9 +1,9 @@
 services:
   db:
-    image: postgres:13
+    image: postgres:15
     restart: always
     volumes:
-      - pgdata13:/var/lib/postgresql/data
+      - pgdata15:/var/lib/postgresql/data
     environment:
       POSTGRES_PASSWORD: 'password'
       POSTGRES_DB: 'ceuk-marking'
@@ -47,5 +47,5 @@ services:
          - email.svc
 
 volumes:
-  pgdata13:
+  pgdata15:
   node_modules:
