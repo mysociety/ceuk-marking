@@ -15,6 +15,12 @@
     </h1>
 
     <div class="sticky-top py-3 bg-white border-bottom" style="margin-bottom: -1px;">
+        {% if council_minutes %}
+          <div class="float-end" style="position: relative; z-index: 10;">
+            <a target="_blank" href="{{ council_minutes }}">Minutes</a>
+          </div>
+        {% endif %}
+
         {% include "crowdsourcer/includes/skip_questions_dropdown.html" with form=form%}
     </div>
 
