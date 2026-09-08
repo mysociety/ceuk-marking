@@ -956,7 +956,7 @@ class SendWelcomeEmails(BaseCommandTestCase):
 
         emails = mail.outbox
 
-        text = "your previous password"
+        text = "remember your password"
         for m in emails:
             if m.to[0] == "already@example.org":
                 self.assertTrue(m.body.rfind(text) >= 0)
