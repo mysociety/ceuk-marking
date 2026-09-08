@@ -331,18 +331,34 @@ class Command(BaseCommand):
                 own_council = PublicAuthority.objects.filter(
                     name__icontains=councils[0]
                 )
-                if len(councils) > 1:
+                if own_council and len(councils) > 1:
                     for council in councils[1:]:
                         own_council = own_council | PublicAuthority.objects.filter(
                             name__icontains=council
                         )
+                elif own_council is None:
+                    if len(councils) == 1:
+                        own_councils = councils[1]
+                    elif len(councils) > 1:
+                        own_councils = councils[1]
+                        for council in councils[2:]:
+                            own_council = own_council | PublicAuthority.objects.filter(
+                                name__icontains=council
+                            )
 
             if response_type != "First Mark":
-                own_council = own_council | PublicAuthority.objects.filter(
-                    id__in=Assigned.objects.filter(user=u, section=s)
-                    .exclude(response_type=rt)
-                    .values_list("authority")
-                )
+                if own_council:
+                    own_council = own_council | PublicAuthority.objects.filter(
+                        id__in=Assigned.objects.filter(user=u, section=s)
+                        .exclude(response_type=rt)
+                        .values_list("authority")
+                    )
+                else:
+                    own_council = PublicAuthority.objects.filter(
+                        id__in=Assigned.objects.filter(user=u, section=s)
+                        .exclude(response_type=rt)
+                        .values_list("authority")
+                    )
 
             if len(councils) > 0 and own_council.count() == 0:
                 bad_councils.append((row["council_area"], row["email"]))
