@@ -463,6 +463,10 @@ class Response(models.Model):
             r = cls.objects.get(**args)
         except Response.DoesNotExist:
             r = None
+        except Response.MultipleObjectsReturned:
+            raise Exception(
+                f"multiple responses to {section} {question_number} for {authority}"
+            )
 
         return r
 
