@@ -548,20 +548,38 @@ class WeightedScoresDataCSVView(BaseScoresView):
     file_name = "all_sections_scores.csv"
 
     def get_context_data(self, **kwargs):
-        ordered_sections = [
-            "Buildings & Heating",
-            "Transport",
-            "Planning & Land Use",
-            "Governance & Finance",
-            "Biodiversity",
-            "Collaboration & Engagement",
-            "Waste Reduction & Food",
-            "Transport (CA)",
-            "Buildings & Heating & Green Skills (CA)",
-            "Governance & Finance (CA)",
-            "Planning & Biodiversity (CA)",
-            "Collaboration & Engagement (CA)",
-        ]
+        session = self.request.current_session.label
+        if session == "Scorecards 2023" or session == "Scorecards 2025":
+            ordered_sections = [
+                "Buildings & Heating",
+                "Transport",
+                "Planning & Land Use",
+                "Governance & Finance",
+                "Biodiversity",
+                "Collaboration & Engagement",
+                "Waste Reduction & Food",
+                "Transport (CA)",
+                "Buildings & Heating & Green Skills (CA)",
+                "Governance & Finance (CA)",
+                "Planning & Biodiversity (CA)",
+                "Collaboration & Engagement (CA)",
+            ]
+        else:
+            ordered_sections = [
+                "Buildings & Heating",
+                "Transport",
+                "Planning & Land Use",
+                "Governance & Finance",
+                "Biodiversity",
+                "Collaboration & Engagement",
+                "Waste Reduction & Food",
+                "Transport (MA)",
+                "Buildings & Heating (MA)",
+                "Governance & Finance (MA)",
+                "Planning & Biodiversity (MA)",
+                "Collaboration & Engagement (MA)",
+            ]
+
         context = super().get_context_data(**kwargs)
 
         self.get_scores()
