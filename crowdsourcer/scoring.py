@@ -351,14 +351,17 @@ def get_blank_section_scores(session):
     non_ca_sections = {
         x: 0
         for x in Section.objects.exclude(title__contains="(CA)")
+        .exclude(title__contains="(MA)")
         .filter(marking_session=session)
         .values_list("title", flat=True)
     }
     ca_sections = {
         x: 0
         for x in Section.objects.filter(
-            title__contains="(CA)", marking_session=session
-        ).values_list("title", flat=True)
+            Q(title__contains="(CA)") | Q(title__contains="(MA)")
+        )
+        .filter(marking_session=session)
+        .values_list("title", flat=True)
     }
 
     for council in PublicAuthority.objects.filter(
