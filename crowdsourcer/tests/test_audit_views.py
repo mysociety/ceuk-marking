@@ -241,6 +241,42 @@ class TestSaveView(BaseTestCase):
         self.assertRegex(response.content, rb"Second Session")
         self.assertNotRegex(response.content, rb"vehicle fleet")
 
+    def test_question_visibility(self):
+        q_not_to_change = Question.objects.get(
+            number=1,
+            section__title="Transport",
+            section__marking_session__label="Default",
+        )
+
+        q_to_change = Question.objects.get(
+            number=2,
+            section__title="Transport",
+            section__marking_session__label="Default",
+        )
+        self.assertEqual(q_not_to_change.how_marked, "volunteer")
+        self.assertEqual(q_to_change.how_marked, "volunteer")
+
+        url = reverse("authority_audit", args=("Aberdeenshire Council", "Transport"))
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+
+        form = response.context["form"]
+        self.assertEqual(len(form.forms), 2)
+        self.assertEqual(form.forms[0].orig.question.id, q_not_to_change.id)
+        self.assertEqual(form.forms[1].orig.question.id, q_to_change.id)
+
+        q_to_change.how_marked = "national_data"
+        q_to_change.save()
+
+        url = reverse("authority_audit", args=("Aberdeenshire Council", "Transport"))
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+
+        form = response.context["form"]
+        # only one question now
+        self.assertEqual(len(form.forms), 1)
+        self.assertEqual(form.forms[0].orig.question.id, q_not_to_change.id)
+
     @skip("read only questions temporarily disabled")
     def test_read_only_questions(self):
         q = Question.objects.get(pk=282)

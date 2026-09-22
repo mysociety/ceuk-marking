@@ -28,8 +28,8 @@ class AuthorityAuditSectionQuestions(BaseQuestionView):
         "volunteer",
         "national_volunteer",
         "foi",
-        "national_data",
-        "national_data_ror_visible",
+        # "national_data",
+        # "national_data_ror_visible",
     ]
 
     def get_initial_obj(self):
