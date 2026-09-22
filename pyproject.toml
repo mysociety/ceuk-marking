@@ -22,6 +22,8 @@ django-filter = "26.1"
 requests = "2.33.0"
 pygments = "2.20.0"
 django-compressor = "4.5"
+urllib3 = "2.7.0"
+idna = "3.20"
 
 [tool.poetry.group.dev.dependencies]
 black = "^24.4.2"
