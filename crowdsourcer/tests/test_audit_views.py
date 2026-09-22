@@ -241,6 +241,27 @@ class TestSaveView(BaseTestCase):
         self.assertRegex(response.content, rb"Second Session")
         self.assertNotRegex(response.content, rb"vehicle fleet")
 
+    def test_question_visibility(self):
+        url = reverse("authority_audit", args=("Aberdeenshire Council", "Transport"))
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+
+        form = response.context["form"]
+        self.assertEqual(len(form.forms), 2)
+        self.assertEqual(form.forms[1].orig.question.id, 282)
+
+        q = Question.objects.get(pk=282)
+        q.how_marked = "national_data"
+        q.save()
+
+        url = reverse("authority_audit", args=("Aberdeenshire Council", "Transport"))
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+
+        form = response.context["form"]
+        # only one question now
+        self.assertEqual(len(form.forms), 1)
+
     @skip("read only questions temporarily disabled")
     def test_read_only_questions(self):
         q = Question.objects.get(pk=282)
