@@ -1348,7 +1348,9 @@ class TestAuthorityLoginView(BaseTestCase):
 
     def test_has_logged_in_since_session_start(self):
         council = User.objects.get(username="council")
-        council.lastlogin = datetime.datetime(2023, 2, 27, 0, 0, 0, tzinfo=datetime.timezone.utc)
+        council.lastlogin = datetime.datetime(
+            2023, 2, 27, 0, 0, 0, tzinfo=datetime.timezone.utc
+        )
         council.save()
         last_login = council.last_login
 
