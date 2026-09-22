@@ -338,9 +338,9 @@ class Command(BaseCommand):
                         )
                 elif own_council is None:
                     if len(councils) == 1:
-                        own_councils = councils[1]
+                        own_council = councils[1]
                     elif len(councils) > 1:
-                        own_councils = councils[1]
+                        own_council = councils[1]
                         for council in councils[2:]:
                             own_council = own_council | PublicAuthority.objects.filter(
                                 name__icontains=council
