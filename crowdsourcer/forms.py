@@ -342,7 +342,12 @@ class AuditResponseForm(ModelForm):
                 or self.question_obj.how_marked == "national_data_ror_visible"
             ):
                 mandatory = self.mandatory_if_national
-            elif str(response) in ["No", "None", "No evidence found"]:
+            elif str(response) in [
+                "No",
+                "None",
+                "No evidence found",
+                "Evidence doesn't meet criteria",
+            ]:
                 mandatory = self.mandatory_if_no
             else:
                 mandatory = self.mandatory_if_response
