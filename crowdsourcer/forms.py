@@ -115,6 +115,8 @@ class ResponseForm(ModelForm):
             "None",
             "No evidence found",
             "Evidence doesn't meet criteria",
+            "Council does not directly own or manage social housing, likely to provide social housing through external organisations",
+            "Council directly owns or manages less than 100 homes so question doesn't apply",
         ]
         if settings.NO_RESPONSE_OPTIONS.get(self.session.label):
             no_response_options = settings.NO_RESPONSE_OPTIONS[self.session.label]
@@ -142,7 +144,7 @@ class ResponseForm(ModelForm):
                 self.add_error(option_field, "This field is required")
 
         else:
-            if str(response) in no_response_options:
+            if str(response).strip() in no_response_options:
                 mandatory = self.mandatory_if_no
             else:
                 mandatory = self.mandatory_if_response
@@ -342,7 +344,7 @@ class AuditResponseForm(ModelForm):
                 or self.question_obj.how_marked == "national_data_ror_visible"
             ):
                 mandatory = self.mandatory_if_national
-            elif str(response) in [
+            elif str(response).strip() in [
                 "No",
                 "None",
                 "No evidence found",
