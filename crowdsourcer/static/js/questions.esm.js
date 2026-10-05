@@ -59,6 +59,10 @@ $(function(){
         $fs.find('.form-select, .form-control, .form-check-input, input[type="hidden"]').each(function() {
           let $f = $(this);
           let name = get_name_from_input($f[0]);
+          // remove any errors added by django POST validation
+          let error_id = '#' + $f[0].id + '_error';
+          $(error_id).remove();
+          // remove errors added by our JSON validation
           $f.next('.invalid-feedback').remove();
           if (r_data["errors"].hasOwnProperty(name)) {
             $f.addClass("is-invalid").removeClass("is-valid");
@@ -71,7 +75,8 @@ $(function(){
       } else {
         $fs.find('.form-select, .form-control, .form-check-input, input[type="hidden"]').each(function() {
           $f = $(this);
-          let name = get_name_from_input($f[0]);
+          let error_id = '#' + $f[0].id + '_error';
+          $(error_id).remove();
           $f.next('.invalid-feedback').remove();
           $f.addClass("is-valid").removeClass("is-invalid");
         });
